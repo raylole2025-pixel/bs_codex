@@ -19,12 +19,16 @@ EPS = 1e-9
 PRUNE_EXACT_LIMIT = 8
 TOURNAMENT_SIZE = 3
 INIT_PREFIX_LENGTH = 20
+FEEDBACK_PREFIX_LENGTH = 5
+PREFIX_CROSSOVER_MIN_CUT = 8
+PREFIX_CROSSOVER_MAX_CUT = 30
 INIT_RCL_LAYER_ALPHAS = (0.05, 0.10, 0.20, 0.30)
 INIT_RCL_LAYER_WEIGHTS = (12, 16, 16, 8)
 INIT_RANDOM_RATIO = 0.10
 INIT_FIRST_GENE_REPEAT_RATIO = 0.10
 INIT_FIRST3_REPEAT_RATIO = 0.05
 INIT_MAX_ATTEMPTS_PER_SLOT = 64
+OFFSPRING_FEEDBACK_RATIO = 0.50
 
 
 def _prefix_signature(values: Iterable[str], length: int = INIT_PREFIX_LENGTH) -> tuple[str, ...]:
@@ -868,7 +872,7 @@ class Stage1GA:
         self._decode_order_cache: dict[tuple[str, ...], list[ScheduledWindow]] = {}
         self._decoded_acceptance_cache: dict[tuple[str, ...], tuple[str, ...]] = {}
         self._order_state_cache: dict[tuple[str, ...], OrderState] = {}
-        self._candidate_cache: dict[tuple[str, ...], Stage1Candidate] = {}
+        self._candidate_cache: dict[tuple[tuple[str, ...], bool], Stage1Candidate] = {}
         self._initial_population_summary: dict[str, Any] = {}
 
     def _log(self, message: str) -> None:
@@ -1056,6 +1060,7 @@ class Stage1GA:
 
         generation_best = min(population, key=lambda item: item.fitness) if population else None
         feasible_count = sum(1 for item in population if item.feasible)
+        unique_accepted_order_count = len({item.accepted_order for item in population})
         accepted_changed = (
             None
             if generation_best is None or previous_generation_best is None
@@ -1073,7 +1078,9 @@ class Stage1GA:
             f"best_eta_cap={_format_diag_value(generation_best.eta_cap if generation_best is not None else None)}",
             f"best_avg_hot_coverage={_format_diag_value(generation_best.avg_hot_coverage if generation_best is not None else None)}",
             f"best_activation_count={_format_diag_value(generation_best.activation_count if generation_best is not None else None)}",
+            f"best_window_count={_format_diag_value(generation_best.window_count if generation_best is not None else None)}",
             f"best_accepted_len={_format_diag_value(len(generation_best.accepted_order) if generation_best is not None else None)}",
+            f"unique_accepted_order_count={_format_diag_value(unique_accepted_order_count)}",
             f"gen_best_is_global_best={_format_diag_value(_candidate_match(generation_best, global_best_candidate))}",
             f"global_best_generation={_format_diag_value(global_best_generation)}",
             f"no_improvement_generations={_format_diag_value(no_improvement_generations)}",
@@ -1199,10 +1206,12 @@ class Stage1GA:
         calendar = ResourceCalendar(self.scenario.node_domain.keys())
         accepted_order: list[str] = []
         q_eval = max(1, self.scenario.stage1.q_eval)
+        first_feasible_found = False
+        post_feasible_budget = 0
 
         for window_id in chromosome:
             if self._started_at is not None and self._time_exceeded(self._started_at):
-                decoded = tuple(accepted_order)
+                decoded = self._prune_redundant_windows(accepted_order) if first_feasible_found else tuple(accepted_order)
                 self._decoded_acceptance_cache[chromosome] = decoded
                 return decoded
             window = self.windows_by_id[window_id]
@@ -1210,24 +1219,56 @@ class Stage1GA:
             if scheduled is None:
                 continue
             accepted_order.append(window_id)
+            if first_feasible_found and post_feasible_budget > 0:
+                post_feasible_budget -= 1
+                if post_feasible_budget == 0:
+                    decoded = self._prune_redundant_windows(accepted_order)
+                    self._decoded_acceptance_cache[chromosome] = decoded
+                    return decoded
             if len(accepted_order) % q_eval != 0:
                 continue
             state = self._analyze_order(accepted_order)
             if state.feasible:
-                decoded = tuple(state.order)
-                self._decoded_acceptance_cache[chromosome] = decoded
-                return decoded
+                if not first_feasible_found:
+                    first_feasible_found = True
+                    post_feasible_budget = q_eval
 
-        decoded = tuple(accepted_order)
+        decoded = self._prune_redundant_windows(accepted_order) if first_feasible_found else tuple(accepted_order)
         self._decoded_acceptance_cache[chromosome] = decoded
         return decoded
 
-    def _candidate_from_state(self, original_chromosome: tuple[str, ...], state: OrderState) -> Stage1Candidate:
+    def _prune_redundant_windows(self, accepted_order: Iterable[str]) -> tuple[str, ...]:
+        current_order = list(accepted_order)
+        if not current_order:
+            return tuple(current_order)
+
+        idx = len(current_order) - 1
+        while idx >= 0:
+            trial_order = current_order[:idx] + current_order[idx + 1 :]
+            trial_state = self._analyze_order(trial_order)
+            if trial_state.feasible:
+                current_order = list(trial_state.order)
+            idx -= 1
+        return tuple(current_order)
+
+    def _apply_feedback(self, original_chromosome: tuple[str, ...], accepted_order: tuple[str, ...]) -> tuple[str, ...]:
+        accepted_prefix = tuple(accepted_order[:FEEDBACK_PREFIX_LENGTH])
+        if not accepted_prefix:
+            return original_chromosome
+        accepted_set = set(accepted_prefix)
+        return accepted_prefix + tuple(gene for gene in original_chromosome if gene not in accepted_set)
+
+    def _candidate_from_state(
+        self,
+        original_chromosome: tuple[str, ...],
+        state: OrderState,
+        *,
+        apply_feedback: bool = False,
+    ) -> Stage1Candidate:
         accepted = tuple(state.order)
-        accepted_set = set(accepted)
-        feedback = accepted + tuple(gene for gene in original_chromosome if gene not in accepted_set)
+        chromosome = self._apply_feedback(original_chromosome, accepted) if apply_feedback else original_chromosome
         return Stage1Candidate(
-            chromosome=feedback,
+            chromosome=chromosome,
             accepted_order=accepted,
             plan=state.plan,
             feasible=state.feasible,
@@ -1247,17 +1288,17 @@ class Stage1GA:
             fitness=state.fitness,
         )
 
-    def _evaluate_chromosome(self, chromosome: Iterable[str]) -> Stage1Candidate:
+    def _evaluate_chromosome(self, chromosome: Iterable[str], *, apply_feedback: bool = False) -> Stage1Candidate:
         chromosome_tuple = tuple(chromosome)
-        cached = self._candidate_cache.get(chromosome_tuple)
+        cache_key = (chromosome_tuple, apply_feedback)
+        cached = self._candidate_cache.get(cache_key)
         if cached is not None:
             return cached
 
         accepted_order = self._decode_accepted_order(chromosome_tuple)
         state = self._analyze_order(accepted_order)
-        candidate = self._candidate_from_state(chromosome_tuple, state)
-        self._candidate_cache[chromosome_tuple] = candidate
-        self._candidate_cache[candidate.chromosome] = candidate
+        candidate = self._candidate_from_state(chromosome_tuple, state, apply_feedback=apply_feedback)
+        self._candidate_cache[cache_key] = candidate
         return candidate
 
     def _sorted_windows_by_value(self) -> list[str]:
@@ -1469,7 +1510,12 @@ class Stage1GA:
     def _prefix_crossover(self, parent_a: tuple[str, ...], parent_b: tuple[str, ...]) -> list[str]:
         if len(parent_a) <= 1:
             return list(parent_a)
-        cut = self.random.randint(1, len(parent_a) - 1)
+        lower = min(max(1, PREFIX_CROSSOVER_MIN_CUT), len(parent_a) - 1)
+        upper = min(PREFIX_CROSSOVER_MAX_CUT, len(parent_a) - 1)
+        if lower > upper:
+            lower = 1
+            upper = len(parent_a) - 1
+        cut = self.random.randint(lower, upper)
         child = list(parent_a[:cut])
         seen = set(child)
         child.extend(gene for gene in parent_b if gene not in seen)
@@ -1479,14 +1525,34 @@ class Stage1GA:
         if len(chromosome) <= 1:
             return chromosome
         mutated = chromosome[:]
-        if self.random.random() < 0.7:
-            src = self.random.randrange(len(mutated))
-            gene = mutated.pop(src)
-            dst = self.random.randrange(len(mutated) + 1)
-            mutated.insert(dst, gene)
+        prefix_limit = min(INIT_PREFIX_LENGTH, len(mutated))
+        prefix_focus = prefix_limit >= 2 and self.random.random() < 0.75
+        if prefix_focus:
+            operation = self.random.choice(("prefix_swap", "prefix_insertion"))
         else:
+            operation = self.random.choice(("global_swap", "global_insertion"))
+
+        if operation == "prefix_swap":
+            i, j = self.random.sample(range(prefix_limit), 2)
+            mutated[i], mutated[j] = mutated[j], mutated[i]
+            return mutated
+
+        if operation == "prefix_insertion":
+            src = self.random.randrange(prefix_limit)
+            gene = mutated.pop(src)
+            dst = self.random.randrange(prefix_limit + 1)
+            mutated.insert(dst, gene)
+            return mutated
+
+        if operation == "global_swap":
             i, j = self.random.sample(range(len(mutated)), 2)
             mutated[i], mutated[j] = mutated[j], mutated[i]
+            return mutated
+
+        src = self.random.randrange(len(mutated))
+        gene = mutated.pop(src)
+        dst = self.random.randrange(len(mutated) + 1)
+        mutated.insert(dst, gene)
         return mutated
 
     def _update_archive(self, archive: list[Stage1Candidate], population: list[Stage1Candidate]) -> list[Stage1Candidate]:
@@ -1551,8 +1617,8 @@ class Stage1GA:
 
         if current_state.fitness >= candidate.fitness:
             return candidate
-        improved = self._candidate_from_state(candidate.chromosome, current_state)
-        self._candidate_cache[improved.chromosome] = improved
+        improved = self._candidate_from_state(candidate.chromosome, current_state, apply_feedback=False)
+        self._candidate_cache[(candidate.chromosome, False)] = improved
         return improved
 
     def _prune_elites(self, population: list[Stage1Candidate], started_at: float) -> list[Stage1Candidate]:
@@ -1595,6 +1661,7 @@ class Stage1GA:
                     "population_best_avg_hot_coverage": (population_best.avg_hot_coverage if population_best is not None else None),
                     "population_best_activation_count": (population_best.activation_count if population_best is not None else None),
                     "population_best_window_count": (population_best.window_count if population_best is not None else None),
+                    "population_unique_accepted_order_count": len({item.accepted_order for item in population}),
                     "best_feasible_violation": (best_feasible.violation if best_feasible is not None else None),
                     "best_feasible_mean_completion_ratio": (
                         best_feasible.mean_completion_ratio if best_feasible is not None else None
@@ -1682,7 +1749,8 @@ class Stage1GA:
                     child = list(better.chromosome)
                 if self.random.random() < ga.mutation_probability:
                     child = self._mutate(child)
-                new_population.append(self._evaluate_chromosome(child))
+                apply_feedback = self.random.random() < OFFSPRING_FEEDBACK_RATIO
+                new_population.append(self._evaluate_chromosome(child, apply_feedback=apply_feedback))
 
             if new_population:
                 population = self._prune_elites(new_population, started_at)
@@ -1738,6 +1806,7 @@ class Stage1GA:
                 ("total_generations_executed", generations),
                 ("total_elapsed_seconds", time.perf_counter() - started_at),
                 ("global_best_generation", global_best_generation),
+                ("stall_count", stall),
                 ("gen0_best_fitness", gen0_best_candidate.fitness if gen0_best_candidate is not None else None),
                 ("global_best_fitness", global_best_candidate.fitness if global_best_candidate is not None else None),
                 ("gen0_best_fr", gen0_best_candidate.fr if gen0_best_candidate is not None else None),
