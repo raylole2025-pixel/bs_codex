@@ -1,0 +1,17 @@
+[project]
+name = "bs3"
+version = "0.1.0"
+description = "Two-stage cross-domain link planning and rolling scheduling framework."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "networkx>=3.0",
+    "pulp>=3.3.0",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["bs3*"]

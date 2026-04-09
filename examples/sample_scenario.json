@@ -1,0 +1,60 @@
+﻿{
+  "metadata": {
+    "name": "sample-cross-domain-scenario"
+  },
+  "planning_end": 12,
+  "nodes": {
+    "A": ["A1", "A2", "A3"],
+    "B": ["B1", "B2", "B3"]
+  },
+  "capacities": {
+    "A": 4.0,
+    "B": 4.0,
+    "X": 3.0
+  },
+  "stage1": {
+    "theta": 0.65,
+    "rho": 0.3,
+    "t_pre": 0.5,
+    "d_min": 1.0,
+    "k_paths": 1,
+    "ga": {
+      "population_size": 20,
+      "elite_count": 2,
+      "immigrant_count": 2,
+      "max_generations": 8,
+      "stall_generations": 4,
+      "top_m": 3
+    }
+  },
+  "stage2": {
+    "k_paths": 2,
+    "insertion_horizon_seconds": 180.0,
+    "completion_tolerance": 1e-6,
+    "affected_task_limit": 8,
+    "best_effort_on_failure": false,
+    "label_keep_limit": 16
+  },
+  "intra_domain_links": [
+    {"id": "A12", "u": "A1", "v": "A2", "domain": "A", "start": 0, "end": 12, "delay": 0.2},
+    {"id": "A23", "u": "A2", "v": "A3", "domain": "A", "start": 0, "end": 12, "delay": 0.2},
+    {"id": "A13", "u": "A1", "v": "A3", "domain": "A", "start": 5, "end": 12, "delay": 0.1},
+    {"id": "B12", "u": "B1", "v": "B2", "domain": "B", "start": 0, "end": 12, "delay": 0.2},
+    {"id": "B23", "u": "B2", "v": "B3", "domain": "B", "start": 0, "end": 12, "delay": 0.2},
+    {"id": "B13", "u": "B1", "v": "B3", "domain": "B", "start": 6, "end": 12, "delay": 0.1}
+  ],
+  "candidate_windows": [
+    {"id": "X1", "a": "A2", "b": "B2", "start": 1, "end": 5, "value": 4.0},
+    {"id": "X2", "a": "A1", "b": "B1", "start": 3, "end": 8, "value": 4.8},
+    {"id": "X3", "a": "A3", "b": "B3", "start": 6, "end": 11, "value": 5.0},
+    {"id": "X4", "a": "A2", "b": "B3", "start": 8, "end": 12, "value": 3.5}
+  ],
+  "tasks": [
+    {"id": "R1", "src": "A1", "dst": "B3", "arrival": 0, "deadline": 6, "data": 8, "weight": 3, "max_rate": 2, "type": "reg", "preemption_priority": 3},
+    {"id": "R2", "src": "A3", "dst": "B1", "arrival": 1, "deadline": 10, "data": 10, "weight": 2, "max_rate": 2, "type": "reg", "preemption_priority": 2},
+    {"id": "R3", "src": "A2", "dst": "B2", "arrival": 2, "deadline": 12, "data": 7, "weight": 1, "max_rate": 1.5, "type": "reg", "preemption_priority": 1},
+    {"id": "E1", "src": "A1", "dst": "B2", "arrival": 4, "deadline": 9, "data": 5, "weight": 5, "max_rate": 3, "type": "emg", "preemption_priority": 5},
+    {"id": "E2", "src": "A3", "dst": "B3", "arrival": 7, "deadline": 12, "data": 4, "weight": 4, "max_rate": 2, "type": "emg", "preemption_priority": 4}
+  ]
+}
+
