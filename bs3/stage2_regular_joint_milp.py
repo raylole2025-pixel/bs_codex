@@ -28,6 +28,13 @@ class _WindowSolveResult:
     remaining_end: dict[str, float]
 
 
+@dataclass(frozen=True)
+class _ObjectiveStage:
+    name: str
+    sense: int
+    expr: pulp.LpAffineExpression
+
+
 def _completion_tolerance(scenario: Scenario, task: Task) -> float:
     return max(float(scenario.stage2.completion_tolerance) * max(float(task.data), 0.0), EPS)
 
@@ -88,11 +95,38 @@ def _require_optimal(model: pulp.LpProblem, solver: pulp.LpSolver, stage: str) -
         raise RuntimeError(f"Stage2-1 joint MILP {stage} solve did not reach optimality: {status_name}")
 
 
+def _solve_lexicographic(
+    model: pulp.LpProblem,
+    solver: pulp.LpSolver,
+    stages: list[_ObjectiveStage],
+    *,
+    mode_label: str,
+) -> dict[str, float]:
+    values: dict[str, float] = {}
+    for idx, stage in enumerate(stages, start=1):
+        model.sense = stage.sense
+        model.setObjective(stage.expr)
+        _require_optimal(model, solver, f"{mode_label}-stage-{idx}-{stage.name}")
+        optimum = float(pulp.value(stage.expr) or 0.0)
+        values[stage.name] = optimum
+        if idx >= len(stages):
+            continue
+        if stage.sense == pulp.LpMaximize:
+            model += stage.expr >= optimum - 1e-6
+        else:
+            model += stage.expr <= optimum + 1e-6
+    return values
+
+
 def _build_task_segments(tasks: list[Task], segments: list[Segment]) -> dict[str, list[Segment]]:
     task_segments: dict[str, list[Segment]] = {}
     for task in tasks:
         task_segments[task.task_id] = [segment for segment in segments if task.arrival <= segment.start < task.deadline]
     return task_segments
+
+
+def _normalized_milp_mode(mode: str) -> str:
+    return "full" if str(mode).strip().lower() == "full" else "rolling"
 
 
 def _rolling_high_weight_threshold(scenario: Scenario, tasks: list[Task]) -> float:
@@ -237,16 +271,18 @@ def _solve_regular_window_milp(
     tasks: list[Task],
     initial_remaining: dict[str, float],
     initial_cross_link: dict[str, str | None],
-    optimize_progress: bool,
+    milp_mode: str,
 ) -> _WindowSolveResult:
     if not tasks or not window_segments:
         return _WindowSolveResult(schedule={}, remaining_end={task.task_id: initial_remaining.get(task.task_id, float(task.data)) for task in tasks})
 
+    mode = _normalized_milp_mode(milp_mode)
+    rolling_mode = mode == "rolling"
     edge_capacities, cross_links_by_segment, reserved_cross = _build_edge_capacities(scenario, plan, window_segments)
     task_segments = _build_task_segments(tasks, window_segments)
     rolling_path_limits = (
         _select_rolling_path_limits(scenario, tasks, task_segments, initial_remaining)
-        if optimize_progress
+        if rolling_mode
         else None
     )
     (
@@ -261,7 +297,7 @@ def _solve_regular_window_milp(
         task_segments,
         tasks,
         edge_capacities,
-        default_path_limit=(scenario.stage2.milp_rolling_path_limit if optimize_progress else None),
+        default_path_limit=(scenario.stage2.milp_rolling_path_limit if rolling_mode else None),
         path_limits_by_task_segment=rolling_path_limits,
     )
 
@@ -281,7 +317,7 @@ def _solve_regular_window_milp(
     q_vars = {
         segment.index: pulp.LpVariable(f"q_{segment.index}", lowBound=0.0, upBound=1.0)
         for segment in window_segments
-        if (not optimize_progress) and cross_links_by_segment.get(segment.index)
+        if cross_links_by_segment.get(segment.index)
     }
     rate_vars = {
         key: pulp.LpVariable(
@@ -307,11 +343,9 @@ def _solve_regular_window_milp(
                 lowBound=0.0,
                 upBound=start_remaining,
             )
-        if (not optimize_progress) and local_segments:
+        if local_segments:
             first_switch_vars[task.task_id] = pulp.LpVariable(f"u0_{task.task_id}", cat=pulp.LpBinary)
         for local_index in range(1, len(local_segments)):
-            if optimize_progress:
-                continue
             transition_switch_vars[(task.task_id, local_index)] = pulp.LpVariable(
                 f"u_{task.task_id}_{local_index}",
                 cat=pulp.LpBinary,
@@ -334,7 +368,7 @@ def _solve_regular_window_milp(
                 for key in keys:
                     model += rate_vars[key] <= candidate_records[key].rate_upper_bound * choice_vars[key]
                 model += _expr_sum(delivered_terms) <= remaining_vars[(task.task_id, local_index)]
-                if optimize_progress and float(task.data) > EPS:
+                if float(task.data) > EPS:
                     urgency = float(task.weight) / (float(task.data) * max(float(task.deadline) - float(segment.start), float(segment.duration), EPS))
                     for key in keys:
                         progress_terms.append(urgency * rate_vars[key] * candidate_records[key].effective_duration)
@@ -351,7 +385,7 @@ def _solve_regular_window_milp(
                 continue
             model += pulp.lpSum(rate_vars[key] for key in keys) <= float(capacity)
 
-    if (not optimize_progress) and reserved_cross > EPS:
+    if reserved_cross > EPS:
         for segment in window_segments:
             q_var = q_vars.get(segment.index)
             if q_var is None:
@@ -364,55 +398,43 @@ def _solve_regular_window_milp(
                     model += q_var >= 0.0
 
     switch_expr_terms: list = []
-    if not optimize_progress:
-        for task in tasks:
-            local_segments = task_segments[task.task_id]
-            if not local_segments:
-                continue
-            first_switch = first_switch_vars[task.task_id]
-            switch_expr_terms.append(first_switch)
-            first_choices = cross_choice_keys.get((task.task_id, 0), {})
-            preferred = initial_cross_link.get(task.task_id)
-            if preferred is not None:
-                for cross_link, keys in first_choices.items():
-                    if cross_link == preferred:
-                        continue
-                    model += first_switch >= pulp.lpSum(choice_vars[key] for key in keys)
-            for local_index in range(1, len(local_segments)):
-                switch_var = transition_switch_vars[(task.task_id, local_index)]
-                switch_expr_terms.append(switch_var)
-                prev_choices = cross_choice_keys.get((task.task_id, local_index - 1), {})
-                curr_choices = cross_choice_keys.get((task.task_id, local_index), {})
-                if not prev_choices or not curr_choices:
+    for task in tasks:
+        local_segments = task_segments[task.task_id]
+        if not local_segments:
+            continue
+        first_switch = first_switch_vars[task.task_id]
+        switch_expr_terms.append(first_switch)
+        first_choices = cross_choice_keys.get((task.task_id, 0), {})
+        preferred = initial_cross_link.get(task.task_id)
+        if preferred is not None:
+            for cross_link, keys in first_choices.items():
+                if cross_link == preferred:
                     continue
-                for prev_cross, prev_keys in prev_choices.items():
-                    for curr_cross, curr_keys in curr_choices.items():
-                        if prev_cross == curr_cross:
-                            continue
-                        model += switch_var >= pulp.lpSum(choice_vars[key] for key in prev_keys) + pulp.lpSum(choice_vars[key] for key in curr_keys) - 1.0
+                model += first_switch >= pulp.lpSum(choice_vars[key] for key in keys)
+        for local_index in range(1, len(local_segments)):
+            switch_var = transition_switch_vars[(task.task_id, local_index)]
+            switch_expr_terms.append(switch_var)
+            prev_choices = cross_choice_keys.get((task.task_id, local_index - 1), {})
+            curr_choices = cross_choice_keys.get((task.task_id, local_index), {})
+            if not prev_choices or not curr_choices:
+                continue
+            for prev_cross, prev_keys in prev_choices.items():
+                for curr_cross, curr_keys in curr_choices.items():
+                    if prev_cross == curr_cross:
+                        continue
+                    model += switch_var >= pulp.lpSum(choice_vars[key] for key in prev_keys) + pulp.lpSum(choice_vars[key] for key in curr_keys) - 1.0
 
     progress_expr = _expr_sum(progress_terms)
     load_expr = _expr_sum([float(segment.duration) * q_vars[segment.index] for segment in window_segments if segment.index in q_vars])
     switch_expr = _expr_sum(switch_expr_terms)
-
-    model.setObjective(completion_expr)
-    _require_optimal(model, solver, "rolling-stage-1")
-    best_completion = float(pulp.value(completion_expr) or 0.0)
-
-    model += completion_expr >= best_completion - 1e-6
-    if optimize_progress:
-        model.sense = pulp.LpMaximize
-        model.setObjective(progress_expr)
-        _require_optimal(model, solver, "rolling-stage-2")
-    else:
-        model.sense = pulp.LpMinimize
-        model.setObjective(load_expr)
-        _require_optimal(model, solver, "rolling-stage-3")
-        best_load = float(pulp.value(load_expr) or 0.0)
-
-        model += load_expr <= best_load + 1e-6
-        model.setObjective(switch_expr)
-        _require_optimal(model, solver, "rolling-stage-4")
+    stages = [_ObjectiveStage(name="completion", sense=pulp.LpMaximize, expr=completion_expr)]
+    if rolling_mode:
+        stages.append(_ObjectiveStage(name="progress", sense=pulp.LpMaximize, expr=progress_expr))
+    stages.append(_ObjectiveStage(name="load_balance", sense=pulp.LpMinimize, expr=load_expr))
+    stages.append(_ObjectiveStage(name="switch", sense=pulp.LpMinimize, expr=switch_expr))
+    if not rolling_mode:
+        stages = [stages[0], stages[-2], stages[-1]]
+    _solve_lexicographic(model, solver, stages, mode_label=mode)
 
     schedule: dict[tuple[str, int], Allocation] = {}
     remaining_end: dict[str, float] = {}
@@ -497,7 +519,7 @@ def build_regular_baseline_full_milp(
         tasks=regular_tasks,
         initial_remaining=initial_remaining,
         initial_cross_link=initial_cross_link,
-        optimize_progress=False,
+        milp_mode="full",
     )
     completed = {
         task.task_id: result.remaining_end.get(task.task_id, float(task.data)) <= _completion_tolerance(scenario, task) + 1e-9
@@ -547,7 +569,7 @@ def build_regular_baseline_rolling_milp(
                 tasks=active_tasks,
                 initial_remaining=remaining_by_task,
                 initial_cross_link=prev_cross_link,
-                optimize_progress=True,
+                milp_mode="rolling",
             )
             committed_chunk = _commit_window_prefix(
                 scenario=scenario,

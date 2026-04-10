@@ -756,6 +756,7 @@ def main() -> None:
                 "gateway_count": recommended["gateway_count"],
                 "activation_count": recommended["activation_count"],
                 "activation_time": recommended["activation_time"],
+                **dict(recommended.get("metadata", {}) or {}),
             }
 
         summary["runs"].append(run_record)

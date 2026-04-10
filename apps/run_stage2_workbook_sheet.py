@@ -169,6 +169,7 @@ def summarize_result(scenario, result) -> dict[str, Any]:
             "u_cross": result.u_cross,
             "u_all": result.u_all,
             "solver_mode": result.solver_mode,
+            **dict(result.metadata or {}),
         },
         "tasks": task_rows,
     }

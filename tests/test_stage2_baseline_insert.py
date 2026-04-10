@@ -138,7 +138,7 @@ def _task_allocation(result, task_id: str):
 
 
 class Stage2BaselineInsertTests(unittest.TestCase):
-    def test_stage2_reports_fixed_mode(self) -> None:
+    def test_stage2_reports_joint_milp_metadata(self) -> None:
         payload = copy.deepcopy(BASE_PAYLOAD)
         payload["tasks"] = [
             {
@@ -155,7 +155,10 @@ class Stage2BaselineInsertTests(unittest.TestCase):
         ]
         scenario = _load_payload(payload)
         result = run_stage2(scenario, PLAN)
-        self.assertEqual(result.solver_mode, "two_phase_event_insert")
+        self.assertEqual(result.solver_mode, "two_phase_event_insert+joint_milp_rolling")
+        self.assertTrue(result.metadata["prefer_milp"])
+        self.assertEqual(result.metadata["milp_mode"], "rolling")
+        self.assertEqual(result.metadata["regular_task_count"], 1)
 
     def test_regular_baseline_uses_only_reserved_cross_slice(self) -> None:
         payload = copy.deepcopy(BASE_PAYLOAD)

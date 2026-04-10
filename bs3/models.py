@@ -335,6 +335,7 @@ class Stage2Result:
     u_all: float
     allocations: list[Allocation]
     solver_mode: str
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass

@@ -1,5 +1,6 @@
 ﻿from __future__ import annotations
 
+import time
 from collections import defaultdict
 from dataclasses import dataclass
 
@@ -68,8 +69,10 @@ class BaselineInsertScheduler:
         return emergencies
 
     def run(self, plan: list[ScheduledWindow]) -> Stage2Result:
+        started_at = time.perf_counter()
         regular_tasks = [task for task in self.scenario.tasks if task.task_type == "reg"]
         segments = build_segments(self.scenario, plan, regular_tasks)
+        initial_event_segment_count = len(segments)
         baseline_schedule, _ = self._build_regular_baseline(plan, segments)
         committed: dict[tuple[str, int], Allocation] = dict(baseline_schedule)
         actual_remaining = {task.task_id: float(task.data) for task in self.scenario.tasks}
@@ -186,6 +189,11 @@ class BaselineInsertScheduler:
         cr_emg = self._weighted_true_completion("emg", actual_remaining)
         u_cross = sum(usage for edge_id, usage in edge_usage.items() if edge_id in cross_edge_ids) / cross_denominator if cross_denominator > self.numeric_tolerance else 0.0
         u_all = sum(edge_usage.values()) / all_denominator if all_denominator > self.numeric_tolerance else 0.0
+        metadata = self._build_result_metadata(
+            event_segment_count=initial_event_segment_count,
+            regular_task_count=len(regular_tasks),
+            elapsed_seconds=time.perf_counter() - started_at,
+        )
 
         return Stage2Result(
             plan=plan,
@@ -195,7 +203,8 @@ class BaselineInsertScheduler:
             u_cross=u_cross,
             u_all=u_all,
             allocations=allocations,
-            solver_mode="two_phase_event_insert",
+            solver_mode=self._solver_mode_label(),
+            metadata=metadata,
         )
 
     def _split_segment_if_needed(
@@ -310,6 +319,33 @@ class BaselineInsertScheduler:
         if self.scenario.stage2.prefer_milp:
             return build_regular_baseline_joint_milp(self.scenario, plan, segments)
         return self._build_regular_baseline_sequential(plan, segments)
+
+    def _solver_mode_label(self) -> str:
+        if self.scenario.stage2.prefer_milp:
+            return f"two_phase_event_insert+joint_milp_{self.scenario.stage2.milp_mode}"
+        return "two_phase_event_insert+sequential_baseline"
+
+    def _build_result_metadata(
+        self,
+        *,
+        event_segment_count: int,
+        regular_task_count: int,
+        elapsed_seconds: float,
+    ) -> dict[str, float | int | bool | None | str]:
+        return {
+            "prefer_milp": bool(self.scenario.stage2.prefer_milp),
+            "milp_mode": str(self.scenario.stage2.milp_mode),
+            "milp_horizon_segments": int(self.scenario.stage2.milp_horizon_segments),
+            "milp_commit_segments": int(self.scenario.stage2.milp_commit_segments),
+            "milp_rolling_path_limit": int(self.scenario.stage2.milp_rolling_path_limit),
+            "milp_rolling_high_path_limit": int(self.scenario.stage2.milp_rolling_high_path_limit),
+            "milp_rolling_promoted_tasks_per_segment": int(self.scenario.stage2.milp_rolling_promoted_tasks_per_segment),
+            "milp_time_limit_seconds": self.scenario.stage2.milp_time_limit_seconds,
+            "milp_relative_gap": self.scenario.stage2.milp_relative_gap,
+            "event_segment_count": int(event_segment_count),
+            "regular_task_count": int(regular_task_count),
+            "elapsed_seconds": float(elapsed_seconds),
+        }
 
     def _build_regular_baseline_sequential(
         self,
