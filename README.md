@@ -7,6 +7,11 @@ BS3 is a two-stage cross-domain scheduling project:
   1. offline regular-task baseline planning
   2. online event-driven emergency insertion with local repair/preemption
 
+Current Stage2-1 keeps both MILP variants:
+
+- `rolling` MILP
+- `full` MILP
+
 ## Quick Start
 
 ```bash
@@ -28,14 +33,12 @@ bs3/
 |- bs3/                   core package
 |- examples/              minimal runnable examples
 |- inputs/                task inputs and runnable templates
+|- results/               curated retained results and future generated outputs
 |- mydata/
 |  |- constellation/      constellation notes
 |  |- stk_access/         raw STK access exports
 |  |- distances/          reusable distance products
 |  `- topology/           reusable topology assets
-|- outputs/
-|  |- active/             current retained outputs
-|  `- archive_unused/     archived old or temporary outputs
 |- docs/                  project docs
 `- tests/                 regression tests
 ```
@@ -48,18 +51,16 @@ bs3/
 - `apps/run_stage1_workbook_batch.py`
 - `apps/run_stage2_workbook_sheet.py`
 - `tools/enrich_scenario_distances.py`
-- `tools/compare_stage1_greedy_baselines.py`
-
-Legacy script names are still kept as compatibility wrappers.
+- `tools/run_stage2_milp_experiments.py`
+- `tools/run_stage2_rolling_robustness.py`
 
 ## Important Default Paths
 
 - Base scenario template: `inputs/templates/stage1_scenario_template.json`
 - Distance data: `mydata/distances/`
-- Active outputs: `outputs/active/`
-- Archived old outputs: `outputs/archive_unused/`
+- Retained results: `results/`
+- Generated experiment outputs: `results/generated/`
 
 ## Parameter Documentation
 
 - Canonical parameter table: `docs/PARAMETER_SETTINGS.md`
-- 4.6 alignment checklist: `docs/ALIGNMENT_CHECK_4_6.md`

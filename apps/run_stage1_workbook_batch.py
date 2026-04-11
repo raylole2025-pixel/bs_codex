@@ -32,7 +32,7 @@ from bs3.distance_enrichment import enrich_scenario_distances
 from bs3.pipeline import run_pipeline
 from bs3.scenario import load_scenario, scenario_to_dict
 from bs3.stage1_screening import screen_candidate_windows
-from bs3.stage1 import activation_count, activation_time, gateway_count, run_stage1
+from bs3.stage1 import activation_count, gateway_count, run_stage1
 from bs3.stage1_visualization import export_stage1_run_artifacts
 from bs3.stage1_static_value import annotate_scenario_candidate_values
 
@@ -43,7 +43,7 @@ NS = {
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BASE_SCENARIO = PROJECT_ROOT / "inputs" / "templates" / "stage1_scenario_template.json"
-DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "outputs" / "active" / "stage1" / "taskset_runs"
+DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "results" / "generated" / "stage1_taskset_runs"
 DEFAULT_DISTANCE_ROOT = PROJECT_ROOT / "mydata" / "distances"
 DEFAULT_DOMAIN_A_TIMESERIES = DEFAULT_DISTANCE_ROOT / "domain1_isl_distance_20260323" / "domain1_isl_distance_timeseries.csv"
 DEFAULT_DOMAIN_B_TIMESERIES = DEFAULT_DISTANCE_ROOT / "domain2_isl_distance_20260323" / "domain2_isl_distance_timeseries.csv"
@@ -249,7 +249,6 @@ def stage2_result_to_dict(result, t_pre: float) -> dict[str, Any]:
     data = asdict(result)
     data["gateway_count"] = gateway_count(result.plan)
     data["activation_count"] = activation_count(result.plan, t_pre)
-    data["activation_time"] = activation_time(result.plan, t_pre)
     data["plan"] = [asdict(window) for window in result.plan]
     data["allocations"] = [asdict(item) for item in result.allocations]
     return data
@@ -469,14 +468,11 @@ def main() -> None:
     parser.add_argument("--cap-a", type=float, default=600.0)
     parser.add_argument("--cap-b", type=float, default=2000.0)
     parser.add_argument("--cap-x", type=float, default=1000.0)
-    parser.add_argument("--theta", type=float, default=None, help="Deprecated and ignored in Stage1 4.8; feasibility now uses FR=1")
     parser.add_argument("--rho", type=float, default=0.20)
     parser.add_argument("--t-pre", type=float, default=1800.0)
     parser.add_argument("--d-min", type=float, default=600.0)
-    parser.add_argument("--theta-sr", type=float, default=None, help="Deprecated and ignored in Stage1 4.8; feasibility now uses FR=1")
-    parser.add_argument("--theta-cap", "--theta-eta0", dest="theta_cap", type=float, default=0.08)
+    parser.add_argument("--theta-cap", dest="theta_cap", type=float, default=0.08)
     parser.add_argument("--theta-hot", type=float, default=0.80)
-    parser.add_argument("--theta-c", type=float, default=None, help="Deprecated and ignored in Stage1 4.8; feasibility now uses FR=1")
     parser.add_argument("--hot-hop-limit", type=int, default=4)
     parser.add_argument("--alpha", type=float, default=0.85)
     parser.add_argument("--eta-x", type=float, default=0.90)
@@ -486,7 +482,7 @@ def main() -> None:
     parser.add_argument("--candidate-pool-min-per-coarse-segment", type=int, default=3)
     parser.add_argument("--candidate-pool-max-additional", type=int, default=150)
     parser.add_argument("--q-eval", type=int, default=4)
-    parser.add_argument("--omega-fr", "--omega-sr", dest="omega_fr", type=float, default=4.0 / 9.0)
+    parser.add_argument("--omega-fr", dest="omega_fr", type=float, default=4.0 / 9.0)
     parser.add_argument("--omega-cap", type=float, default=3.0 / 9.0)
     parser.add_argument("--omega-hot", type=float, default=2.0 / 9.0)
     parser.add_argument("--elite-prune-count", type=int, default=6)
@@ -497,8 +493,6 @@ def main() -> None:
     parser.add_argument("--stall-generations", type=int, default=20)
     parser.add_argument("--top-m", type=int, default=5)
     parser.add_argument("--max-runtime-seconds", type=float, default=None)
-    parser.add_argument("--screen-pool-size", type=int, default=None, help="Deprecated; Stage1 4.9 uses candidate-pool parameters instead.")
-    parser.add_argument("--screen-block-seconds", type=float, default=None, help="Deprecated; Stage1 4.9 no longer uses block screening.")
     parser.add_argument("--run-stage2", action="store_true", help="Run the full pipeline and export stage2 metrics.")
     parser.add_argument("--stage2-k-paths", type=int, default=2)
     parser.add_argument("--skip-artifacts", action="store_true")
@@ -582,8 +576,6 @@ def main() -> None:
             "stall_generations": args.stall_generations,
             "top_m": args.top_m,
             "max_runtime_seconds": args.max_runtime_seconds,
-            "screen_pool_size": args.screen_pool_size,
-            "screen_block_seconds": args.screen_block_seconds,
             "skip_artifacts": args.skip_artifacts,
             "distance_enrichment_enabled": not args.disable_distance_enrichment,
             "light_speed_kmps": args.light_speed_kmps,
@@ -730,7 +722,6 @@ def main() -> None:
                 "gateway_count": best.gateway_count,
                 "window_count": best.window_count,
                 "activation_count": best.activation_count,
-                "activation_time": best.activation_time,
                 "max_cross_gap": best.max_cross_gap,
                 "cross_active_fraction": best.cross_active_fraction,
             }
@@ -755,7 +746,6 @@ def main() -> None:
                 "u_all": recommended["u_all"],
                 "gateway_count": recommended["gateway_count"],
                 "activation_count": recommended["activation_count"],
-                "activation_time": recommended["activation_time"],
                 **dict(recommended.get("metadata", {}) or {}),
             }
 

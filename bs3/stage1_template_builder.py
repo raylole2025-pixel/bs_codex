@@ -112,13 +112,13 @@ def build_stage1_scenario_template(
         "X": float((capacities or {}).get("X", 1000.0)),
     }
     stage1_payload = {
-        "theta_cap": float((stage1_config or {}).get("theta_cap", (stage1_config or {}).get("theta_eta0", 0.08))),
+        "theta_cap": float((stage1_config or {}).get("theta_cap", 0.08)),
         "theta_hot": float((stage1_config or {}).get("theta_hot", 0.80)),
         "rho": float((stage1_config or {}).get("rho", 0.20)),
         "t_pre": float((stage1_config or {}).get("t_pre", 1800.0)),
         "d_min": float((stage1_config or {}).get("d_min", 600.0)),
         "hot_hop_limit": int((stage1_config or {}).get("hot_hop_limit", 4)),
-        "bottleneck_factor_alpha": float((stage1_config or {}).get("bottleneck_factor_alpha", (stage1_config or {}).get("alpha", 0.85))),
+        "bottleneck_factor_alpha": float((stage1_config or {}).get("bottleneck_factor_alpha", 0.85)),
         "eta_x": float((stage1_config or {}).get("eta_x", 0.90)),
         "static_value_snapshot_seconds": int((stage1_config or {}).get("static_value_snapshot_seconds", 600)),
         "candidate_pool_base_size": int((stage1_config or {}).get("candidate_pool_base_size", 400)),
@@ -126,7 +126,7 @@ def build_stage1_scenario_template(
         "candidate_pool_min_per_coarse_segment": int((stage1_config or {}).get("candidate_pool_min_per_coarse_segment", 3)),
         "candidate_pool_max_additional": int((stage1_config or {}).get("candidate_pool_max_additional", 150)),
         "q_eval": int((stage1_config or {}).get("q_eval", 4)),
-        "omega_fr": float((stage1_config or {}).get("omega_fr", (stage1_config or {}).get("omega_sr", 4.0 / 9.0))),
+        "omega_fr": float((stage1_config or {}).get("omega_fr", 4.0 / 9.0)),
         "omega_cap": float((stage1_config or {}).get("omega_cap", 3.0 / 9.0)),
         "omega_hot": float((stage1_config or {}).get("omega_hot", 2.0 / 9.0)),
         "elite_prune_count": int((stage1_config or {}).get("elite_prune_count", 6)),
@@ -148,7 +148,7 @@ def build_stage1_scenario_template(
     payload = {
         "metadata": {
             "name": scenario_name,
-            "source": "stk_stage1_preprocess",
+            "source": "stk_access_preprocess",
             "preprocess_dir": str(root.resolve()),
             "precomputed_hops": {
                 "A": str((root / "A_hop_matrix.csv").resolve()),

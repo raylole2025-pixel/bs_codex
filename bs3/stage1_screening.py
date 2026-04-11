@@ -51,23 +51,15 @@ def _segment_local_rank(
     )
 
 
-def screen_candidate_windows(
-    scenario: Scenario,
-    *,
-    pool_size: int | None = None,
-    block_seconds: float | None = None,
-) -> list[CandidateWindow]:
-    del pool_size, block_seconds
-
+def screen_candidate_windows(scenario: Scenario) -> list[CandidateWindow]:
     raw_windows = list(scenario.candidate_windows)
     raw_count = len(raw_windows)
     if raw_count == 0:
         scenario.metadata["stage1_screening"] = {
             "candidate_window_count_raw": 0,
             "candidate_window_count_screened": 0,
-            "screen_pool_size": 0,
-            "screen_block_seconds": None,
-            "screen_metric": "candidate_pool_v49",
+            "candidate_pool_size_limit": 0,
+            "screening_mode": "candidate_pool_v49",
         }
         return []
 
@@ -98,9 +90,8 @@ def screen_candidate_windows(
         scenario.metadata["stage1_screening"] = {
             "candidate_window_count_raw": raw_count,
             "candidate_window_count_screened": raw_count,
-            "screen_pool_size": screen_cap,
-            "screen_block_seconds": None,
-            "screen_metric": "candidate_pool_v49_noop",
+            "candidate_pool_size_limit": screen_cap,
+            "screening_mode": "candidate_pool_v49_noop",
             "candidate_pool_base_size": base_size,
             "candidate_pool_additional_limit": max_additional,
             "candidate_pool_min_per_coarse_segment": min_per_segment,
@@ -249,9 +240,8 @@ def screen_candidate_windows(
     scenario.metadata["stage1_screening"] = {
         "candidate_window_count_raw": raw_count,
         "candidate_window_count_screened": len(selected),
-        "screen_pool_size": screen_cap,
-        "screen_block_seconds": None,
-        "screen_metric": "candidate_pool_v49",
+        "candidate_pool_size_limit": screen_cap,
+        "screening_mode": "candidate_pool_v49",
         "candidate_pool_base_size": base_size,
         "candidate_pool_base_selected": len(base_ids),
         "candidate_pool_base_reg_quota": reg_quota,

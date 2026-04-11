@@ -118,14 +118,10 @@ def _find_default_scenario(repo_root: Path) -> Path:
 
 
 def _find_default_stage1_result(repo_root: Path) -> Path:
-    candidates = [
-        repo_root / "outputs" / "active" / "stage1_validation_tmp" / "normal72x_seed13_no_runtime_limit_result.json",
-        repo_root / "outputs" / "active" / "stage1_validation_tmp" / "normal72x_seed7_no_runtime_limit_result.json",
-    ]
-    for path in candidates:
-        if path.exists():
-            return path
-    raise FileNotFoundError("No default stage1 result found for normal72x_v2_regular_tasks_adjusted")
+    matches = sorted(repo_root.rglob("normal72x_v2_regular_tasks_adjusted_stage1_result.json"))
+    if not matches:
+        raise FileNotFoundError("No default stage1 result found for normal72x_v2_regular_tasks_adjusted")
+    return matches[0]
 
 
 def _materialize_scenario(
@@ -355,7 +351,7 @@ def main() -> None:
     output_root = (
         Path(args.output_root)
         if args.output_root
-        else repo_root / "outputs" / "active" / "stage2_rolling_robustness" / f"normal72x_v2_regular_tasks_adjusted_{timestamp}"
+        else repo_root / "results" / "generated" / "stage2_rolling_robustness" / f"normal72x_v2_regular_tasks_adjusted_{timestamp}"
     )
     output_root.mkdir(parents=True, exist_ok=True)
 

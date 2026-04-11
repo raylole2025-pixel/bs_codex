@@ -49,7 +49,7 @@ class _TaskPlan:
     load_cost: float
 
 
-class BaselineInsertScheduler:
+class TwoPhaseEventDrivenScheduler:
     def __init__(self, scenario: Scenario) -> None:
         self.scenario = scenario
         self.numeric_tolerance = EPS
@@ -979,9 +979,5 @@ class BaselineInsertScheduler:
 
 
 def run_stage2_two_phase_event_insert(scenario: Scenario, plan: list[ScheduledWindow]) -> Stage2Result:
-    return BaselineInsertScheduler(scenario).run(plan)
-
-
-def run_stage2_baseline_insert(scenario: Scenario, plan: list[ScheduledWindow]) -> Stage2Result:
-    return run_stage2_two_phase_event_insert(scenario, plan)
+    return TwoPhaseEventDrivenScheduler(scenario).run(plan)
 

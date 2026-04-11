@@ -499,7 +499,6 @@ def export_stage1_run_artifacts(
             "gateway_count": candidate.gateway_count,
             "window_count": candidate.window_count,
             "activation_count": candidate.activation_count,
-            "activation_time": candidate.activation_time,
             "mean_completion_ratio": candidate.mean_completion_ratio,
             "fr": candidate.fr,
             "eta_cap": candidate.eta_cap,

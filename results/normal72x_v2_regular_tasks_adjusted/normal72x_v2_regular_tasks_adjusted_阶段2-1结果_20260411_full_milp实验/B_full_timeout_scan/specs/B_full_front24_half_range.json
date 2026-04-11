@@ -1,0 +1,16 @@
+{
+  "name": "B_full_front24_half_range",
+  "scenario_path": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_milp_experiments\\normal72x_v2_regular_tasks_adjusted_B_20260410_1711\\scenarios\\B_full_front24_half_range.json",
+  "plan_path": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_milp_experiments\\normal72x_v2_regular_tasks_adjusted_B_20260410_1711\\selected_stage1_plan.json",
+  "result_path": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_milp_experiments\\normal72x_v2_regular_tasks_adjusted_B_20260410_1711\\results\\B_full_front24_half_range.json",
+  "taskset_name": "normal72x_v2_regular_tasks_adjusted_front24_reg_half_range",
+  "mode": "full",
+  "params": {
+    "task_limit": 24,
+    "half_range": true,
+    "planning_end": 21600.0,
+    "milp_time_limit_seconds": null
+  },
+  "event_segment_count": 335,
+  "regular_task_count": 24
+}

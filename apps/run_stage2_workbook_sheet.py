@@ -13,13 +13,13 @@ if __package__ in {None, ""}:
 
 from bs3.models import ScheduledWindow
 from bs3.scenario import load_scenario
-from bs3.stage1 import activation_count, activation_time, gateway_count
+from bs3.stage1 import activation_count, gateway_count
 from bs3.stage2 import run_stage2
 from apps.run_stage1_workbook_batch import read_task_sets, task_stats, workbook_task_to_payload
 
 EPS = 1e-9
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "outputs" / "active" / "stage2" / "taskset_runs"
+DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "results" / "generated" / "stage2_taskset_runs"
 
 
 def _float(value: Any, default: float = 0.0) -> float:
@@ -94,7 +94,6 @@ def stage2_to_dict(result, t_pre: float) -> dict[str, Any]:
     data = asdict(result)
     data["gateway_count"] = gateway_count(result.plan)
     data["activation_count"] = activation_count(result.plan, t_pre)
-    data["activation_time"] = activation_time(result.plan, t_pre)
     data["plan"] = [asdict(window) for window in result.plan]
     data["allocations"] = [asdict(item) for item in result.allocations]
     return data

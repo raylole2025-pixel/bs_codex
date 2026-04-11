@@ -25,6 +25,23 @@ from .models import (
 
 WEIGHT_EPS = 1e-9
 LIGHT_SPEED_KM_PER_S = 299_792.458
+REMOVED_STAGE1_FIELDS = {
+    "k_paths",
+    "near_completion_ratio",
+    "omega_sr",
+    "theta",
+    "theta_c",
+    "theta_eta0",
+    "theta_sr",
+    "viol_weight_cap",
+    "viol_weight_hot",
+    "viol_weight_sr",
+}
+REMOVED_STAGE2_FIELDS = {
+    "affected_task_limit",
+    "best_effort_on_failure",
+    "insertion_horizon_seconds",
+}
 
 
 def _float(value: object, name: str) -> float:
@@ -44,6 +61,12 @@ def _required(data: dict, key: str):
     if key not in data:
         raise ValueError(f"Missing required field: {key}")
     return data[key]
+
+
+def _reject_removed_fields(config: dict[str, Any], *, section: str, removed: set[str]) -> None:
+    hits = sorted(key for key in removed if key in config)
+    if hits:
+        raise ValueError(f"{section} contains removed field(s): {', '.join(hits)}")
 
 
 def _runtime_cache(scenario: Scenario) -> dict:
@@ -147,6 +170,8 @@ def load_scenario(path: str | Path) -> Scenario:
     capacities_cfg = _required(payload, "capacities")
     stage1_cfg = _required(payload, "stage1")
     stage2_cfg = payload.get("stage2", {})
+    _reject_removed_fields(stage1_cfg, section="stage1", removed=REMOVED_STAGE1_FIELDS)
+    _reject_removed_fields(stage2_cfg, section="stage2", removed=REMOVED_STAGE2_FIELDS)
 
     node_domain: dict[str, str] = {}
     for domain in ("A", "B"):
@@ -238,21 +263,20 @@ def load_scenario(path: str | Path) -> Scenario:
             else _float(ga_cfg.get("max_runtime_seconds"), "ga.max_runtime_seconds")
         ),
     )
-    theta_cap_default = stage1_cfg.get("theta_cap", stage1_cfg.get("theta_eta0", 0.08))
     omega_fr, omega_cap, omega_hot = _normalized_stage1_weights(
-        stage1_cfg.get("omega_fr", stage1_cfg.get("omega_sr", stage1_cfg.get("viol_weight_sr", 4.0 / 9.0))),
-        stage1_cfg.get("omega_cap", stage1_cfg.get("viol_weight_cap", 3.0 / 9.0)),
-        stage1_cfg.get("omega_hot", stage1_cfg.get("viol_weight_hot", 2.0 / 9.0)),
+        stage1_cfg.get("omega_fr", 4.0 / 9.0),
+        stage1_cfg.get("omega_cap", 3.0 / 9.0),
+        stage1_cfg.get("omega_hot", 2.0 / 9.0),
     )
     stage1 = Stage1Config(
         rho=_float(_required(stage1_cfg, "rho"), "stage1.rho"),
         t_pre=_float(_required(stage1_cfg, "t_pre"), "stage1.t_pre"),
         d_min=_float(_required(stage1_cfg, "d_min"), "stage1.d_min"),
-        theta_cap=_float(theta_cap_default, "stage1.theta_cap"),
+        theta_cap=_float(stage1_cfg.get("theta_cap", 0.08), "stage1.theta_cap"),
         theta_hot=_float(stage1_cfg.get("theta_hot", 0.80), "stage1.theta_hot"),
-        hot_hop_limit=int(stage1_cfg.get("hot_hop_limit", stage1_cfg.get("H_A", 4))),
+        hot_hop_limit=int(stage1_cfg.get("hot_hop_limit", 4)),
         bottleneck_factor_alpha=_float(
-            stage1_cfg.get("bottleneck_factor_alpha", stage1_cfg.get("alpha", 0.85)),
+            stage1_cfg.get("bottleneck_factor_alpha", 0.85),
             "stage1.bottleneck_factor_alpha",
         ),
         eta_x=_float(stage1_cfg.get("eta_x", 0.90), "stage1.eta_x"),

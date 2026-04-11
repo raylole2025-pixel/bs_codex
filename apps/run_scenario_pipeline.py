@@ -27,7 +27,7 @@ if __package__ in {None, ""}:
 
 from bs3.pipeline import run_pipeline
 from bs3.scenario import load_scenario
-from bs3.stage1 import activation_count, activation_time, gateway_count
+from bs3.stage1 import activation_count, gateway_count
 
 
 def _candidate_to_dict(candidate):
@@ -65,7 +65,6 @@ def _stage2_to_dict(result, t_pre: float):
     data = asdict(result)
     data["gateway_count"] = gateway_count(result.plan)
     data["activation_count"] = activation_count(result.plan, t_pre)
-    data["activation_time"] = activation_time(result.plan, t_pre)
     data["plan"] = [asdict(window) for window in result.plan]
     data["allocations"] = [asdict(item) for item in result.allocations]
     return data

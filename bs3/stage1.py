@@ -138,7 +138,7 @@ def plan_signature(plan: list[ScheduledWindow]) -> tuple[tuple[str, float, float
 def gateway_count(plan: list[ScheduledWindow]) -> int:
     return len({node for window in plan for node in (window.a, window.b)})
 
-# 用于合并重叠的时间间隔（本质上是为了计算一颗网关的激活时间，但这个指标已删掉）
+# 用于合并重叠的时间间隔
 def _merge_intervals(intervals: list[tuple[float, float]]) -> list[tuple[float, float]]:
     if not intervals:
         return []
@@ -155,30 +155,9 @@ def _merge_intervals(intervals: list[tuple[float, float]]) -> list[tuple[float, 
     return merged
 
 
-def gateway_activation_intervals(plan: list[ScheduledWindow], t_pre: float) -> dict[str, list[tuple[float, float]]]:
-    intervals_by_node: dict[str, list[tuple[float, float]]] = {}
-    for window in plan:
-        interval = (window.on - t_pre, window.off)
-        intervals_by_node.setdefault(window.a, []).append(interval)
-        intervals_by_node.setdefault(window.b, []).append(interval)
-    return {node: _merge_intervals(intervals) for node, intervals in intervals_by_node.items()}
-
-
 def activation_count(plan: list[ScheduledWindow], t_pre: float) -> int:
     del t_pre
     return 2 * len(plan)
-
-
-def activation_time(plan: list[ScheduledWindow], t_pre: float) -> float:
-    return sum(
-        end - start
-        for intervals in gateway_activation_intervals(plan, t_pre).values()
-        for start, end in intervals
-    )
-
-
-def occupation_time(plan: list[ScheduledWindow], t_pre: float) -> float:
-    return activation_time(plan, t_pre)
 
 
 def merged_cross_intervals(plan: list[ScheduledWindow]) -> list[tuple[float, float]]:
@@ -217,7 +196,6 @@ class EvaluationMetrics:
 @dataclass(frozen=True)
 class StructuralMetrics:
     activation_count: int
-    activation_time: float
     unique_gateway_count: int
     avg_hot_coverage: float
     max_hot_gap: float
@@ -843,7 +821,6 @@ class PlanAnalyzer:
         avg_hot_coverage, max_hot_gap = self.hot_metrics(plan)
         metrics = StructuralMetrics(
             activation_count=activation_count(plan, self.scenario.stage1.t_pre),
-            activation_time=activation_time(plan, self.scenario.stage1.t_pre),
             unique_gateway_count=gateway_count(plan),
             avg_hot_coverage=avg_hot_coverage,
             max_hot_gap=max_hot_gap,
@@ -1105,7 +1082,6 @@ class Stage1GA:
                 ("eta_cap", candidate.eta_cap),
                 ("eta_0", candidate.eta_0),
                 ("activation_count", candidate.activation_count),
-                ("activation_time", candidate.activation_time),
                 ("unique_gateway_count", candidate.unique_gateway_count),
                 ("avg_hot_coverage", candidate.avg_hot_coverage),
                 ("max_hot_gap", candidate.max_hot_gap),
@@ -1280,7 +1256,6 @@ class Stage1GA:
             avg_hot_coverage=state.structural.avg_hot_coverage,
             max_hot_gap=state.structural.max_hot_gap,
             activation_count=state.structural.activation_count,
-            activation_time=state.structural.activation_time,
             unique_gateway_count=state.structural.unique_gateway_count,
             window_count=len(state.plan),
             cross_active_fraction=state.structural.cross_active_fraction,

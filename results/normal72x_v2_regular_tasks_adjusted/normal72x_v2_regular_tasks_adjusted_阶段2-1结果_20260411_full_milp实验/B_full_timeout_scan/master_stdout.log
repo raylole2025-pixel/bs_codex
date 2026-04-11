@@ -1,0 +1,152 @@
+{
+  "scenario": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_scenario_weighted.json",
+  "stage1_result": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage1_validation_tmp\\normal72x_seed13_no_runtime_limit_result.json",
+  "plan_file": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_milp_experiments\\normal72x_v2_regular_tasks_adjusted_B_20260410_1711\\selected_stage1_plan.json",
+  "rolling_outer_timeout_seconds": null,
+  "full_outer_timeout_seconds": 900.0,
+  "experiments": [
+    {
+      "taskset_name": "normal72x_v2_regular_tasks_adjusted_front24_reg",
+      "mode": "full",
+      "params": {
+        "task_limit": 24,
+        "half_range": false,
+        "milp_time_limit_seconds": null
+      },
+      "success": false,
+      "elapsed_seconds": 900.0,
+      "success_counts": null,
+      "success_rates": null,
+      "cr_reg": null,
+      "u_cross": null,
+      "u_all": null,
+      "n_preemptions": null,
+      "event_segment_count": 676,
+      "regular_task_count": 24,
+      "solver_mode": null,
+      "metadata": {},
+      "result_file": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_milp_experiments\\normal72x_v2_regular_tasks_adjusted_B_20260410_1711\\results\\B_full_front24.json",
+      "error": "TimeoutExpired: outer timeout 900.0s"
+    },
+    {
+      "taskset_name": "normal72x_v2_regular_tasks_adjusted_front24_reg_half_range",
+      "mode": "full",
+      "params": {
+        "task_limit": 24,
+        "half_range": true,
+        "planning_end": 21600.0,
+        "milp_time_limit_seconds": null
+      },
+      "success": false,
+      "elapsed_seconds": 900.0,
+      "success_counts": null,
+      "success_rates": null,
+      "cr_reg": null,
+      "u_cross": null,
+      "u_all": null,
+      "n_preemptions": null,
+      "event_segment_count": 335,
+      "regular_task_count": 24,
+      "solver_mode": null,
+      "metadata": {},
+      "result_file": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_milp_experiments\\normal72x_v2_regular_tasks_adjusted_B_20260410_1711\\results\\B_full_front24_half_range.json",
+      "error": "TimeoutExpired: outer timeout 900.0s"
+    },
+    {
+      "taskset_name": "normal72x_v2_regular_tasks_adjusted_front36_reg",
+      "mode": "full",
+      "params": {
+        "task_limit": 36,
+        "half_range": false,
+        "milp_time_limit_seconds": null
+      },
+      "success": false,
+      "elapsed_seconds": 900.0,
+      "success_counts": null,
+      "success_rates": null,
+      "cr_reg": null,
+      "u_cross": null,
+      "u_all": null,
+      "n_preemptions": null,
+      "event_segment_count": 677,
+      "regular_task_count": 36,
+      "solver_mode": null,
+      "metadata": {},
+      "result_file": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_milp_experiments\\normal72x_v2_regular_tasks_adjusted_B_20260410_1711\\results\\B_full_front36.json",
+      "error": "TimeoutExpired: outer timeout 900.0s"
+    },
+    {
+      "taskset_name": "normal72x_v2_regular_tasks_adjusted_front36_reg_half_range",
+      "mode": "full",
+      "params": {
+        "task_limit": 36,
+        "half_range": true,
+        "planning_end": 21600.0,
+        "milp_time_limit_seconds": null
+      },
+      "success": false,
+      "elapsed_seconds": 900.0,
+      "success_counts": null,
+      "success_rates": null,
+      "cr_reg": null,
+      "u_cross": null,
+      "u_all": null,
+      "n_preemptions": null,
+      "event_segment_count": 336,
+      "regular_task_count": 36,
+      "solver_mode": null,
+      "metadata": {},
+      "result_file": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_milp_experiments\\normal72x_v2_regular_tasks_adjusted_B_20260410_1711\\results\\B_full_front36_half_range.json",
+      "error": "TimeoutExpired: outer timeout 900.0s"
+    },
+    {
+      "taskset_name": "normal72x_v2_regular_tasks_adjusted_front48_reg",
+      "mode": "full",
+      "params": {
+        "task_limit": 48,
+        "half_range": false,
+        "milp_time_limit_seconds": null
+      },
+      "success": false,
+      "elapsed_seconds": 900.0,
+      "success_counts": null,
+      "success_rates": null,
+      "cr_reg": null,
+      "u_cross": null,
+      "u_all": null,
+      "n_preemptions": null,
+      "event_segment_count": 680,
+      "regular_task_count": 48,
+      "solver_mode": null,
+      "metadata": {},
+      "result_file": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_milp_experiments\\normal72x_v2_regular_tasks_adjusted_B_20260410_1711\\results\\B_full_front48.json",
+      "error": "TimeoutExpired: outer timeout 900.0s"
+    },
+    {
+      "taskset_name": "normal72x_v2_regular_tasks_adjusted_front48_reg_half_range",
+      "mode": "full",
+      "params": {
+        "task_limit": 48,
+        "half_range": true,
+        "planning_end": 21600.0,
+        "milp_time_limit_seconds": null
+      },
+      "success": false,
+      "elapsed_seconds": 900.0,
+      "success_counts": null,
+      "success_rates": null,
+      "cr_reg": null,
+      "u_cross": null,
+      "u_all": null,
+      "n_preemptions": null,
+      "event_segment_count": 336,
+      "regular_task_count": 36,
+      "solver_mode": null,
+      "metadata": {},
+      "result_file": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_milp_experiments\\normal72x_v2_regular_tasks_adjusted_B_20260410_1711\\results\\B_full_front48_half_range.json",
+      "error": "TimeoutExpired: outer timeout 900.0s"
+    }
+  ]
+}
+summary_json=D:\Codex_Project\bs3 - 副本\outputs\active\stage2_milp_experiments\normal72x_v2_regular_tasks_adjusted_B_20260410_1711\summary.json
+summary_md=D:\Codex_Project\bs3 - 副本\outputs\active\stage2_milp_experiments\normal72x_v2_regular_tasks_adjusted_B_20260410_1711\summary.md

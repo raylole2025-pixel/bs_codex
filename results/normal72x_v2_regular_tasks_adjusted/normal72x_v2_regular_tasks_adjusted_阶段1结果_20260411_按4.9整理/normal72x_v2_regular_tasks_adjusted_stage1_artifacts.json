@@ -1,0 +1,19 @@
+{
+  "best_cross_timeline_csv": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_best_cross_timeline.csv",
+  "best_cross_timeline_png": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_best_cross_timeline.png",
+  "best_capacity_profile_csv": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_best_capacity_profile.csv",
+  "best_capacity_profile_png": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_best_capacity_profile.png",
+  "best_cross_link_requirement_csv": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_best_cross_link_requirement.csv",
+  "best_cross_link_requirement_png": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_best_cross_link_requirement.png",
+  "best_task_completion_csv": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_best_task_completion.csv",
+  "best_task_completion_png": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_best_task_completion.png",
+  "candidate_tradeoff_csv": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_candidate_tradeoff.csv",
+  "candidate_tradeoff_png": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_candidate_tradeoff.png",
+  "hotspot_profile_csv": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_hotspot_profile.csv",
+  "hotspot_profile_png": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_hotspot_profile.png",
+  "hotspot_region_breakdown_csv": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_hotspot_region_breakdown.csv",
+  "hotspot_region_breakdown_png": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_hotspot_region_breakdown.png",
+  "solution_scorecard_png": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_solution_scorecard.png",
+  "ga_history_csv": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_ga_history.csv",
+  "ga_convergence_png": "D:\\Codex_Project\\bs3\\outputs\\active\\stage1_stage2_1_json_runs\\normal72x_v2_regular_tasks_adjusted_20260408_212819\\normal72x_v2_regular_tasks_adjusted_ga_convergence.png"
+}

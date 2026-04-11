@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from .models import PipelineResult, Scenario
-from .stage1 import activation_count, activation_time, run_stage1
+from .stage1 import activation_count, run_stage1
 from .stage2 import run_stage2
 
 
@@ -11,7 +11,6 @@ def _stage2_sort_key(result, t_pre: float) -> tuple[float, ...]:
         float(result.n_preemptions),
         -result.cr_reg,
         float(activation_count(result.plan, t_pre)),
-        activation_time(result.plan, t_pre),
     )
 
 

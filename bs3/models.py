@@ -266,7 +266,6 @@ class Stage1Candidate:
     avg_hot_coverage: float
     max_hot_gap: float
     activation_count: int
-    activation_time: float
     unique_gateway_count: int
     window_count: int
     cross_active_fraction: float
@@ -292,10 +291,6 @@ class Stage1Candidate:
     @property
     def zero_cross_demand_ratio(self) -> float:
         return self.eta_0
-
-    @property
-    def occupation_time(self) -> float:
-        return self.activation_time
 
     @property
     def gateway_count(self) -> int:

@@ -1,0 +1,12 @@
+[2026-04-08 21:30:34] Run directory: D:\Codex_Project\bs3\outputs\active\stage1_stage2_1_json_runs\normal72x_v2_regular_tasks_adjusted_20260408_212819
+[2026-04-08 21:30:34] Loading task set from D:\Google_download\raylole\normal72x_v2_regular_tasks_adjusted.json
+[2026-04-08 21:30:34] Raw scenario written; loading scenario and applying distance enrichment
+[2026-04-08 21:30:35] Distance enrichment finished; candidate windows after cross-distance filter: 23572
+[2026-04-08 21:30:35] Running static value annotation
+[2026-04-08 21:30:36] Running candidate-window screening
+[2026-04-08 21:30:36] Scenario annotated and written; screened candidate windows: 450
+[2026-04-08 21:30:36] Running Stage 1
+[2026-04-08 21:33:37] Stage 1 finished in 180.28s; feasible candidates: 5
+[2026-04-08 21:33:37] Running Stage 2-1 equivalent execution using best_feasible[0]
+[2026-04-08 23:02:57] Running Stage 2-1 sequential fallback from saved Stage1 plan
+[2026-04-08 23:03:23] Stage 2-1 sequential fallback finished in 26.21s

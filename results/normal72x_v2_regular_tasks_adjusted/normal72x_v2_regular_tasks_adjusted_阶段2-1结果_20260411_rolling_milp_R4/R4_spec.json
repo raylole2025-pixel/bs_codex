@@ -1,0 +1,24 @@
+{
+  "name": "R4",
+  "scenario_path": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_rolling_robustness\\normal72x_v2_regular_tasks_adjusted_20260410_robust\\scenarios\\R4.json",
+  "plan_path": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_rolling_robustness\\normal72x_v2_regular_tasks_adjusted_20260410_robust\\selected_stage1_plan.json",
+  "result_path": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_rolling_robustness\\normal72x_v2_regular_tasks_adjusted_20260410_robust\\results\\R4.json",
+  "taskset_name": "normal72x_v2_regular_tasks_adjusted",
+  "mode": "rolling",
+  "params": {
+    "milp_horizon_segments": 20,
+    "milp_commit_segments": 10,
+    "milp_rolling_path_limit": 1,
+    "milp_rolling_high_path_limit": 2,
+    "milp_rolling_promoted_tasks_per_segment": 1,
+    "milp_time_limit_seconds": 60.0,
+    "milp_relative_gap": 0.05,
+    "source_regular_task_count": 72
+  },
+  "event_segment_count": 683,
+  "event_segment_count_raw": 683,
+  "regular_task_count": 72,
+  "source_regular_task_count": 72,
+  "profile_path": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_rolling_robustness\\normal72x_v2_regular_tasks_adjusted_20260410_robust\\profiles\\R4.jsonl",
+  "profile_collapsed_path": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_rolling_robustness\\normal72x_v2_regular_tasks_adjusted_20260410_robust\\profiles\\R4_collapsed.json"
+}

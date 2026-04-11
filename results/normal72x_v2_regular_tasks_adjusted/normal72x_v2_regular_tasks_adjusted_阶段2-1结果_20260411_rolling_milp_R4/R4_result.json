@@ -1,0 +1,5423 @@
+{
+  "success": true,
+  "elapsed_seconds": 21.953055400052108,
+  "solver_mode": "two_phase_event_insert+joint_milp_rolling",
+  "metadata": {
+    "prefer_milp": true,
+    "milp_mode": "rolling",
+    "milp_horizon_segments": 20,
+    "milp_commit_segments": 10,
+    "milp_rolling_path_limit": 1,
+    "milp_rolling_high_path_limit": 2,
+    "milp_rolling_promoted_tasks_per_segment": 1,
+    "milp_time_limit_seconds": 60.0,
+    "milp_relative_gap": 0.05,
+    "event_segment_count": 683,
+    "event_segment_count_raw": 683,
+    "regular_task_count": 72,
+    "elapsed_seconds": 21.952606500010006,
+    "rolling_window_profile_path": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_rolling_robustness\\normal72x_v2_regular_tasks_adjusted_20260410_robust\\profiles\\R4.jsonl",
+    "rolling_window_profile_count": 69,
+    "rolling_window_profiles": [
+      {
+        "window_index": 0,
+        "window_segment_start_index": 0,
+        "window_segment_end_index": 19,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 0,
+        "commit_segment_end_index": 9,
+        "commit_segment_count": 10,
+        "window_time_start": 0.0,
+        "window_time_end": 1380.0,
+        "active_task_count": 2,
+        "due_task_count": 0,
+        "candidate_path_count": 9,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 49,
+        "constraint_count": 133,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 0.0,
+          "progress": 0.0002521145084777422,
+          "load_balance": 195.840075,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.013548800023272634,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999996899976395
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0002521145084777422,
+            "elapsed_seconds": 0.011066800099797547,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.98469750001095
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 195.840075,
+            "elapsed_seconds": 0.012404099921695888,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97313459997531
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.02589849999640137,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96027449995745
+          }
+        ],
+        "elapsed_seconds": 0.06610100006219,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 1,
+        "window_segment_start_index": 10,
+        "window_segment_end_index": 29,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 10,
+        "commit_segment_end_index": 19,
+        "commit_segment_count": 10,
+        "window_time_start": 780.0,
+        "window_time_end": 1980.0,
+        "active_task_count": 4,
+        "due_task_count": 0,
+        "candidate_path_count": 38,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 139,
+        "constraint_count": 447,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 0.0,
+          "progress": 0.001212984011910178,
+          "load_balance": 636.590365,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.015492200036533177,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999780009966
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.001212984011910178,
+            "elapsed_seconds": 0.014363799942657351,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.98373360000551
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 636.590365,
+            "elapsed_seconds": 0.02549519995227456,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.968657699995674
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.015277900034561753,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.942691200063564
+          }
+        ],
+        "elapsed_seconds": 0.07308969995938241,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 2,
+        "window_segment_start_index": 20,
+        "window_segment_end_index": 39,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 20,
+        "commit_segment_end_index": 29,
+        "commit_segment_count": 10,
+        "window_time_start": 1380.0,
+        "window_time_end": 2580.0,
+        "active_task_count": 6,
+        "due_task_count": 0,
+        "candidate_path_count": 78,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 262,
+        "constraint_count": 798,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 0.0,
+          "progress": 0.0024519665865578044,
+          "load_balance": 1013.97922,
+          "switch": 2.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.01997619995381683,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9999986999901
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0024519665865578044,
+            "elapsed_seconds": 0.01963150000665337,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97953819995746
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1013.97922,
+            "elapsed_seconds": 0.02053830004297197,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.95934810000472
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.03305119997821748,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.93835830001626
+          }
+        ],
+        "elapsed_seconds": 0.09518850001040846,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 3,
+        "window_segment_start_index": 30,
+        "window_segment_end_index": 49,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 30,
+        "commit_segment_end_index": 39,
+        "commit_segment_count": 10,
+        "window_time_start": 1980.0,
+        "window_time_end": 3240.0,
+        "active_task_count": 8,
+        "due_task_count": 0,
+        "candidate_path_count": 119,
+        "promoted_task_count": 1,
+        "promoted_task_segment_count": 1,
+        "variable_count": 389,
+        "constraint_count": 1040,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 0.0,
+          "progress": 0.0033480111011354387,
+          "load_balance": 1115.1653346,
+          "switch": 3.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.02367429994046688,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998500104994
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0033480111011354387,
+            "elapsed_seconds": 0.027480600052513182,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9757853000192
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1115.1653346,
+            "elapsed_seconds": 0.029985100030899048,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.94780880003236
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.03234350006096065,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.91697220003698
+          }
+        ],
+        "elapsed_seconds": 0.11585839989129454,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 4,
+        "window_segment_start_index": 40,
+        "window_segment_end_index": 59,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 40,
+        "commit_segment_end_index": 49,
+        "commit_segment_count": 10,
+        "window_time_start": 2580.0,
+        "window_time_end": 3840.0,
+        "active_task_count": 10,
+        "due_task_count": 0,
+        "candidate_path_count": 171,
+        "promoted_task_count": 1,
+        "promoted_task_segment_count": 11,
+        "variable_count": 542,
+        "constraint_count": 1292,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 0.0,
+          "progress": 0.004357556059194548,
+          "load_balance": 1149.401379,
+          "switch": 5.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.03185030003078282,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999870010652
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.004357556059194548,
+            "elapsed_seconds": 0.03619470004923642,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96764470008202
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1149.401379,
+            "elapsed_seconds": 0.0449324999935925,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.93085610005073
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 5.0,
+            "elapsed_seconds": 0.09480159997474402,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.88528460008092
+          }
+        ],
+        "elapsed_seconds": 0.21009279997088015,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 5,
+        "window_segment_start_index": 50,
+        "window_segment_end_index": 69,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 50,
+        "commit_segment_end_index": 59,
+        "commit_segment_count": 10,
+        "window_time_start": 3240.0,
+        "window_time_end": 4560.0,
+        "active_task_count": 12,
+        "due_task_count": 2,
+        "candidate_path_count": 222,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 20,
+        "variable_count": 686,
+        "constraint_count": 1503,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 6.0,
+          "progress": 0.011936553187801917,
+          "load_balance": 1127.6470464,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 6.0,
+            "elapsed_seconds": 0.03929770004469901,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.011936553187801917,
+            "elapsed_seconds": 0.05492889997549355,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96016659995075
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1127.6470464,
+            "elapsed_seconds": 0.07122500007972121,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.90458889992442
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.06353559996932745,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.83286239998415
+          }
+        ],
+        "elapsed_seconds": 0.23124220001045614,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 6,
+        "window_segment_start_index": 60,
+        "window_segment_end_index": 79,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 60,
+        "commit_segment_end_index": 69,
+        "commit_segment_count": 10,
+        "window_time_start": 3840.0,
+        "window_time_end": 5220.0,
+        "active_task_count": 12,
+        "due_task_count": 3,
+        "candidate_path_count": 231,
+        "promoted_task_count": 3,
+        "promoted_task_segment_count": 20,
+        "variable_count": 709,
+        "constraint_count": 1521,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 9.0,
+          "progress": 0.01640240141878566,
+          "load_balance": 1190.4290603999998,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 9.0,
+            "elapsed_seconds": 0.04008069995325059,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9999986999901
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.01640240141878566,
+            "elapsed_seconds": 0.06439800001680851,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.95937669998966
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1190.4290603999998,
+            "elapsed_seconds": 0.0563500999705866,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.894433000008576
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.06653409998398274,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.83752249996178
+          }
+        ],
+        "elapsed_seconds": 0.2296953999903053,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 7,
+        "window_segment_start_index": 70,
+        "window_segment_end_index": 89,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 70,
+        "commit_segment_end_index": 79,
+        "commit_segment_count": 10,
+        "window_time_start": 4560.0,
+        "window_time_end": 5760.0,
+        "active_task_count": 10,
+        "due_task_count": 2,
+        "candidate_path_count": 206,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 20,
+        "variable_count": 635,
+        "constraint_count": 1381,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 5.0,
+          "progress": 0.011011847241251222,
+          "load_balance": 1092.281883,
+          "switch": 2.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 5.0,
+            "elapsed_seconds": 0.03437119990121573,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9999986999901
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.011011847241251222,
+            "elapsed_seconds": 0.05365869996603578,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96508069999982
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1092.281883,
+            "elapsed_seconds": 0.04159609996713698,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.91089689999353
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.05737639998551458,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.86883119994309
+          }
+        ],
+        "elapsed_seconds": 0.18910469999536872,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 8,
+        "window_segment_start_index": 80,
+        "window_segment_end_index": 99,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 80,
+        "commit_segment_end_index": 89,
+        "commit_segment_count": 10,
+        "window_time_start": 5220.0,
+        "window_time_end": 6540.0,
+        "active_task_count": 9,
+        "due_task_count": 3,
+        "candidate_path_count": 166,
+        "promoted_task_count": 1,
+        "promoted_task_segment_count": 11,
+        "variable_count": 524,
+        "constraint_count": 1184,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 6.0,
+          "progress": 0.008748476726662525,
+          "load_balance": 1109.4118776,
+          "switch": 2.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 6.0,
+            "elapsed_seconds": 0.035264700069092214,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998199986294
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.008748476726662525,
+            "elapsed_seconds": 0.045442899921908975,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96405579999555
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1109.4118776,
+            "elapsed_seconds": 0.036384499981068075,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.91800519998651
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.049603700055740774,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.88100829999894
+          }
+        ],
+        "elapsed_seconds": 0.16921730001922697,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 9,
+        "window_segment_start_index": 90,
+        "window_segment_end_index": 109,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 90,
+        "commit_segment_end_index": 99,
+        "commit_segment_count": 10,
+        "window_time_start": 5760.0,
+        "window_time_end": 7080.0,
+        "active_task_count": 8,
+        "due_task_count": 2,
+        "candidate_path_count": 94,
+        "promoted_task_count": 1,
+        "promoted_task_segment_count": 1,
+        "variable_count": 341,
+        "constraint_count": 785,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 4.0,
+          "progress": 0.004382061437251544,
+          "load_balance": 972.9646438000004,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 4.0,
+            "elapsed_seconds": 0.026394300046376884,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998299987055
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.004382061437251544,
+            "elapsed_seconds": 0.032634500064887106,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97292390000075
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 972.9646438000004,
+            "elapsed_seconds": 0.02991209994070232,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.93963169993367
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.03559220000170171,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.909071299945936
+          }
+        ],
+        "elapsed_seconds": 0.1271833999780938,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 10,
+        "window_segment_start_index": 100,
+        "window_segment_end_index": 119,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 100,
+        "commit_segment_end_index": 109,
+        "commit_segment_count": 10,
+        "window_time_start": 6540.0,
+        "window_time_end": 7800.0,
+        "active_task_count": 6,
+        "due_task_count": 2,
+        "candidate_path_count": 41,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 210,
+        "constraint_count": 422,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.0011902114629297293,
+          "load_balance": 482.0583145000005,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.019652999937534332,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999839998782
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0011902114629297293,
+            "elapsed_seconds": 0.017656699987128377,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97984479996376
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 482.0583145000005,
+            "elapsed_seconds": 0.018565399921499193,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.961612699902616
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.02136479993350804,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.94248579989653
+          }
+        ],
+        "elapsed_seconds": 0.07937820011284202,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 11,
+        "window_segment_start_index": 110,
+        "window_segment_end_index": 129,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 110,
+        "commit_segment_end_index": 119,
+        "commit_segment_count": 10,
+        "window_time_start": 7080.0,
+        "window_time_end": 8340.0,
+        "active_task_count": 6,
+        "due_task_count": 1,
+        "candidate_path_count": 61,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 237,
+        "constraint_count": 529,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 1.0,
+          "progress": 0.0019580344623045657,
+          "load_balance": 610.4475812618401,
+          "switch": 2.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.02052739995997399,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998199986294
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0019580344623045657,
+            "elapsed_seconds": 0.020532900001853704,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97883110004477
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 610.4475812618401,
+            "elapsed_seconds": 0.02012739994097501,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9576711000409
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.023850500001572073,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9368554999819
+          }
+        ],
+        "elapsed_seconds": 0.08757019997574389,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 12,
+        "window_segment_start_index": 120,
+        "window_segment_end_index": 139,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 120,
+        "commit_segment_end_index": 129,
+        "commit_segment_count": 10,
+        "window_time_start": 7800.0,
+        "window_time_end": 9000.0,
+        "active_task_count": 7,
+        "due_task_count": 2,
+        "candidate_path_count": 91,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 305,
+        "constraint_count": 703,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 2.0,
+          "progress": 0.0033637481311595305,
+          "load_balance": 707.71197822,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.024685999960638583,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999839998782
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0033637481311595305,
+            "elapsed_seconds": 0.02668240002822131,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97461839998141
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 707.71197822,
+            "elapsed_seconds": 0.024012899957597256,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.94726120005362
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.030649399966932833,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9226266000187
+          }
+        ],
+        "elapsed_seconds": 0.10860369994770736,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 13,
+        "window_segment_start_index": 130,
+        "window_segment_end_index": 149,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 130,
+        "commit_segment_end_index": 139,
+        "commit_segment_count": 10,
+        "window_time_start": 8340.0,
+        "window_time_end": 9660.0,
+        "active_task_count": 9,
+        "due_task_count": 2,
+        "candidate_path_count": 111,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 364,
+        "constraint_count": 784,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 2.0,
+          "progress": 0.0049490785296530376,
+          "load_balance": 1111.950315,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.02614450000692159,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999849998858
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0049490785296530376,
+            "elapsed_seconds": 0.027592699974775314,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.973128099925816
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1111.950315,
+            "elapsed_seconds": 0.025644599925726652,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.94481159991119
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.028493499965406954,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.918542800005525
+          }
+        ],
+        "elapsed_seconds": 0.11047840001992881,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 14,
+        "window_segment_start_index": 140,
+        "window_segment_end_index": 159,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 140,
+        "commit_segment_end_index": 149,
+        "commit_segment_count": 10,
+        "window_time_start": 9000.0,
+        "window_time_end": 10380.0,
+        "active_task_count": 10,
+        "due_task_count": 1,
+        "candidate_path_count": 153,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 9,
+        "variable_count": 481,
+        "constraint_count": 990,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.006975671036033035,
+          "load_balance": 1267.754058,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.029614800005219877,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9999986999901
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.006975671036033035,
+            "elapsed_seconds": 0.03961850004270673,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.969699000008404
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1267.754058,
+            "elapsed_seconds": 0.03550679993350059,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.929450599942356
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.04862499993760139,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.89341709995642
+          }
+        ],
+        "elapsed_seconds": 0.15585780004039407,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 15,
+        "window_segment_start_index": 150,
+        "window_segment_end_index": 169,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 150,
+        "commit_segment_end_index": 159,
+        "commit_segment_count": 10,
+        "window_time_start": 9660.0,
+        "window_time_end": 11100.0,
+        "active_task_count": 12,
+        "due_task_count": 2,
+        "candidate_path_count": 198,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 19,
+        "variable_count": 609,
+        "constraint_count": 1171,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 5.0,
+          "progress": 0.008852981511717626,
+          "load_balance": 1345.2946212,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 5.0,
+            "elapsed_seconds": 0.041496300022117794,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998299987055
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.008852981511717626,
+            "elapsed_seconds": 0.045342199970036745,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.95782740006689
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1345.2946212,
+            "elapsed_seconds": 0.0540847999509424,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9118446999928
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.054072100087068975,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.85713230003603
+          }
+        ],
+        "elapsed_seconds": 0.19754600001033396,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 16,
+        "window_segment_start_index": 160,
+        "window_segment_end_index": 179,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 160,
+        "commit_segment_end_index": 169,
+        "commit_segment_count": 10,
+        "window_time_start": 10380.0,
+        "window_time_end": 11820.0,
+        "active_task_count": 13,
+        "due_task_count": 3,
+        "candidate_path_count": 231,
+        "promoted_task_count": 3,
+        "promoted_task_segment_count": 20,
+        "variable_count": 709,
+        "constraint_count": 1257,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 8.0,
+          "progress": 0.015043514839623183,
+          "load_balance": 1277.0182812,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 8.0,
+            "elapsed_seconds": 0.04468229995109141,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999849998858
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.015043514839623183,
+            "elapsed_seconds": 0.062478800071403384,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.954643700039014
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1277.0182812,
+            "elapsed_seconds": 0.05600480001885444,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.8914682000177
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.06528450001496822,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.834867600002326
+          }
+        ],
+        "elapsed_seconds": 0.23089849995449185,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 17,
+        "window_segment_start_index": 170,
+        "window_segment_end_index": 189,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 170,
+        "commit_segment_end_index": 179,
+        "commit_segment_count": 10,
+        "window_time_start": 11100.0,
+        "window_time_end": 12480.0,
+        "active_task_count": 12,
+        "due_task_count": 3,
+        "candidate_path_count": 231,
+        "promoted_task_count": 4,
+        "promoted_task_segment_count": 20,
+        "variable_count": 714,
+        "constraint_count": 1227,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 9.0,
+          "progress": 0.017453764019059136,
+          "load_balance": 1276.3007004,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 9.0,
+            "elapsed_seconds": 0.043079799972474575,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.017453764019059136,
+            "elapsed_seconds": 0.06611800007522106,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.956402700045146
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1276.3007004,
+            "elapsed_seconds": 0.07624949992168695,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.88955900003202
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.11734419991262257,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.81260689999908
+          }
+        ],
+        "elapsed_seconds": 0.3056938999798149,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 18,
+        "window_segment_start_index": 180,
+        "window_segment_end_index": 199,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 180,
+        "commit_segment_end_index": 189,
+        "commit_segment_count": 10,
+        "window_time_start": 11820.0,
+        "window_time_end": 13081.965,
+        "active_task_count": 10,
+        "due_task_count": 3,
+        "candidate_path_count": 199,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 18,
+        "variable_count": 625,
+        "constraint_count": 1119,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 7.0,
+          "progress": 0.010900243619612221,
+          "load_balance": 804.2877723000001,
+          "switch": 4.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 7.0,
+            "elapsed_seconds": 0.04813190002460033,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999849998858
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.010900243619612221,
+            "elapsed_seconds": 0.050452299998141825,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.95120649994351
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 804.2877723000001,
+            "elapsed_seconds": 0.07170430000405759,
+            "relative_gap": 0.01,
+            "accepted": true,
+            "time_limit_seconds": 59.90009490004741
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 4.0,
+            "elapsed_seconds": 0.11308320006355643,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.82766349997837
+          }
+        ],
+        "elapsed_seconds": 0.2861062999581918,
+        "relative_gap": 0.01,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 19,
+        "window_segment_start_index": 190,
+        "window_segment_end_index": 209,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 190,
+        "commit_segment_end_index": 199,
+        "commit_segment_count": 10,
+        "window_time_start": 12480.0,
+        "window_time_end": 13620.0,
+        "active_task_count": 9,
+        "due_task_count": 3,
+        "candidate_path_count": 159,
+        "promoted_task_count": 1,
+        "promoted_task_segment_count": 8,
+        "variable_count": 519,
+        "constraint_count": 1033,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 6.0,
+          "progress": 0.008094985989445497,
+          "load_balance": 847.189177825,
+          "switch": 7.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 6.0,
+            "elapsed_seconds": 0.028826599940657616,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998899991624
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.008094985989445497,
+            "elapsed_seconds": 0.03968719998374581,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97066760004964
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 847.189177825,
+            "elapsed_seconds": 0.046031099976971745,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.93041520006955
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 7.0,
+            "elapsed_seconds": 0.10072170000057667,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.883836499997415
+          }
+        ],
+        "elapsed_seconds": 0.21741969999857247,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 20,
+        "window_segment_start_index": 200,
+        "window_segment_end_index": 219,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 200,
+        "commit_segment_end_index": 209,
+        "commit_segment_count": 10,
+        "window_time_start": 13081.965,
+        "window_time_end": 14340.0,
+        "active_task_count": 7,
+        "due_task_count": 1,
+        "candidate_path_count": 129,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 424,
+        "constraint_count": 934,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 2.0,
+          "progress": 0.004117566478382134,
+          "load_balance": 1089.48736454224,
+          "switch": 6.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.023571399971842766,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998600105755
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.004117566478382134,
+            "elapsed_seconds": 0.027435700059868395,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9759302000748
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1089.48736454224,
+            "elapsed_seconds": 0.026318599935621023,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.94799230003264
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 6.0,
+            "elapsed_seconds": 0.048969399998895824,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.921218500006944
+          }
+        ],
+        "elapsed_seconds": 0.1282523999689147,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 21,
+        "window_segment_start_index": 210,
+        "window_segment_end_index": 229,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 210,
+        "commit_segment_end_index": 219,
+        "commit_segment_count": 10,
+        "window_time_start": 13620.0,
+        "window_time_end": 15000.0,
+        "active_task_count": 6,
+        "due_task_count": 2,
+        "candidate_path_count": 111,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 361,
+        "constraint_count": 804,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.003979818922229956,
+          "load_balance": 933.3856943999999,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.023868200019933283,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999879999086
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.003979818922229956,
+            "elapsed_seconds": 0.02386140008457005,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97562500007916
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 933.3856943999999,
+            "elapsed_seconds": 0.025844200048595667,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.95120360003784
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.04035469994414598,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.92488200007938
+          }
+        ],
+        "elapsed_seconds": 0.11596119997557253,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 22,
+        "window_segment_start_index": 220,
+        "window_segment_end_index": 239,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 220,
+        "commit_segment_end_index": 229,
+        "commit_segment_count": 10,
+        "window_time_start": 14340.0,
+        "window_time_end": 15540.0,
+        "active_task_count": 7,
+        "due_task_count": 2,
+        "candidate_path_count": 95,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 315,
+        "constraint_count": 680,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.004421061476697334,
+          "load_balance": 806.0222603999999,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.02129509998485446,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.004421061476697334,
+            "elapsed_seconds": 0.022617100039497018,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.978194200084545
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 806.0222603999999,
+            "elapsed_seconds": 0.021240000030957162,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.955080899992026
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.027204600046388805,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.93341570009943
+          }
+        ],
+        "elapsed_seconds": 0.09423859999515116,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 23,
+        "window_segment_start_index": 230,
+        "window_segment_end_index": 249,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 230,
+        "commit_segment_end_index": 239,
+        "commit_segment_count": 10,
+        "window_time_start": 15000.0,
+        "window_time_end": 16200.0,
+        "active_task_count": 7,
+        "due_task_count": 2,
+        "candidate_path_count": 91,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 303,
+        "constraint_count": 663,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 2.0,
+          "progress": 0.0033450586147043475,
+          "load_balance": 689.4292836679319,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.025096700061112642,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999880010728
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0033450586147043475,
+            "elapsed_seconds": 0.022909500054083765,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97441230004188
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 689.4292836679319,
+            "elapsed_seconds": 0.022447200026363134,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.951004300033674
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.032111800042912364,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.92804640007671
+          }
+        ],
+        "elapsed_seconds": 0.10474589990917593,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 24,
+        "window_segment_start_index": 240,
+        "window_segment_end_index": 259,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 240,
+        "commit_segment_end_index": 249,
+        "commit_segment_count": 10,
+        "window_time_start": 15540.0,
+        "window_time_end": 16800.0,
+        "active_task_count": 9,
+        "due_task_count": 2,
+        "candidate_path_count": 110,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 361,
+        "constraint_count": 785,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 2.0,
+          "progress": 0.004319531963101809,
+          "load_balance": 1158.6600858,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.022133299964480102,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999879999086
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.004319531963101809,
+            "elapsed_seconds": 0.02409229998011142,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97725580004044
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1158.6600858,
+            "elapsed_seconds": 0.024750799988396466,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9526777000865
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.0333907000022009,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.92733970005065
+          }
+        ],
+        "elapsed_seconds": 0.10673969995696098,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 25,
+        "window_segment_start_index": 250,
+        "window_segment_end_index": 269,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 250,
+        "commit_segment_end_index": 259,
+        "commit_segment_count": 10,
+        "window_time_start": 16200.0,
+        "window_time_end": 17520.0,
+        "active_task_count": 9,
+        "due_task_count": 1,
+        "candidate_path_count": 149,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 8,
+        "variable_count": 475,
+        "constraint_count": 973,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.006265075674250069,
+          "load_balance": 1312.00449,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.03396130003966391,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999879999086
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.006265075674250069,
+            "elapsed_seconds": 0.03814239997882396,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96538359997794
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1312.00449,
+            "elapsed_seconds": 0.03464010008610785,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.92658480000682
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.039396399981342256,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.8912787999725
+          }
+        ],
+        "elapsed_seconds": 0.14872579998336732,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 26,
+        "window_segment_start_index": 260,
+        "window_segment_end_index": 279,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 260,
+        "commit_segment_end_index": 269,
+        "commit_segment_count": 10,
+        "window_time_start": 16800.0,
+        "window_time_end": 18120.0,
+        "active_task_count": 11,
+        "due_task_count": 2,
+        "candidate_path_count": 193,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 18,
+        "variable_count": 610,
+        "constraint_count": 1167,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 5.0,
+          "progress": 0.008044061626035269,
+          "load_balance": 1244.5553988000001,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 5.0,
+            "elapsed_seconds": 0.03560709999874234,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999839998782
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.008044061626035269,
+            "elapsed_seconds": 0.059313799953088164,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.963708300027065
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1244.5553988000001,
+            "elapsed_seconds": 0.048982599982991815,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.903752199956216
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.055119099910371006,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.854153600055724
+          }
+        ],
+        "elapsed_seconds": 0.20146370003931224,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 27,
+        "window_segment_start_index": 270,
+        "window_segment_end_index": 289,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 270,
+        "commit_segment_end_index": 279,
+        "commit_segment_count": 10,
+        "window_time_start": 17520.0,
+        "window_time_end": 18720.0,
+        "active_task_count": 12,
+        "due_task_count": 1,
+        "candidate_path_count": 224,
+        "promoted_task_count": 1,
+        "promoted_task_segment_count": 20,
+        "variable_count": 704,
+        "constraint_count": 1280,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 2.0,
+          "progress": 0.007826592331325316,
+          "load_balance": 1183.9486938,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.04020489996764809,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999859998934
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.007826592331325316,
+            "elapsed_seconds": 0.053218399989418685,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.95915090001654
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1183.9486938,
+            "elapsed_seconds": 0.0448038000613451,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.905247999937274
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.05041010002605617,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.859983399976045
+          }
+        ],
+        "elapsed_seconds": 0.19103139999788254,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 28,
+        "window_segment_start_index": 280,
+        "window_segment_end_index": 299,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 280,
+        "commit_segment_end_index": 289,
+        "commit_segment_count": 10,
+        "window_time_start": 18120.0,
+        "window_time_end": 19320.0,
+        "active_task_count": 12,
+        "due_task_count": 2,
+        "candidate_path_count": 234,
+        "promoted_task_count": 3,
+        "promoted_task_segment_count": 20,
+        "variable_count": 724,
+        "constraint_count": 1296,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 6.0,
+          "progress": 0.012655667161816117,
+          "load_balance": 1174.821156,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 6.0,
+            "elapsed_seconds": 0.041153799975290895,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999840010423
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.012655667161816117,
+            "elapsed_seconds": 0.05940809997264296,
+            "relative_gap": 0.28,
+            "accepted": true,
+            "time_limit_seconds": 59.95832270011306
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1174.821156,
+            "elapsed_seconds": 0.04896879999432713,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.89840580010787
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.054618499940261245,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.84897200006526
+          }
+        ],
+        "elapsed_seconds": 0.20616229996085167,
+        "relative_gap": 0.28,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 29,
+        "window_segment_start_index": 290,
+        "window_segment_end_index": 309,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 290,
+        "commit_segment_end_index": 299,
+        "commit_segment_count": 10,
+        "window_time_start": 18720.0,
+        "window_time_end": 20040.0,
+        "active_task_count": 12,
+        "due_task_count": 4,
+        "candidate_path_count": 221,
+        "promoted_task_count": 4,
+        "promoted_task_segment_count": 20,
+        "variable_count": 679,
+        "constraint_count": 1234,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 11.0,
+          "progress": 0.014909269623440252,
+          "load_balance": 1306.3386408000001,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 11.0,
+            "elapsed_seconds": 0.03726809995714575,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999909999315
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.014909269623440252,
+            "elapsed_seconds": 0.05715290002990514,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.962102200021036
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1306.3386408000001,
+            "elapsed_seconds": 0.044257599976845086,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.904389500035904
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.04941279999911785,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.85967709997203
+          }
+        ],
+        "elapsed_seconds": 0.19020800001453608,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 30,
+        "window_segment_start_index": 300,
+        "window_segment_end_index": 319,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 300,
+        "commit_segment_end_index": 309,
+        "commit_segment_count": 10,
+        "window_time_start": 19320.0,
+        "window_time_end": 20580.0,
+        "active_task_count": 10,
+        "due_task_count": 3,
+        "candidate_path_count": 182,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 14,
+        "variable_count": 567,
+        "constraint_count": 1076,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 7.0,
+          "progress": 0.011475397093772616,
+          "load_balance": 1224.8199384000002,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 7.0,
+            "elapsed_seconds": 0.030686100013554096,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998899991624
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.011475397093772616,
+            "elapsed_seconds": 0.03975430002901703,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96882339997683
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1224.8199384000002,
+            "elapsed_seconds": 0.03530360001605004,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9285887000151
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.04196169995702803,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.892806399962865
+          }
+        ],
+        "elapsed_seconds": 0.14960190001875162,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 31,
+        "window_segment_start_index": 310,
+        "window_segment_end_index": 329,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 310,
+        "commit_segment_end_index": 319,
+        "commit_segment_count": 10,
+        "window_time_start": 20040.0,
+        "window_time_end": 21180.0,
+        "active_task_count": 8,
+        "due_task_count": 2,
+        "candidate_path_count": 141,
+        "promoted_task_count": 1,
+        "promoted_task_segment_count": 4,
+        "variable_count": 455,
+        "constraint_count": 927,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 4.0,
+          "progress": 0.006944935297965682,
+          "load_balance": 986.7731631825593,
+          "switch": 3.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 4.0,
+            "elapsed_seconds": 0.02539480000268668,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999909999315
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.006944935297965682,
+            "elapsed_seconds": 0.02793570002540946,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97413799993228
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 986.7731631825593,
+            "elapsed_seconds": 0.02708410006016493,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9455909000244
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.03424840001389384,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.91807100002188
+          }
+        ],
+        "elapsed_seconds": 0.11664740007836372,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 32,
+        "window_segment_start_index": 320,
+        "window_segment_end_index": 339,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 320,
+        "commit_segment_end_index": 329,
+        "commit_segment_count": 10,
+        "window_time_start": 20580.0,
+        "window_time_end": 21840.0,
+        "active_task_count": 7,
+        "due_task_count": 1,
+        "candidate_path_count": 123,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 401,
+        "constraint_count": 851,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 2.0,
+          "progress": 0.004720366489063897,
+          "load_balance": 1208.3148362499999,
+          "switch": 3.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.02213489997666329,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9999973999802
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.004720366489063897,
+            "elapsed_seconds": 0.03729939996264875,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97737820004113
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1208.3148362499999,
+            "elapsed_seconds": 0.02354129997547716,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.93960869999137
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.03787120000924915,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.91562189999968
+          }
+        ],
+        "elapsed_seconds": 0.12271569995209575,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 33,
+        "window_segment_start_index": 330,
+        "window_segment_end_index": 349,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 330,
+        "commit_segment_end_index": 339,
+        "commit_segment_count": 10,
+        "window_time_start": 21180.0,
+        "window_time_end": 22500.0,
+        "active_task_count": 6,
+        "due_task_count": 2,
+        "candidate_path_count": 103,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 337,
+        "constraint_count": 743,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.0048989219618177544,
+          "load_balance": 1287.118155,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.019797999993897974,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999909999315
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0048989219618177544,
+            "elapsed_seconds": 0.02061339991632849,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9797543999739
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1287.118155,
+            "elapsed_seconds": 0.020690899924375117,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.95871340006124
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.02114540000911802,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.93762139999308
+          }
+        ],
+        "elapsed_seconds": 0.08393069996964186,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 34,
+        "window_segment_start_index": 340,
+        "window_segment_end_index": 359,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 340,
+        "commit_segment_end_index": 349,
+        "commit_segment_count": 10,
+        "window_time_start": 21840.0,
+        "window_time_end": 23100.0,
+        "active_task_count": 8,
+        "due_task_count": 4,
+        "candidate_path_count": 90,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 302,
+        "constraint_count": 770,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 4.0,
+          "progress": 0.004694982021220661,
+          "load_balance": 1166.9011794,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 4.0,
+            "elapsed_seconds": 0.02032769995275885,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.004694982021220661,
+            "elapsed_seconds": 0.01995270000770688,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97923950001132
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1166.9011794,
+            "elapsed_seconds": 0.02030099998228252,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.95886859996244
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.021673500072211027,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.93815489998087
+          }
+        ],
+        "elapsed_seconds": 0.08402810001280159,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 35,
+        "window_segment_start_index": 350,
+        "window_segment_end_index": 369,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 350,
+        "commit_segment_end_index": 359,
+        "commit_segment_count": 10,
+        "window_time_start": 22500.0,
+        "window_time_end": 23640.0,
+        "active_task_count": 8,
+        "due_task_count": 2,
+        "candidate_path_count": 99,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 329,
+        "constraint_count": 873,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 1.0,
+          "progress": 0.003316396510535554,
+          "load_balance": 876.5262305,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.02039139997214079,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.003316396510535554,
+            "elapsed_seconds": 0.02172179997432977,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97915719996672
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 876.5262305,
+            "elapsed_seconds": 0.02226519992109388,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.95702649990562
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.030978400027379394,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.93436069996096
+          }
+        ],
+        "elapsed_seconds": 0.09706450009252876,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 36,
+        "window_segment_start_index": 360,
+        "window_segment_end_index": 379,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 360,
+        "commit_segment_end_index": 369,
+        "commit_segment_count": 10,
+        "window_time_start": 23100.0,
+        "window_time_end": 24300.0,
+        "active_task_count": 9,
+        "due_task_count": 1,
+        "candidate_path_count": 130,
+        "promoted_task_count": 1,
+        "promoted_task_segment_count": 3,
+        "variable_count": 421,
+        "constraint_count": 960,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.005364930098141068,
+          "load_balance": 1176.1174283,
+          "switch": 4.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.023246200056746602,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999909999315
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.005364930098141068,
+            "elapsed_seconds": 0.02940989995840937,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97625419998076
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1176.1174283,
+            "elapsed_seconds": 0.029481600038707256,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.944036700064316
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 4.0,
+            "elapsed_seconds": 0.06226849998347461,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.91407810000237
+          }
+        ],
+        "elapsed_seconds": 0.1487164000282064,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 37,
+        "window_segment_start_index": 370,
+        "window_segment_end_index": 389,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 370,
+        "commit_segment_end_index": 379,
+        "commit_segment_count": 10,
+        "window_time_start": 23640.0,
+        "window_time_end": 24960.0,
+        "active_task_count": 11,
+        "due_task_count": 1,
+        "candidate_path_count": 179,
+        "promoted_task_count": 3,
+        "promoted_task_segment_count": 13,
+        "variable_count": 569,
+        "constraint_count": 1135,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.007004921521493447,
+          "load_balance": 1287.5874635999999,
+          "switch": 2.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.028210900025442243,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999879999086
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.007004921521493447,
+            "elapsed_seconds": 0.044838600093498826,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97124039998744
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1287.5874635999999,
+            "elapsed_seconds": 0.05258070002309978,
+            "relative_gap": 0.01,
+            "accepted": true,
+            "time_limit_seconds": 59.92592800001148
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.06253630004357547,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.87291659996845
+          }
+        ],
+        "elapsed_seconds": 0.1900769000640139,
+        "relative_gap": 0.01,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 38,
+        "window_segment_start_index": 380,
+        "window_segment_end_index": 399,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 380,
+        "commit_segment_end_index": 389,
+        "commit_segment_count": 10,
+        "window_time_start": 24300.0,
+        "window_time_end": 25560.0,
+        "active_task_count": 12,
+        "due_task_count": 1,
+        "candidate_path_count": 217,
+        "promoted_task_count": 1,
+        "promoted_task_segment_count": 20,
+        "variable_count": 684,
+        "constraint_count": 1252,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 0.0,
+          "progress": 0.006555117154677378,
+          "load_balance": 1124.1956946,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.03445540007669479,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.006555117154677378,
+            "elapsed_seconds": 0.04075909999664873,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96508909994736
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1124.1956946,
+            "elapsed_seconds": 0.05858010007068515,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.92386159999296
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.05980970000382513,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.86480549990665
+          }
+        ],
+        "elapsed_seconds": 0.1955314000369981,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 39,
+        "window_segment_start_index": 390,
+        "window_segment_end_index": 409,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 390,
+        "commit_segment_end_index": 399,
+        "commit_segment_count": 10,
+        "window_time_start": 24960.0,
+        "window_time_end": 26160.0,
+        "active_task_count": 13,
+        "due_task_count": 3,
+        "candidate_path_count": 238,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 20,
+        "variable_count": 751,
+        "constraint_count": 1279,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 6.0,
+          "progress": 0.01253252026843043,
+          "load_balance": 1014.8231718,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 6.0,
+            "elapsed_seconds": 0.03722840000409633,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.01253252026843043,
+            "elapsed_seconds": 0.06731900002341717,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9622526000021
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1014.8231718,
+            "elapsed_seconds": 0.04933109995909035,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.89441889990121
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.05276630003936589,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.84459449991118
+          }
+        ],
+        "elapsed_seconds": 0.20863530004862696,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 40,
+        "window_segment_start_index": 400,
+        "window_segment_end_index": 419,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 400,
+        "commit_segment_end_index": 409,
+        "commit_segment_count": 10,
+        "window_time_start": 25560.0,
+        "window_time_end": 26820.0,
+        "active_task_count": 12,
+        "due_task_count": 3,
+        "candidate_path_count": 232,
+        "promoted_task_count": 3,
+        "promoted_task_segment_count": 20,
+        "variable_count": 722,
+        "constraint_count": 1204,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 9.0,
+          "progress": 0.014255191649315144,
+          "load_balance": 867.76783008,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 9.0,
+            "elapsed_seconds": 0.03513950004708022,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.014255191649315144,
+            "elapsed_seconds": 0.22537320002447814,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96438669995405
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 867.76783008,
+            "elapsed_seconds": 0.055430500069633126,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.738506399909966
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.07552920002490282,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.68260870000813
+          }
+        ],
+        "elapsed_seconds": 0.39339570002630353,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 41,
+        "window_segment_start_index": 410,
+        "window_segment_end_index": 429,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 410,
+        "commit_segment_end_index": 419,
+        "commit_segment_count": 10,
+        "window_time_start": 26160.0,
+        "window_time_end": 27480.0,
+        "active_task_count": 10,
+        "due_task_count": 3,
+        "candidate_path_count": 203,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 19,
+        "variable_count": 623,
+        "constraint_count": 1083,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 7.0,
+          "progress": 0.010034783061761626,
+          "load_balance": 1287.896202,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 7.0,
+            "elapsed_seconds": 0.032661199918948114,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9999990001088
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.010034783061761626,
+            "elapsed_seconds": 0.07981220004148781,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96688920003362
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1287.896202,
+            "elapsed_seconds": 0.03806280007120222,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.88661340007093
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.04335910000372678,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.848099300055765
+          }
+        ],
+        "elapsed_seconds": 0.19571209989953786,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 42,
+        "window_segment_start_index": 420,
+        "window_segment_end_index": 439,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 420,
+        "commit_segment_end_index": 429,
+        "commit_segment_count": 10,
+        "window_time_start": 26820.0,
+        "window_time_end": 28140.0,
+        "active_task_count": 9,
+        "due_task_count": 3,
+        "candidate_path_count": 160,
+        "promoted_task_count": 1,
+        "promoted_task_segment_count": 9,
+        "variable_count": 503,
+        "constraint_count": 910,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 6.0,
+          "progress": 0.008278557550208678,
+          "load_balance": 1183.508202,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 6.0,
+            "elapsed_seconds": 0.025075100013054907,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999879999086
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.008278557550208678,
+            "elapsed_seconds": 0.037137300008907914,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97447210003156
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1183.508202,
+            "elapsed_seconds": 0.029045200091786683,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.936805599951185
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.03452690003905445,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.90734010003507
+          }
+        ],
+        "elapsed_seconds": 0.1276009000139311,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 43,
+        "window_segment_start_index": 430,
+        "window_segment_end_index": 449,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 430,
+        "commit_segment_end_index": 439,
+        "commit_segment_count": 10,
+        "window_time_start": 27480.0,
+        "window_time_end": 28740.0,
+        "active_task_count": 7,
+        "due_task_count": 1,
+        "candidate_path_count": 127,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 414,
+        "constraint_count": 761,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 2.0,
+          "progress": 0.004301464012003617,
+          "load_balance": 1239.904599075,
+          "switch": 3.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.02137189998757094,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999879999086
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.004301464012003617,
+            "elapsed_seconds": 0.023319999920204282,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97815670003183
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1239.904599075,
+            "elapsed_seconds": 0.02407310006674379,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.954359799972735
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.040513499989174306,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.92982550000306
+          }
+        ],
+        "elapsed_seconds": 0.11124140000902116,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 44,
+        "window_segment_start_index": 440,
+        "window_segment_end_index": 459,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 440,
+        "commit_segment_end_index": 449,
+        "commit_segment_count": 10,
+        "window_time_start": 28140.0,
+        "window_time_end": 29280.0,
+        "active_task_count": 6,
+        "due_task_count": 2,
+        "candidate_path_count": 115,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 379,
+        "constraint_count": 708,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.005011945979399368,
+          "load_balance": 1036.530749625,
+          "switch": 4.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.021816100110299885,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.005011945979399368,
+            "elapsed_seconds": 0.02068289997987449,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9777365999762
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1036.530749625,
+            "elapsed_seconds": 0.022747399983927608,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.95662249997258
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 4.0,
+            "elapsed_seconds": 0.03456900001037866,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.93343350000214
+          }
+        ],
+        "elapsed_seconds": 0.10158779995981604,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 45,
+        "window_segment_start_index": 450,
+        "window_segment_end_index": 469,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 450,
+        "commit_segment_end_index": 459,
+        "commit_segment_count": 10,
+        "window_time_start": 28740.0,
+        "window_time_end": 30000.0,
+        "active_task_count": 7,
+        "due_task_count": 2,
+        "candidate_path_count": 99,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 327,
+        "constraint_count": 642,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.005836975392136779,
+          "load_balance": 1229.86253415,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.01836760004516691,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.005836975392136779,
+            "elapsed_seconds": 0.01820719998795539,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.98119770002086
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1229.86253415,
+            "elapsed_seconds": 0.01995529991108924,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96254320000298
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.023586299968883395,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.94219119998161
+          }
+        ],
+        "elapsed_seconds": 0.08180539996828884,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 46,
+        "window_segment_start_index": 460,
+        "window_segment_end_index": 479,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 460,
+        "commit_segment_end_index": 469,
+        "commit_segment_count": 10,
+        "window_time_start": 29280.0,
+        "window_time_end": 30600.0,
+        "active_task_count": 7,
+        "due_task_count": 2,
+        "candidate_path_count": 91,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 302,
+        "constraint_count": 657,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 0.0,
+          "progress": 0.003945717610566589,
+          "load_balance": 1292.1177456,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.017707300023175776,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.003945717610566589,
+            "elapsed_seconds": 0.01890390005428344,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.98186940001324
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1292.1177456,
+            "elapsed_seconds": 0.019805199932307005,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.962480399990454
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.0195409000152722,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.942277399939485
+          }
+        ],
+        "elapsed_seconds": 0.07781609997618943,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 47,
+        "window_segment_start_index": 470,
+        "window_segment_end_index": 489,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 470,
+        "commit_segment_end_index": 479,
+        "commit_segment_count": 10,
+        "window_time_start": 30000.0,
+        "window_time_end": 31260.0,
+        "active_task_count": 9,
+        "due_task_count": 2,
+        "candidate_path_count": 110,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 363,
+        "constraint_count": 781,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 0.0,
+          "progress": 0.004303714425537105,
+          "load_balance": 1220.9415882,
+          "switch": 2.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.021891599986702204,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999910010956
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.004303714425537105,
+            "elapsed_seconds": 0.021584799978882074,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97767170006409
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1220.9415882,
+            "elapsed_seconds": 0.02278519992250949,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.955667400034145
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.039670699974521995,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.93241950008087
+          }
+        ],
+        "elapsed_seconds": 0.10771889996249229,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 48,
+        "window_segment_start_index": 480,
+        "window_segment_end_index": 499,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 480,
+        "commit_segment_end_index": 489,
+        "commit_segment_count": 10,
+        "window_time_start": 30600.0,
+        "window_time_end": 31860.0,
+        "active_task_count": 9,
+        "due_task_count": 1,
+        "candidate_path_count": 151,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 9,
+        "variable_count": 479,
+        "constraint_count": 942,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.006423238450592407,
+          "load_balance": 1226.5505784,
+          "switch": 2.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.024517100071534514,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999879999086
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.006423238450592407,
+            "elapsed_seconds": 0.03469190001487732,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97502540005371
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1226.5505784,
+            "elapsed_seconds": 0.041056100046262145,
+            "relative_gap": 0.01,
+            "accepted": true,
+            "time_limit_seconds": 59.93989830010105
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.06978280004113913,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.89843669999391
+          }
+        ],
+        "elapsed_seconds": 0.17184629989787936,
+        "relative_gap": 0.01,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 49,
+        "window_segment_start_index": 490,
+        "window_segment_end_index": 509,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 490,
+        "commit_segment_end_index": 499,
+        "commit_segment_count": 10,
+        "window_time_start": 31260.0,
+        "window_time_end": 32580.0,
+        "active_task_count": 12,
+        "due_task_count": 2,
+        "candidate_path_count": 194,
+        "promoted_task_count": 3,
+        "promoted_task_segment_count": 19,
+        "variable_count": 612,
+        "constraint_count": 1141,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.00821626217988647,
+          "load_balance": 1304.6538965999998,
+          "switch": 4.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.033215600065886974,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999909999315
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.00821626217988647,
+            "elapsed_seconds": 0.04399200004991144,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96633869991638
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1304.6538965999998,
+            "elapsed_seconds": 0.06574960006400943,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.921846400015056
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 4.0,
+            "elapsed_seconds": 0.07100610004272312,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.85562739998568
+          }
+        ],
+        "elapsed_seconds": 0.21583090000785887,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 50,
+        "window_segment_start_index": 500,
+        "window_segment_end_index": 519,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 500,
+        "commit_segment_end_index": 509,
+        "commit_segment_count": 10,
+        "window_time_start": 31860.0,
+        "window_time_end": 33180.0,
+        "active_task_count": 13,
+        "due_task_count": 1,
+        "candidate_path_count": 225,
+        "promoted_task_count": 1,
+        "promoted_task_segment_count": 20,
+        "variable_count": 690,
+        "constraint_count": 1232,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 0.0,
+          "progress": 0.009700114538636421,
+          "load_balance": 1305.9353879999999,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.0343719000229612,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998899991624
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.009700114538636421,
+            "elapsed_seconds": 0.04548089997842908,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96517340000719
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1305.9353879999999,
+            "elapsed_seconds": 0.039447100018151104,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.91918279998936
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.049257899983786047,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.879308499977924
+          }
+        ],
+        "elapsed_seconds": 0.1703829999314621,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 51,
+        "window_segment_start_index": 510,
+        "window_segment_end_index": 529,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 510,
+        "commit_segment_end_index": 519,
+        "commit_segment_count": 10,
+        "window_time_start": 32580.0,
+        "window_time_end": 33840.0,
+        "active_task_count": 12,
+        "due_task_count": 2,
+        "candidate_path_count": 234,
+        "promoted_task_count": 3,
+        "promoted_task_segment_count": 20,
+        "variable_count": 723,
+        "constraint_count": 1268,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 6.0,
+          "progress": 0.014791870901062045,
+          "load_balance": 1193.9085648,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 6.0,
+            "elapsed_seconds": 0.037019999930635095,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.014791870901062045,
+            "elapsed_seconds": 0.12676529993768781,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96253020002041
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1193.9085648,
+            "elapsed_seconds": 0.10536459996365011,
+            "relative_gap": 0.03,
+            "accepted": true,
+            "time_limit_seconds": 59.83526089997031
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.16152790002524853,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.729458400048316
+          }
+        ],
+        "elapsed_seconds": 0.4325875999638811,
+        "relative_gap": 0.03,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 52,
+        "window_segment_start_index": 520,
+        "window_segment_end_index": 539,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 520,
+        "commit_segment_end_index": 529,
+        "commit_segment_count": 10,
+        "window_time_start": 33180.0,
+        "window_time_end": 34380.0,
+        "active_task_count": 12,
+        "due_task_count": 4,
+        "candidate_path_count": 217,
+        "promoted_task_count": 4,
+        "promoted_task_segment_count": 20,
+        "variable_count": 682,
+        "constraint_count": 1190,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 11.0,
+          "progress": 0.01598335374390955,
+          "load_balance": 1089.8790702,
+          "switch": 3.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 11.0,
+            "elapsed_seconds": 0.03419570007827133,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999910010956
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.01598335374390955,
+            "elapsed_seconds": 0.0495799999916926,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.965336300083436
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1089.8790702,
+            "elapsed_seconds": 0.0681709999917075,
+            "relative_gap": 0.01,
+            "accepted": true,
+            "time_limit_seconds": 59.915298200096004
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.08490300003904849,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.846706600044854
+          }
+        ],
+        "elapsed_seconds": 0.23865689989179373,
+        "relative_gap": 0.01,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 53,
+        "window_segment_start_index": 530,
+        "window_segment_end_index": 549,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 530,
+        "commit_segment_end_index": 539,
+        "commit_segment_count": 10,
+        "window_time_start": 33840.0,
+        "window_time_end": 35040.0,
+        "active_task_count": 10,
+        "due_task_count": 3,
+        "candidate_path_count": 180,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 14,
+        "variable_count": 571,
+        "constraint_count": 1044,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 7.0,
+          "progress": 0.01091196320697242,
+          "load_balance": 1146.1692655250001,
+          "switch": 4.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 7.0,
+            "elapsed_seconds": 0.028736800071783364,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998899991624
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.01091196320697242,
+            "elapsed_seconds": 0.04044970008544624,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97079109994229
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1146.1692655250001,
+            "elapsed_seconds": 0.04626839992124587,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9298861999996
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 4.0,
+            "elapsed_seconds": 0.07644550001714379,
+            "relative_gap": 0.04,
+            "accepted": true,
+            "time_limit_seconds": 59.88320359995123
+          }
+        ],
+        "elapsed_seconds": 0.19367840001359582,
+        "relative_gap": 0.04,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 54,
+        "window_segment_start_index": 540,
+        "window_segment_end_index": 559,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 540,
+        "commit_segment_end_index": 549,
+        "commit_segment_count": 10,
+        "window_time_start": 34380.0,
+        "window_time_end": 35580.0,
+        "active_task_count": 8,
+        "due_task_count": 2,
+        "candidate_path_count": 140,
+        "promoted_task_count": 1,
+        "promoted_task_segment_count": 4,
+        "variable_count": 453,
+        "constraint_count": 910,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 4.0,
+          "progress": 0.0058287382425083935,
+          "load_balance": 788.0021072250001,
+          "switch": 3.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 4.0,
+            "elapsed_seconds": 0.023181900032795966,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999909999315
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0058287382425083935,
+            "elapsed_seconds": 0.044249000027775764,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.976393799996
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 788.0021072250001,
+            "elapsed_seconds": 0.028680399991571903,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.931682299938984
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.03529779997188598,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.90256139996927
+          }
+        ],
+        "elapsed_seconds": 0.13320479996036738,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 55,
+        "window_segment_start_index": 550,
+        "window_segment_end_index": 569,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 550,
+        "commit_segment_end_index": 559,
+        "commit_segment_count": 10,
+        "window_time_start": 35040.0,
+        "window_time_end": 36300.0,
+        "active_task_count": 7,
+        "due_task_count": 2,
+        "candidate_path_count": 122,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 398,
+        "constraint_count": 833,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 4.0,
+          "progress": 0.00503558288501506,
+          "load_balance": 1116.6787785999995,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 4.0,
+            "elapsed_seconds": 0.03578379994723946,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.00503558288501506,
+            "elapsed_seconds": 0.02305850002449006,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96372540004086
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1116.6787785999995,
+            "elapsed_seconds": 0.024552299990318716,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.94023890001699
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.030887400032952428,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.915286600007676
+          }
+        ],
+        "elapsed_seconds": 0.11609039991162717,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 56,
+        "window_segment_start_index": 560,
+        "window_segment_end_index": 579,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 560,
+        "commit_segment_end_index": 569,
+        "commit_segment_count": 10,
+        "window_time_start": 35580.0,
+        "window_time_end": 36900.0,
+        "active_task_count": 8,
+        "due_task_count": 2,
+        "candidate_path_count": 114,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 372,
+        "constraint_count": 790,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.004302600532594632,
+          "load_balance": 973.7274299999999,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.021779999951831996,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998899991624
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.004302600532594632,
+            "elapsed_seconds": 0.022999899927526712,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97776859998703
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 973.7274299999999,
+            "elapsed_seconds": 0.023384299944154918,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.95433710003272
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.024820099934004247,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.930481099989265
+          }
+        ],
+        "elapsed_seconds": 0.09473339992109686,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 57,
+        "window_segment_start_index": 570,
+        "window_segment_end_index": 589,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 570,
+        "commit_segment_end_index": 579,
+        "commit_segment_count": 10,
+        "window_time_start": 36300.0,
+        "window_time_end": 37500.0,
+        "active_task_count": 10,
+        "due_task_count": 3,
+        "candidate_path_count": 134,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 5,
+        "variable_count": 431,
+        "constraint_count": 939,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.0034080502651912445,
+          "load_balance": 975.1553004,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.025206300080753863,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998899991624
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0034080502651912445,
+            "elapsed_seconds": 0.03321179992053658,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97431159997359
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 975.1553004,
+            "elapsed_seconds": 0.02803360007237643,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.94063399999868
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.030307300039567053,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.912155699916184
+          }
+        ],
+        "elapsed_seconds": 0.11857719998806715,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 58,
+        "window_segment_start_index": 580,
+        "window_segment_end_index": 599,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 580,
+        "commit_segment_end_index": 589,
+        "commit_segment_count": 10,
+        "window_time_start": 36900.0,
+        "window_time_end": 38100.0,
+        "active_task_count": 12,
+        "due_task_count": 2,
+        "candidate_path_count": 183,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 15,
+        "variable_count": 573,
+        "constraint_count": 1209,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 2.0,
+          "progress": 0.00414640850528931,
+          "load_balance": 1087.4596474000007,
+          "switch": 4.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.029221500037238002,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.00414640850528931,
+            "elapsed_seconds": 0.03637910005636513,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97033359995112
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1087.4596474000007,
+            "elapsed_seconds": 0.034437800059095025,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.93351010000333
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 4.0,
+            "elapsed_seconds": 0.07982260000426322,
+            "relative_gap": 0.03,
+            "accepted": true,
+            "time_limit_seconds": 59.89861789997667
+          }
+        ],
+        "elapsed_seconds": 0.1816501000430435,
+        "relative_gap": 0.03,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 59,
+        "window_segment_start_index": 590,
+        "window_segment_end_index": 609,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 590,
+        "commit_segment_end_index": 599,
+        "commit_segment_count": 10,
+        "window_time_start": 37500.0,
+        "window_time_end": 38760.0,
+        "active_task_count": 13,
+        "due_task_count": 1,
+        "candidate_path_count": 226,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 20,
+        "variable_count": 702,
+        "constraint_count": 1353,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.005834587234906403,
+          "load_balance": 1235.4339768,
+          "switch": 3.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.0362520000198856,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998899991624
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.005834587234906403,
+            "elapsed_seconds": 0.0410125000635162,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96329720003996
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1235.4339768,
+            "elapsed_seconds": 0.041321200085803866,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.92182310007047
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.04470829991623759,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.88005600008182
+          }
+        ],
+        "elapsed_seconds": 0.16511919989716262,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 60,
+        "window_segment_start_index": 600,
+        "window_segment_end_index": 619,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 600,
+        "commit_segment_end_index": 609,
+        "commit_segment_count": 10,
+        "window_time_start": 38100.0,
+        "window_time_end": 39360.0,
+        "active_task_count": 13,
+        "due_task_count": 1,
+        "candidate_path_count": 253,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 20,
+        "variable_count": 779,
+        "constraint_count": 1386,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 3.0,
+          "progress": 0.00649514216530622,
+          "load_balance": 1229.0200836,
+          "switch": 2.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.03885720006655902,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999909999315
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.00649514216530622,
+            "elapsed_seconds": 0.044137499993667006,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96069209999405
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1229.0200836,
+            "elapsed_seconds": 0.04462429997511208,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.91606860002503
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.05288450000807643,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.87098300002981
+          }
+        ],
+        "elapsed_seconds": 0.18233750003855675,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 61,
+        "window_segment_start_index": 610,
+        "window_segment_end_index": 629,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 610,
+        "commit_segment_end_index": 619,
+        "commit_segment_count": 10,
+        "window_time_start": 38760.0,
+        "window_time_end": 40020.0,
+        "active_task_count": 13,
+        "due_task_count": 1,
+        "candidate_path_count": 260,
+        "promoted_task_count": 1,
+        "promoted_task_segment_count": 20,
+        "variable_count": 796,
+        "constraint_count": 1381,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 2.0,
+          "progress": 0.006868216349778599,
+          "load_balance": 1226.7725784,
+          "switch": 1.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 2.0,
+            "elapsed_seconds": 0.037746099987998605,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998899991624
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.006868216349778599,
+            "elapsed_seconds": 0.04620960005559027,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.961768699926324
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1226.7725784,
+            "elapsed_seconds": 0.045097900088876486,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.91510220000055
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.05621519999112934,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.869484000024386
+          }
+        ],
+        "elapsed_seconds": 0.18719179998151958,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 62,
+        "window_segment_start_index": 620,
+        "window_segment_end_index": 639,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 620,
+        "commit_segment_end_index": 629,
+        "commit_segment_count": 10,
+        "window_time_start": 39360.0,
+        "window_time_end": 40560.0,
+        "active_task_count": 13,
+        "due_task_count": 3,
+        "candidate_path_count": 259,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 20,
+        "variable_count": 801,
+        "constraint_count": 1451,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 8.0,
+          "progress": 0.014566910194315968,
+          "load_balance": 1194.5219694,
+          "switch": 3.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 8.0,
+            "elapsed_seconds": 0.04973940004128963,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9999986999901
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.014566910194315968,
+            "elapsed_seconds": 0.06522679992485791,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9498124999227
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1194.5219694,
+            "elapsed_seconds": 0.06314109999220818,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.88405419990886
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.08874519995879382,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.820451699895784
+          }
+        ],
+        "elapsed_seconds": 0.26880210009403527,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 63,
+        "window_segment_start_index": 630,
+        "window_segment_end_index": 649,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 630,
+        "commit_segment_end_index": 639,
+        "commit_segment_count": 10,
+        "window_time_start": 40020.0,
+        "window_time_end": 41220.0,
+        "active_task_count": 12,
+        "due_task_count": 3,
+        "candidate_path_count": 239,
+        "promoted_task_count": 3,
+        "promoted_task_segment_count": 20,
+        "variable_count": 738,
+        "constraint_count": 1420,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 9.0,
+          "progress": 0.015138669253340495,
+          "load_balance": 1197.27562569885,
+          "switch": 3.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 9.0,
+            "elapsed_seconds": 0.041662000003270805,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999909999315
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.015138669253340495,
+            "elapsed_seconds": 0.06865250004921108,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9578553000465
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1197.27562569885,
+            "elapsed_seconds": 0.06148959998972714,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.88869980000891
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.0,
+            "elapsed_seconds": 0.11687509994953871,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.826763799996115
+          }
+        ],
+        "elapsed_seconds": 0.29066379996947944,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 64,
+        "window_segment_start_index": 640,
+        "window_segment_end_index": 659,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 640,
+        "commit_segment_end_index": 649,
+        "commit_segment_count": 10,
+        "window_time_start": 40560.0,
+        "window_time_end": 41820.0,
+        "active_task_count": 10,
+        "due_task_count": 3,
+        "candidate_path_count": 205,
+        "promoted_task_count": 2,
+        "promoted_task_segment_count": 20,
+        "variable_count": 628,
+        "constraint_count": 1250,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 7.0,
+          "progress": 0.010532776708417596,
+          "load_balance": 1072.8590094,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 7.0,
+            "elapsed_seconds": 0.034354500006884336,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999909999315
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.010532776708417596,
+            "elapsed_seconds": 0.06103880004957318,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96520550001878
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1072.8590094,
+            "elapsed_seconds": 0.04375900002196431,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.90367730008438
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.04936589999124408,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.85929130006116
+          }
+        ],
+        "elapsed_seconds": 0.1905100999865681,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 65,
+        "window_segment_start_index": 650,
+        "window_segment_end_index": 669,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 650,
+        "commit_segment_end_index": 659,
+        "commit_segment_count": 10,
+        "window_time_start": 41220.0,
+        "window_time_end": 42420.0,
+        "active_task_count": 9,
+        "due_task_count": 7,
+        "candidate_path_count": 153,
+        "promoted_task_count": 1,
+        "promoted_task_segment_count": 10,
+        "variable_count": 485,
+        "constraint_count": 1029,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 11.0,
+          "progress": 0.015048912491289769,
+          "load_balance": 1138.3115556,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 11.0,
+            "elapsed_seconds": 0.02938610001001507,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.015048912491289769,
+            "elapsed_seconds": 0.0352750999154523,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97014669992495
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1138.3115556,
+            "elapsed_seconds": 0.031091100070625544,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.93436629988719
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.036151799955405295,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.90283769997768
+          }
+        ],
+        "elapsed_seconds": 0.13381720008328557,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 66,
+        "window_segment_start_index": 660,
+        "window_segment_end_index": 679,
+        "window_segment_count": 20,
+        "commit_segment_start_index": 660,
+        "commit_segment_end_index": 669,
+        "commit_segment_count": 10,
+        "window_time_start": 41820.0,
+        "window_time_end": 42960.0,
+        "active_task_count": 7,
+        "due_task_count": 6,
+        "candidate_path_count": 66,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 237,
+        "constraint_count": 540,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 8.0,
+          "progress": 0.009084060286435073,
+          "load_balance": 638.7322657250003,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 8.0,
+            "elapsed_seconds": 0.018596500041894615,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.009084060286435073,
+            "elapsed_seconds": 0.01819390000309795,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.98095170001034
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 638.7322657250003,
+            "elapsed_seconds": 0.018205999978818,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.962230000062846
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.01822969992645085,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.94358950003516
+          }
+        ],
+        "elapsed_seconds": 0.07505829993169755,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 67,
+        "window_segment_start_index": 670,
+        "window_segment_end_index": 682,
+        "window_segment_count": 13,
+        "commit_segment_start_index": 670,
+        "commit_segment_end_index": 679,
+        "commit_segment_count": 10,
+        "window_time_start": 42420.0,
+        "window_time_end": 43200.0,
+        "active_task_count": 2,
+        "due_task_count": 2,
+        "candidate_path_count": 8,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 47,
+        "constraint_count": 91,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 1.0,
+          "progress": 0.00032326742944410166,
+          "load_balance": 76.0674901250001,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.010282700066454709,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.9999986999901
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.00032326742944410166,
+            "elapsed_seconds": 0.009708800003863871,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.98909139994066
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 76.0674901250001,
+            "elapsed_seconds": 0.009953200002200902,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97900169994682
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.009674299973994493,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.96866170002613
+          }
+        ],
+        "elapsed_seconds": 0.04138559999410063,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      },
+      {
+        "window_index": 68,
+        "window_segment_start_index": 680,
+        "window_segment_end_index": 682,
+        "window_segment_count": 3,
+        "commit_segment_start_index": 680,
+        "commit_segment_end_index": 682,
+        "commit_segment_count": 3,
+        "window_time_start": 42960.0,
+        "window_time_end": 43200.0,
+        "active_task_count": 1,
+        "due_task_count": 1,
+        "candidate_path_count": 0,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 5,
+        "constraint_count": 5,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 0.0,
+          "progress": 0.0,
+          "load_balance": 0.0,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.00835149991326034,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.999998999992386
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.007747799973003566,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99125149997417
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.007770699914544821,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.983108800021
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.007965299999341369,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97493160003796
+          }
+        ],
+        "elapsed_seconds": 0.03345210000406951,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      }
+    ]
+  },
+  "success_counts": {
+    "total": 64,
+    "reg": 64,
+    "emg": 0
+  },
+  "success_rates": {
+    "total": 0.8888888888888888,
+    "reg": 0.8888888888888888,
+    "emg": 1.0
+  },
+  "cr_reg": 0.9266666666666666,
+  "cr_emg": 1.0,
+  "u_cross": 0.5893796140099619,
+  "u_all": 0.013219953414853719,
+  "n_preemptions": 0,
+  "allocations_count": 2850,
+  "result_file": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_rolling_robustness\\normal72x_v2_regular_tasks_adjusted_20260410_robust\\results\\R4.json"
+}

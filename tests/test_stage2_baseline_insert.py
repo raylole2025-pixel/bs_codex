@@ -549,10 +549,9 @@ class Stage2BaselineInsertTests(unittest.TestCase):
         self.assertTrue(all(not alloc.is_preempted for alloc in base_allocations))
         self.assertGreater(len({alloc.path_id for alloc in base_allocations}), 1)
 
-    def test_legacy_insertion_horizon_is_ignored_and_deadline_horizon_is_used(self) -> None:
+    def test_deadline_horizon_is_used_for_emergency_planning(self) -> None:
         payload = copy.deepcopy(BASE_PAYLOAD)
         payload["planning_end"] = 5.0
-        payload["stage2"]["insertion_horizon_seconds"] = 0.5
         payload["tasks"] = [
             {
                 "id": "E1",

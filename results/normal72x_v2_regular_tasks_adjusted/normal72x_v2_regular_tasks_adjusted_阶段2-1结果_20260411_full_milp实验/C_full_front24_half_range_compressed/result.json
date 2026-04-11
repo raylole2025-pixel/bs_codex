@@ -1,0 +1,26 @@
+{
+  "success": false,
+  "elapsed_seconds": 900.0,
+  "solver_mode": null,
+  "metadata": {
+    "prefer_milp": true,
+    "milp_mode": "full",
+    "milp_time_limit_seconds": null,
+    "milp_relative_gap": null,
+    "event_segment_count": 335,
+    "event_segment_count_raw": 335,
+    "event_segment_count_compressed": 335,
+    "regular_task_count": 24,
+    "segment_compression_enabled": true
+  },
+  "success_counts": null,
+  "success_rates": null,
+  "cr_reg": null,
+  "cr_emg": null,
+  "u_cross": null,
+  "u_all": null,
+  "n_preemptions": null,
+  "allocations_count": null,
+  "error": "TimeoutExpired: outer timeout 900.0s",
+  "result_file": "D:\\Codex_Project\\bs3 - 副本\\outputs\\active\\stage2_rolling_robustness\\normal72x_v2_regular_tasks_adjusted_20260410_robust\\results\\C_full_front24_half_range_compressed.json"
+}
