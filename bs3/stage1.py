@@ -10,7 +10,8 @@ from typing import Any, Iterable
 
 import networkx as nx
 
-from .models import CandidateWindow, HotspotRegion, ScheduledWindow, Scenario, Stage1Candidate, Stage1Result, Task
+from .models import CandidateWindow, HotspotRegion, PathCandidate, ScheduledWindow, Scenario, Stage1Candidate, Stage1Result, Task
+from .regular_routing_common import regular_priority_key, stage1_style_path_options
 from .scenario import active_cross_links, active_intra_links, build_domain_graph, build_segments
 from .stage1_screening import screen_candidate_windows
 from .stage1_static_value import annotate_scenario_candidate_values
@@ -439,62 +440,44 @@ class RegularEvaluator:
         prev_path_key: tuple[str, ...] | None,
         cross_reg_capacity: float,
     ) -> list[PathOption]:
-        remaining_slack = max(task.deadline - segment.start, EPS)
-        options: list[PathOption] = []
+        candidates: list[PathCandidate] = []
         for window in active_windows:
-            for _, edge_ids, delay, hop_count in self._cross_path_candidates(task, window, segment.start, cap_res):
-                if delay >= remaining_slack:
-                    continue
-                effective_duration = max(
-                    0.0,
-                    min(segment.end, task.deadline - delay) - segment.start,
-                )
-                if effective_duration <= EPS:
-                    continue
-                bottleneck = min(cap_res.get(edge_id, 0.0) for edge_id in edge_ids)
-                if bottleneck <= EPS:
-                    continue
-                candidate_rate = min(task.max_rate, bottleneck, remaining_task / effective_duration)
-                if candidate_rate <= EPS:
-                    continue
-                candidate_delivered = candidate_rate * effective_duration
-                if candidate_delivered <= EPS:
-                    continue
-                predicted_cross_load = (cross_used[window.window_id] + candidate_rate) / max(cross_reg_capacity, EPS)
-                path_key = tuple(edge_ids)
-                options.append(
-                    PathOption(
-                        path_key=path_key,
+            for idx, (_, edge_ids, delay, hop_count) in enumerate(self._cross_path_candidates(task, window, segment.start, cap_res)):
+                candidates.append(
+                    PathCandidate(
+                        path_id=f"{task.task_id}:{segment.index}:{window.window_id}:stage1:{idx}",
+                        nodes=tuple(),
                         edge_ids=edge_ids,
-                        cross_window_id=window.window_id,
-                        delay=delay,
-                        candidate_rate=candidate_rate,
-                        candidate_delivered=candidate_delivered,
-                        effective_duration=effective_duration,
-                        predicted_cross_load=predicted_cross_load,
                         hop_count=hop_count,
+                        delay=delay,
+                        cross_window_id=window.window_id,
                     )
                 )
-        if not options:
-            return []
-
-        max_delivered = max(option.candidate_delivered for option in options)
-        near_threshold = self.scenario.stage1.eta_x * max_delivered
-        near_options = [
-            option
-            for option in options
-            if option.candidate_delivered + EPS >= near_threshold
-        ]
-        near_options.sort(
-            key=lambda option: (
-                option.predicted_cross_load,
-                option.delay,
-                0 if prev_path_key is not None and option.path_key == prev_path_key else 1,
-                option.hop_count,
-                option.edge_ids,
-            )
+        ranked_options = stage1_style_path_options(
+            scenario=self.scenario,
+            task=task,
+            segment=segment,
+            candidates=candidates,
+            cap_res=cap_res,
+            cross_used=cross_used,
+            remaining_task=remaining_task,
+            prev_path_key=prev_path_key,
+            cross_reg_capacity=cross_reg_capacity,
         )
-        return near_options
+        return [
+            PathOption(
+                path_key=option.path_key,
+                edge_ids=option.candidate.edge_ids,
+                cross_window_id=option.candidate.cross_window_id or "",
+                delay=option.candidate.delay,
+                candidate_rate=option.rate,
+                candidate_delivered=option.delivered,
+                effective_duration=option.effective_duration,
+                predicted_cross_load=option.predicted_cross_load,
+                hop_count=option.candidate.hop_count,
+            )
+            for option in ranked_options
+        ]
 
     def _simulate(self, plan: list[ScheduledWindow], rho: float) -> SimulationTrace:
         if not self.regular_tasks:
@@ -549,12 +532,7 @@ class RegularEvaluator:
             segment_cross_data_used = 0.0
 
             active_tasks.sort(
-                key=lambda task: (
-                    -task.weight,
-                    -(remaining[task.task_id] / max(task.deadline - segment.start, EPS)),
-                    -remaining[task.task_id],
-                    task.task_id,
-                )
+                key=lambda task: regular_priority_key(task, remaining[task.task_id], segment.start)
             )
 
             for task in active_tasks:

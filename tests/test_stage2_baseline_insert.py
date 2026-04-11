@@ -14,9 +14,13 @@ from bs3.models import (
     Task,
     TemporalLink,
 )
+from bs3.regular_routing_common import build_regular_schedule_diagnostics
 from bs3.scenario import build_segments, validate_scenario
 from bs3.stage2 import run_stage2
+from bs3.stage2_regular_block_repair import repair_regular_baseline_blocks
+from bs3.stage2_regular_greedy_baseline import build_regular_baseline_stage1_greedy
 from bs3.stage2_regular_joint_milp import _build_task_segments, _select_rolling_path_limits
+from bs3.stage2_two_phase_scheduler import TwoPhaseEventDrivenScheduler
 
 
 BASE_PAYLOAD = {
@@ -114,6 +118,8 @@ def _load_payload(payload: dict) -> Scenario:
         stage2=Stage2Config(
             k_paths=int(payload["stage2"]["k_paths"]),
             completion_tolerance=float(payload["stage2"]["completion_tolerance"]),
+            regular_baseline_mode=payload["stage2"].get("regular_baseline_mode"),
+            regular_repair_enabled=payload["stage2"].get("regular_repair_enabled"),
             prefer_milp=bool(payload["stage2"].get("prefer_milp", True)),
             milp_mode=str(payload["stage2"].get("milp_mode", "rolling")),
             milp_horizon_segments=int(payload["stage2"].get("milp_horizon_segments", 16)),
@@ -125,6 +131,16 @@ def _load_payload(payload: dict) -> Scenario:
             ),
             milp_rolling_high_competition_task_threshold=int(payload["stage2"].get("milp_rolling_high_competition_task_threshold", 8)),
             milp_rolling_promoted_tasks_per_segment=int(payload["stage2"].get("milp_rolling_promoted_tasks_per_segment", 2)),
+            milp_time_limit_seconds=payload["stage2"].get("milp_time_limit_seconds"),
+            milp_relative_gap=payload["stage2"].get("milp_relative_gap"),
+            repair_block_max_count=int(payload["stage2"].get("repair_block_max_count", 3)),
+            repair_expand_segments=int(payload["stage2"].get("repair_expand_segments", 1)),
+            repair_max_block_segments=int(payload["stage2"].get("repair_max_block_segments", 8)),
+            repair_min_active_tasks=int(payload["stage2"].get("repair_min_active_tasks", 2)),
+            repair_util_threshold=float(payload["stage2"].get("repair_util_threshold", 0.75)),
+            repair_candidate_path_limit=int(payload["stage2"].get("repair_candidate_path_limit", 2)),
+            repair_time_limit_seconds=payload["stage2"].get("repair_time_limit_seconds"),
+            repair_accept_epsilon=float(payload["stage2"].get("repair_accept_epsilon", 1e-6)),
         ),
         planning_end=float(payload["planning_end"]),
         metadata=copy.deepcopy(payload.get("metadata", {})),
@@ -138,6 +154,47 @@ def _task_allocation(result, task_id: str):
 
 
 class Stage2BaselineInsertTests(unittest.TestCase):
+    def test_stage1_greedy_baseline_builds_complete_schedule_and_not_worse_than_sequential(self) -> None:
+        payload = copy.deepcopy(BASE_PAYLOAD)
+        payload["planning_end"] = 3.0
+        payload["stage2"].update({"prefer_milp": False, "regular_baseline_mode": "stage1_greedy"})
+        payload["tasks"] = [
+            {
+                "id": "R1",
+                "src": "A1",
+                "dst": "B1",
+                "arrival": 0.0,
+                "deadline": 3.0,
+                "data": 4.0,
+                "weight": 2.0,
+                "max_rate": 2.0,
+                "type": "reg",
+            },
+            {
+                "id": "R2",
+                "src": "A2",
+                "dst": "B2",
+                "arrival": 0.0,
+                "deadline": 3.0,
+                "data": 4.0,
+                "weight": 1.0,
+                "max_rate": 2.0,
+                "type": "reg",
+            },
+        ]
+        scenario = _load_payload(payload)
+        segments = build_segments(scenario, PLAN, [task for task in scenario.tasks if task.task_type == "reg"])
+        greedy_schedule, greedy_completed, _ = build_regular_baseline_stage1_greedy(scenario, PLAN, segments)
+        sequential_schedule, sequential_completed = TwoPhaseEventDrivenScheduler(scenario)._build_regular_baseline_sequential(PLAN, segments)
+
+        self.assertTrue(greedy_schedule)
+        self.assertEqual(sum(1 for done in greedy_completed.values() if done), 2)
+        self.assertGreaterEqual(
+            sum(1 for done in greedy_completed.values() if done),
+            sum(1 for done in sequential_completed.values() if done),
+        )
+        self.assertGreaterEqual(len(greedy_schedule), len(sequential_schedule))
+
     def test_stage2_reports_joint_milp_metadata(self) -> None:
         payload = copy.deepcopy(BASE_PAYLOAD)
         payload["tasks"] = [
@@ -384,6 +441,163 @@ class Stage2BaselineInsertTests(unittest.TestCase):
         self.assertAlmostEqual(delivered["R_s2"], 5.0, delta=1e-5)
         self.assertLess(delivered["R_big"], 1e-6)
         self.assertAlmostEqual(result.cr_reg, 2.0 / 3.0, delta=1e-6)
+
+    def test_repair_does_not_degrade_completed_regular_tasks(self) -> None:
+        payload = copy.deepcopy(BASE_PAYLOAD)
+        payload["planning_end"] = 2.0
+        payload["stage1"]["rho"] = 0.0
+        payload["stage2"].update(
+            {
+                "prefer_milp": False,
+                "regular_baseline_mode": "stage1_greedy_repair",
+                "regular_repair_enabled": True,
+                "repair_block_max_count": 2,
+                "repair_util_threshold": 0.5,
+            }
+        )
+        payload["tasks"] = [
+            {
+                "id": "R1",
+                "src": "A1",
+                "dst": "B1",
+                "arrival": 0.0,
+                "deadline": 2.0,
+                "data": 4.0,
+                "weight": 3.0,
+                "max_rate": 2.0,
+                "type": "reg",
+            },
+            {
+                "id": "R2",
+                "src": "A2",
+                "dst": "B2",
+                "arrival": 0.0,
+                "deadline": 2.0,
+                "data": 4.0,
+                "weight": 2.0,
+                "max_rate": 2.0,
+                "type": "reg",
+            },
+            {
+                "id": "R3",
+                "src": "A1",
+                "dst": "B2",
+                "arrival": 0.0,
+                "deadline": 2.0,
+                "data": 4.0,
+                "weight": 1.0,
+                "max_rate": 2.0,
+                "type": "reg",
+            },
+        ]
+        scenario = _load_payload(payload)
+        regular_tasks = [task for task in scenario.tasks if task.task_type == "reg"]
+        segments = build_segments(scenario, PLAN, regular_tasks)
+        baseline_schedule, _, baseline_diag = build_regular_baseline_stage1_greedy(scenario, PLAN, segments)
+        repaired_schedule, repair_meta = repair_regular_baseline_blocks(scenario, PLAN, segments, baseline_schedule, baseline_diag)
+        repaired_diag = repair_meta["diagnostics_after"]
+
+        for task_id, completed_before in baseline_diag["completed"].items():
+            if completed_before:
+                self.assertTrue(repaired_diag["completed"][task_id])
+
+        peak_before = max(float(row["q_peak"]) for row in baseline_diag["segment_metrics"].values())
+        peak_after = max(float(row["q_peak"]) for row in repaired_diag["segment_metrics"].values())
+        self.assertLessEqual(peak_after, peak_before + 1e-9)
+        if abs(peak_after - peak_before) <= 1e-9:
+            self.assertEqual(repaired_schedule, baseline_schedule)
+
+    def test_regular_baseline_mode_and_metadata_fields_are_reported(self) -> None:
+        payload = copy.deepcopy(BASE_PAYLOAD)
+        payload["planning_end"] = 3.0
+        payload["stage2"].update(
+            {
+                "prefer_milp": False,
+                "regular_baseline_mode": "stage1_greedy_repair",
+                "regular_repair_enabled": True,
+            }
+        )
+        payload["tasks"] = [
+            {
+                "id": "R1",
+                "src": "A1",
+                "dst": "B1",
+                "arrival": 0.0,
+                "deadline": 3.0,
+                "data": 6.0,
+                "weight": 1.0,
+                "max_rate": 2.0,
+                "type": "reg",
+            }
+        ]
+        scenario = _load_payload(payload)
+        result = run_stage2(scenario, PLAN)
+
+        self.assertEqual(result.metadata["regular_baseline_mode"], "stage1_greedy_repair")
+        self.assertEqual(result.metadata["regular_baseline_source"], "stage1_greedy_repair")
+        for key in (
+            "regular_repair_enabled",
+            "repair_block_count_considered",
+            "repair_block_count_accepted",
+            "repair_total_improvement_peak",
+            "repair_total_improvement_integral",
+            "baseline_completed_count_before_repair",
+            "baseline_completed_count_after_repair",
+        ):
+            self.assertIn(key, result.metadata)
+        self.assertLessEqual(result.metadata["repair_block_count_accepted"], result.metadata["repair_block_count_considered"])
+        self.assertGreaterEqual(
+            result.metadata["baseline_completed_count_after_repair"],
+            result.metadata["baseline_completed_count_before_repair"],
+        )
+
+    def test_regular_baseline_mode_full_milp_and_emergency_flow_remain_compatible(self) -> None:
+        payload = copy.deepcopy(BASE_PAYLOAD)
+        payload["planning_end"] = 4.0
+        payload["stage2"].update(
+            {
+                "prefer_milp": False,
+                "regular_baseline_mode": "full_milp",
+            }
+        )
+        payload["candidate_windows"] = [
+            {"id": "X1", "a": "A1", "b": "B1", "start": 0.0, "end": 4.0, "delay": 0.0}
+        ]
+        payload["tasks"] = [
+            {
+                "id": "R1",
+                "src": "A1",
+                "dst": "B1",
+                "arrival": 0.0,
+                "deadline": 4.0,
+                "data": 4.0,
+                "weight": 1.0,
+                "max_rate": 2.0,
+                "type": "reg",
+            },
+            {
+                "id": "E1",
+                "src": "A1",
+                "dst": "B1",
+                "arrival": 1.0,
+                "deadline": 3.0,
+                "data": 2.0,
+                "weight": 5.0,
+                "max_rate": 2.0,
+                "type": "emg",
+            },
+        ]
+        scenario = _load_payload(payload)
+        local_plan = [
+            ScheduledWindow(window_id="X1", a="A1", b="B1", start=0.0, end=4.0, on=0.0, off=4.0, delay=0.0)
+        ]
+        result = run_stage2(scenario, local_plan)
+
+        self.assertEqual(result.solver_mode, "two_phase_event_insert+joint_milp_full")
+        self.assertEqual(result.metadata["regular_baseline_mode"], "full_milp")
+        self.assertEqual(result.metadata["regular_baseline_source"], "full_milp")
+        self.assertAlmostEqual(sum(alloc.delivered for alloc in _task_allocation(result, "E1")), 2.0, delta=1e-6)
+        self.assertGreaterEqual(result.cr_emg, 1.0)
 
     def test_direct_insert_uses_reserved_capacity_without_preemption(self) -> None:
         payload = copy.deepcopy(BASE_PAYLOAD)

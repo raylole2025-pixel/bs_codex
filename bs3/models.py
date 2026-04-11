@@ -190,6 +190,10 @@ class Stage2Config:
     k_paths: int = 2
     # 当任务传输量小于这个值，就认为任务完成
     completion_tolerance: float = 1e-6
+    # 阶段2-1 常态基线模式；None 表示按 legacy prefer_milp/milp_mode 兼容解析
+    regular_baseline_mode: str | None = None
+    # 是否启用 greedy baseline 之后的局部 repair；None 表示按 baseline mode 自动决定
+    regular_repair_enabled: bool | None = None
     # 阶段2-1是否优先使用联合 MILP 进行常态任务基线规划
     prefer_milp: bool = True
     # 阶段2-1 联合 MILP 的求解模式：full 或 rolling
@@ -212,6 +216,22 @@ class Stage2Config:
     milp_time_limit_seconds: float | None = None
     # CBC 相对 gap；None 表示使用求解器默认值
     milp_relative_gap: float | None = None
+    # greedy baseline 后最多尝试的 repair block 数
+    repair_block_max_count: int = 3
+    # repair block 左右各扩的 segment 数
+    repair_expand_segments: int = 1
+    # 单个 repair block 的最大长度
+    repair_max_block_segments: int = 8
+    # 允许进入 repair 的最小活跃常态任务数
+    repair_min_active_tasks: int = 2
+    # repair block 选择阈值（按 q_peak + imbalance）
+    repair_util_threshold: float = 0.75
+    # repair MILP 每个 task-segment 保留的候选路径上限
+    repair_candidate_path_limit: int = 2
+    # repair MILP 求解时间上限（秒）；None 表示不设限
+    repair_time_limit_seconds: float | None = None
+    # repair 接受阈值
+    repair_accept_epsilon: float = 1e-6
     # 控制每个时间段的 路径候选集大小（因为阶段2要选出每个时间段内的最优路径，所以要控制候选集大小，只保留支配解）
     label_keep_limit: int | None = None
 

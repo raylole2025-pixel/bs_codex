@@ -23,6 +23,13 @@ from .models import (
     TemporalLink,
 )
 
+REGULAR_BASELINE_MODES = {
+    "stage1_greedy",
+    "stage1_greedy_repair",
+    "rolling_milp",
+    "full_milp",
+}
+
 WEIGHT_EPS = 1e-9
 LIGHT_SPEED_KM_PER_S = 299_792.458
 REMOVED_STAGE1_FIELDS = {
@@ -301,9 +308,26 @@ def load_scenario(path: str | Path) -> Scenario:
     raw_milp_time_limit = stage2_cfg.get("milp_time_limit_seconds")
     raw_milp_relative_gap = stage2_cfg.get("milp_relative_gap")
     raw_milp_high_weight_threshold = stage2_cfg.get("milp_rolling_high_weight_threshold")
+    raw_regular_baseline_mode = stage2_cfg.get("regular_baseline_mode")
+    raw_regular_repair_enabled = stage2_cfg.get("regular_repair_enabled")
+    raw_repair_time_limit = stage2_cfg.get("repair_time_limit_seconds")
     stage2 = Stage2Config(
         k_paths=stage2_k_paths,
         completion_tolerance=_float(stage2_cfg.get("completion_tolerance", 1e-6), "stage2.completion_tolerance"),
+        regular_baseline_mode=(
+            None
+            if raw_regular_baseline_mode in {None, ""}
+            else (
+                str(raw_regular_baseline_mode).strip().lower()
+                if str(raw_regular_baseline_mode).strip().lower() in REGULAR_BASELINE_MODES
+                else None
+            )
+        ),
+        regular_repair_enabled=(
+            None
+            if raw_regular_repair_enabled in {None, ""}
+            else bool(raw_regular_repair_enabled)
+        ),
         prefer_milp=bool(stage2_cfg.get("prefer_milp", True)),
         milp_mode=raw_milp_mode if raw_milp_mode in {"full", "rolling"} else "rolling",
         milp_horizon_segments=max(int(stage2_cfg.get("milp_horizon_segments", 16)), 1),
@@ -327,6 +351,18 @@ def load_scenario(path: str | Path) -> Scenario:
             if raw_milp_relative_gap in {None, ""}
             else _float(raw_milp_relative_gap, "stage2.milp_relative_gap")
         ),
+        repair_block_max_count=max(int(stage2_cfg.get("repair_block_max_count", 3)), 0),
+        repair_expand_segments=max(int(stage2_cfg.get("repair_expand_segments", 1)), 0),
+        repair_max_block_segments=max(int(stage2_cfg.get("repair_max_block_segments", 8)), 1),
+        repair_min_active_tasks=max(int(stage2_cfg.get("repair_min_active_tasks", 2)), 1),
+        repair_util_threshold=max(_float(stage2_cfg.get("repair_util_threshold", 0.75), "stage2.repair_util_threshold"), 0.0),
+        repair_candidate_path_limit=max(int(stage2_cfg.get("repair_candidate_path_limit", 2)), 1),
+        repair_time_limit_seconds=(
+            None
+            if raw_repair_time_limit in {None, "", 0, 0.0}
+            else _float(raw_repair_time_limit, "stage2.repair_time_limit_seconds")
+        ),
+        repair_accept_epsilon=max(_float(stage2_cfg.get("repair_accept_epsilon", 1e-6), "stage2.repair_accept_epsilon"), 0.0),
         label_keep_limit=(int(raw_label_keep_limit) if raw_label_keep_limit not in {None, ""} else None),
     )
 
@@ -890,6 +926,8 @@ def scenario_to_dict(scenario: Scenario) -> dict:
         "stage2": {
             "k_paths": scenario.stage2.k_paths,
             "completion_tolerance": scenario.stage2.completion_tolerance,
+            "regular_baseline_mode": scenario.stage2.regular_baseline_mode,
+            "regular_repair_enabled": scenario.stage2.regular_repair_enabled,
             "prefer_milp": scenario.stage2.prefer_milp,
             "milp_mode": scenario.stage2.milp_mode,
             "milp_horizon_segments": scenario.stage2.milp_horizon_segments,
@@ -901,6 +939,14 @@ def scenario_to_dict(scenario: Scenario) -> dict:
             "milp_rolling_promoted_tasks_per_segment": scenario.stage2.milp_rolling_promoted_tasks_per_segment,
             "milp_time_limit_seconds": scenario.stage2.milp_time_limit_seconds,
             "milp_relative_gap": scenario.stage2.milp_relative_gap,
+            "repair_block_max_count": scenario.stage2.repair_block_max_count,
+            "repair_expand_segments": scenario.stage2.repair_expand_segments,
+            "repair_max_block_segments": scenario.stage2.repair_max_block_segments,
+            "repair_min_active_tasks": scenario.stage2.repair_min_active_tasks,
+            "repair_util_threshold": scenario.stage2.repair_util_threshold,
+            "repair_candidate_path_limit": scenario.stage2.repair_candidate_path_limit,
+            "repair_time_limit_seconds": scenario.stage2.repair_time_limit_seconds,
+            "repair_accept_epsilon": scenario.stage2.repair_accept_epsilon,
             "label_keep_limit": scenario.stage2.label_keep_limit,
         },
         "hotspots": {

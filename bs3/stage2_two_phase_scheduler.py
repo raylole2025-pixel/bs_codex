@@ -5,8 +5,19 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 from .models import Allocation, PathCandidate, ScheduledWindow, Scenario, Segment, Stage2Result, Task
+from .regular_routing_common import (
+    empty_repair_metadata,
+    is_regular_repair_enabled,
+    resolve_regular_baseline_mode,
+)
 from .scenario import active_cross_links, active_intra_links, build_segments, compress_segments, generate_candidate_paths
-from .stage2_regular_joint_milp import build_regular_baseline_joint_milp
+from .stage2_regular_block_repair import repair_regular_baseline_blocks
+from .stage2_regular_greedy_baseline import build_regular_baseline_stage1_greedy
+from .stage2_regular_joint_milp import (
+    build_regular_baseline_full_milp,
+    build_regular_baseline_joint_milp,
+    build_regular_baseline_rolling_milp,
+)
 
 EPS = 1e-9
 
@@ -55,6 +66,8 @@ class TwoPhaseEventDrivenScheduler:
         self.numeric_tolerance = EPS
         self.completion_tolerance_ratio = max(float(self.scenario.stage2.completion_tolerance), 0.0)
         self.task_by_id = {task.task_id: task for task in self.scenario.tasks}
+        self._last_regular_baseline_mode = resolve_regular_baseline_mode(self.scenario.stage2)
+        self._last_regular_baseline_source = self._last_regular_baseline_mode
 
     def _task_completion_tolerance(self, task: Task | float) -> float:
         data = float(task.data) if isinstance(task, Task) else float(task)
@@ -79,7 +92,27 @@ class TwoPhaseEventDrivenScheduler:
             segments, compression_result = compress_segments(self.scenario, plan, segments, regular_tasks)
             self.scenario.metadata["stage2_segment_compression_result"] = compression_result
         effective_event_segment_count = len(segments)
-        baseline_schedule, _ = self._build_regular_baseline(plan, segments)
+        baseline_mode = resolve_regular_baseline_mode(self.scenario.stage2)
+        baseline_schedule, baseline_completed, baseline_context = self._build_regular_baseline(plan, segments, baseline_mode)
+        repair_metadata = empty_repair_metadata(baseline_completed)
+        repair_metadata["regular_repair_enabled"] = is_regular_repair_enabled(self.scenario.stage2, baseline_mode)
+        if baseline_mode == "stage1_greedy_repair" and repair_metadata["regular_repair_enabled"]:
+            baseline_schedule, repair_metadata = repair_regular_baseline_blocks(
+                scenario=self.scenario,
+                plan=plan,
+                segments=segments,
+                baseline_schedule=baseline_schedule,
+                baseline_diag=baseline_context["diagnostics"],
+            )
+            baseline_completed = dict(repair_metadata.get("diagnostics_after", baseline_context["diagnostics"]).get("completed", baseline_completed))
+            baseline_context["diagnostics"] = repair_metadata.get("diagnostics_after", baseline_context["diagnostics"])
+        self._last_regular_baseline_mode = baseline_mode
+        if baseline_mode in {"rolling_milp", "full_milp"}:
+            self._last_regular_baseline_source = baseline_mode
+        elif repair_metadata["regular_repair_enabled"] and baseline_mode == "stage1_greedy_repair":
+            self._last_regular_baseline_source = "stage1_greedy_repair"
+        else:
+            self._last_regular_baseline_source = "stage1_greedy"
         committed: dict[tuple[str, int], Allocation] = dict(baseline_schedule)
         actual_remaining = {task.task_id: float(task.data) for task in self.scenario.tasks}
         prev_cross_link = {task.task_id: None for task in self.scenario.tasks}
@@ -200,6 +233,7 @@ class TwoPhaseEventDrivenScheduler:
             event_segment_count_raw=raw_event_segment_count,
             regular_task_count=len(regular_tasks),
             elapsed_seconds=time.perf_counter() - started_at,
+            repair_metadata=repair_metadata,
         )
 
         return Stage2Result(
@@ -322,15 +356,32 @@ class TwoPhaseEventDrivenScheduler:
         self,
         plan: list[ScheduledWindow],
         segments: list[Segment],
-    ) -> tuple[dict[tuple[str, int], Allocation], dict[str, bool]]:
-        if self.scenario.stage2.prefer_milp:
-            return build_regular_baseline_joint_milp(self.scenario, plan, segments)
-        return self._build_regular_baseline_sequential(plan, segments)
+        baseline_mode: str | None = None,
+    ) -> tuple[dict[tuple[str, int], Allocation], dict[str, bool], dict]:
+        mode = baseline_mode or resolve_regular_baseline_mode(self.scenario.stage2)
+        if mode == "stage1_greedy":
+            schedule, completed, diagnostics = build_regular_baseline_stage1_greedy(self.scenario, plan, segments)
+            return schedule, completed, {"diagnostics": diagnostics}
+        if mode == "stage1_greedy_repair":
+            schedule, completed, diagnostics = build_regular_baseline_stage1_greedy(self.scenario, plan, segments)
+            return schedule, completed, {"diagnostics": diagnostics}
+        if mode == "full_milp":
+            schedule, completed = build_regular_baseline_full_milp(self.scenario, plan, segments)
+            return schedule, completed, {}
+        if mode == "rolling_milp":
+            schedule, completed = build_regular_baseline_rolling_milp(self.scenario, plan, segments)
+            return schedule, completed, {}
+        schedule, completed = build_regular_baseline_joint_milp(self.scenario, plan, segments)
+        return schedule, completed, {}
 
     def _solver_mode_label(self) -> str:
-        if self.scenario.stage2.prefer_milp:
-            return f"two_phase_event_insert+joint_milp_{self.scenario.stage2.milp_mode}"
-        return "two_phase_event_insert+sequential_baseline"
+        if self._last_regular_baseline_source == "rolling_milp":
+            return "two_phase_event_insert+joint_milp_rolling"
+        if self._last_regular_baseline_source == "full_milp":
+            return "two_phase_event_insert+joint_milp_full"
+        if self._last_regular_baseline_source == "stage1_greedy_repair":
+            return "two_phase_event_insert+stage1_greedy_repair"
+        return "two_phase_event_insert+stage1_greedy"
 
     def _segment_compression_enabled(self) -> bool:
         compression_cfg = self.scenario.metadata.get("stage2_segment_compression")
@@ -343,8 +394,11 @@ class TwoPhaseEventDrivenScheduler:
         event_segment_count_raw: int,
         regular_task_count: int,
         elapsed_seconds: float,
+        repair_metadata: dict[str, object],
     ) -> dict[str, float | int | bool | None | str]:
         metadata: dict[str, float | int | bool | None | str | list | dict] = {
+            "regular_baseline_mode": self._last_regular_baseline_mode,
+            "regular_baseline_source": self._last_regular_baseline_source,
             "prefer_milp": bool(self.scenario.stage2.prefer_milp),
             "milp_mode": str(self.scenario.stage2.milp_mode),
             "milp_horizon_segments": int(self.scenario.stage2.milp_horizon_segments),
@@ -354,6 +408,13 @@ class TwoPhaseEventDrivenScheduler:
             "milp_rolling_promoted_tasks_per_segment": int(self.scenario.stage2.milp_rolling_promoted_tasks_per_segment),
             "milp_time_limit_seconds": self.scenario.stage2.milp_time_limit_seconds,
             "milp_relative_gap": self.scenario.stage2.milp_relative_gap,
+            "regular_repair_enabled": bool(repair_metadata.get("regular_repair_enabled", False)),
+            "repair_block_count_considered": int(repair_metadata.get("repair_block_count_considered", 0)),
+            "repair_block_count_accepted": int(repair_metadata.get("repair_block_count_accepted", 0)),
+            "repair_total_improvement_peak": float(repair_metadata.get("repair_total_improvement_peak", 0.0)),
+            "repair_total_improvement_integral": float(repair_metadata.get("repair_total_improvement_integral", 0.0)),
+            "baseline_completed_count_before_repair": int(repair_metadata.get("baseline_completed_count_before_repair", 0)),
+            "baseline_completed_count_after_repair": int(repair_metadata.get("baseline_completed_count_after_repair", 0)),
             "event_segment_count": int(event_segment_count),
             "event_segment_count_raw": int(event_segment_count_raw),
             "regular_task_count": int(regular_task_count),
