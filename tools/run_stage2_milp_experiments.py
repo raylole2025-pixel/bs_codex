@@ -114,6 +114,7 @@ def _build_experiment_row(spec: dict[str, Any], result_payload: dict[str, Any]) 
         "taskset_name": spec["taskset_name"],
         "mode": spec["mode"],
         "params": spec["params"],
+        "source_regular_task_count": spec.get("source_regular_task_count"),
         "success": bool(result_payload.get("success", False)),
         "elapsed_seconds": result_payload.get("elapsed_seconds"),
         "success_counts": result_payload.get("success_counts"),
@@ -314,6 +315,7 @@ def main() -> None:
             "mode": mode,
             "params": params,
             "event_segment_count": event_segment_count,
+            "source_regular_task_count": params.get("source_regular_task_count"),
             "regular_task_count": sum(1 for task in scenario_obj.tasks if task.task_type == "reg"),
         }
         _write_json(spec_file, spec)
@@ -385,7 +387,13 @@ def main() -> None:
                 full_scenario,
                 taskset_name=f"normal72x_v2_regular_tasks_adjusted_front{limit}_reg",
                 mode="full",
-                params={"task_limit": limit, "half_range": False, "milp_time_limit_seconds": None},
+                params={
+                    "task_limit": limit,
+                    "half_range": False,
+                    "source_regular_task_count": limit,
+                    "effective_regular_task_count": limit,
+                    "milp_time_limit_seconds": None,
+                },
                 timeout_seconds=float(args.full_outer_timeout),
             )
             if row["success"]:
@@ -408,9 +416,16 @@ def main() -> None:
             run_spec(
                 half_label,
                 half_scenario,
-                taskset_name=f"normal72x_v2_regular_tasks_adjusted_front{limit}_reg_half_range",
+                taskset_name=f"normal72x_v2_regular_tasks_adjusted_front{limit}_reg_half_range_effective{len(half_tasks)}",
                 mode="full",
-                params={"task_limit": limit, "half_range": True, "planning_end": cutoff, "milp_time_limit_seconds": None},
+                params={
+                    "task_limit": limit,
+                    "half_range": True,
+                    "planning_end": cutoff,
+                    "source_regular_task_count": limit,
+                    "effective_regular_task_count": len(half_tasks),
+                    "milp_time_limit_seconds": None,
+                },
                 timeout_seconds=float(args.full_outer_timeout),
             )
 

@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "name": "regular-routing-switch-probe"
+  },
+  "planning_end": 8.0,
+  "nodes": {
+    "A": [
+      "A1",
+      "A2"
+    ],
+    "B": [
+      "B1",
+      "B2"
+    ]
+  },
+  "capacities": {
+    "A": 4.0,
+    "B": 4.0,
+    "X": 4.0
+  },
+  "stage1": {
+    "rho": 0.0,
+    "t_pre": 1.0,
+    "d_min": 1.0
+  },
+  "stage2": {
+    "k_paths": 2,
+    "completion_tolerance": 1e-06,
+    "prefer_milp": true,
+    "milp_mode": "rolling",
+    "milp_horizon_segments": 20,
+    "milp_commit_segments": 10,
+    "milp_rolling_path_limit": 1,
+    "milp_rolling_high_path_limit": 2,
+    "milp_rolling_promoted_tasks_per_segment": 1,
+    "milp_time_limit_seconds": 60.0,
+    "milp_relative_gap": 0.05
+  },
+  "intra_domain_links": [
+    {
+      "id": "A12",
+      "u": "A1",
+      "v": "A2",
+      "domain": "A",
+      "start": 0.0,
+      "end": 8.0,
+      "delay": 0.0
+    },
+    {
+      "id": "B12",
+      "u": "B1",
+      "v": "B2",
+      "domain": "B",
+      "start": 0.0,
+      "end": 8.0,
+      "delay": 0.0
+    }
+  ],
+  "candidate_windows": [
+    {
+      "id": "X1",
+      "a": "A1",
+      "b": "B1",
+      "start": 0.0,
+      "end": 4.0,
+      "delay": 0.0
+    },
+    {
+      "id": "X2",
+      "a": "A2",
+      "b": "B2",
+      "start": 4.0,
+      "end": 8.0,
+      "delay": 0.0
+    }
+  ],
+  "tasks": [
+    {
+      "id": "R_base",
+      "src": "A1",
+      "dst": "B2",
+      "arrival": 0.0,
+      "deadline": 8.0,
+      "data": 20.0,
+      "weight": 1.0,
+      "max_rate": 4.0,
+      "type": "reg"
+    },
+    {
+      "id": "R_hot1",
+      "src": "A1",
+      "dst": "B2",
+      "arrival": 2.0,
+      "deadline": 8.0,
+      "data": 8.0,
+      "weight": 6.0,
+      "max_rate": 4.0,
+      "type": "reg"
+    }
+  ]
+}

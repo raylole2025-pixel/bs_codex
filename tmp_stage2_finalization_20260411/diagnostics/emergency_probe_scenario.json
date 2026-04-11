@@ -1,0 +1,72 @@
+{
+  "metadata": {
+    "name": "emergency-controlled-preemption-probe"
+  },
+  "planning_end": 8.0,
+  "nodes": {
+    "A": [
+      "A1"
+    ],
+    "B": [
+      "B1"
+    ]
+  },
+  "capacities": {
+    "A": 10.0,
+    "B": 10.0,
+    "X": 4.0
+  },
+  "stage1": {
+    "rho": 0.0,
+    "t_pre": 1.0,
+    "d_min": 1.0
+  },
+  "stage2": {
+    "k_paths": 1,
+    "completion_tolerance": 1e-06,
+    "prefer_milp": true,
+    "milp_mode": "rolling",
+    "milp_horizon_segments": 20,
+    "milp_commit_segments": 10,
+    "milp_rolling_path_limit": 1,
+    "milp_rolling_high_path_limit": 2,
+    "milp_rolling_promoted_tasks_per_segment": 1,
+    "milp_time_limit_seconds": 60.0,
+    "milp_relative_gap": 0.05
+  },
+  "intra_domain_links": [],
+  "candidate_windows": [
+    {
+      "id": "X1",
+      "a": "A1",
+      "b": "B1",
+      "start": 0.0,
+      "end": 8.0,
+      "delay": 0.0
+    }
+  ],
+  "tasks": [
+    {
+      "id": "R1",
+      "src": "A1",
+      "dst": "B1",
+      "arrival": 0.0,
+      "deadline": 8.0,
+      "data": 16.0,
+      "weight": 1.0,
+      "max_rate": 4.0,
+      "type": "reg"
+    },
+    {
+      "id": "E1",
+      "src": "A1",
+      "dst": "B1",
+      "arrival": 2.0,
+      "deadline": 4.0,
+      "data": 8.0,
+      "weight": 10.0,
+      "max_rate": 4.0,
+      "type": "emg"
+    }
+  ]
+}

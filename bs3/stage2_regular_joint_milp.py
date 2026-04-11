@@ -1,7 +1,14 @@
 from __future__ import annotations
 
+import json
+import re
+import tempfile
+import time
+import uuid
 from collections import defaultdict
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Callable
 
 import pulp
 
@@ -26,6 +33,7 @@ class _CandidateRecord:
 class _WindowSolveResult:
     schedule: dict[tuple[str, int], Allocation]
     remaining_end: dict[str, float]
+    profiling: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -33,6 +41,17 @@ class _ObjectiveStage:
     name: str
     sense: int
     expr: pulp.LpAffineExpression
+
+
+@dataclass(frozen=True)
+class _StageSolveInfo:
+    name: str
+    status: str
+    solution_status: str
+    objective_value: float
+    elapsed_seconds: float
+    relative_gap: float | None
+    accepted: bool
 
 
 def _completion_tolerance(scenario: Scenario, task: Task) -> float:
@@ -79,35 +98,146 @@ def _build_edge_capacities(
     return edge_caps, cross_links, reserved_cross
 
 
-def _build_solver(scenario: Scenario) -> pulp.PULP_CBC_CMD:
-    kwargs: dict[str, object] = {"msg": False}
-    if scenario.stage2.milp_time_limit_seconds is not None:
-        kwargs["timeLimit"] = float(scenario.stage2.milp_time_limit_seconds)
+def _build_solver(
+    scenario: Scenario,
+    *,
+    time_limit_seconds: float | None = None,
+    log_path: str | None = None,
+) -> pulp.PULP_CBC_CMD:
+    kwargs: dict[str, object] = {"msg": bool(log_path)}
+    effective_time_limit = (
+        float(time_limit_seconds)
+        if time_limit_seconds is not None
+        else (
+            float(scenario.stage2.milp_time_limit_seconds)
+            if scenario.stage2.milp_time_limit_seconds is not None
+            else None
+        )
+    )
+    if effective_time_limit is not None:
+        kwargs["timeLimit"] = effective_time_limit
     if scenario.stage2.milp_relative_gap is not None:
         kwargs["gapRel"] = float(scenario.stage2.milp_relative_gap)
+    if log_path:
+        kwargs["logPath"] = str(log_path)
     return pulp.PULP_CBC_CMD(**kwargs)
 
 
-def _require_optimal(model: pulp.LpProblem, solver: pulp.LpSolver, stage: str) -> None:
-    status_code = model.solve(solver)
-    status_name = pulp.LpStatus.get(status_code, str(status_code))
-    if status_name != "Optimal":
-        raise RuntimeError(f"Stage2-1 joint MILP {stage} solve did not reach optimality: {status_name}")
+def _solver_log_path() -> Path:
+    return Path(tempfile.gettempdir()) / f"stage2_cbc_{uuid.uuid4().hex}.log"
+
+
+def _parse_cbc_relative_gap(log_path: Path, stage_sense: int, objective_value: float) -> float | None:
+    if not log_path.exists():
+        return None
+    content = log_path.read_text(encoding="utf-8", errors="ignore")
+    match = re.search(r"Gap:\s*([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)", content)
+    if match:
+        return abs(float(match.group(1)))
+    match = re.search(
+        r"gap(?: between best possible and best solution)? is\s*([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)",
+        content,
+        flags=re.IGNORECASE,
+    )
+    if match:
+        return abs(float(match.group(1)))
+    if "Optimal solution found" in content:
+        return 0.0
+
+    objective_match = re.search(r"Objective value:\s*([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)", content)
+    upper_match = re.search(r"Upper bound:\s*([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)", content)
+    lower_match = re.search(r"Lower bound:\s*([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)", content)
+    if objective_match is None:
+        return None
+
+    obj = float(objective_match.group(1))
+    bound: float | None = None
+    if stage_sense == pulp.LpMaximize and upper_match is not None:
+        bound = float(upper_match.group(1))
+    elif stage_sense == pulp.LpMinimize and lower_match is not None:
+        bound = float(lower_match.group(1))
+    elif upper_match is not None:
+        bound = float(upper_match.group(1))
+    elif lower_match is not None:
+        bound = float(lower_match.group(1))
+    if bound is None:
+        return None
+    return abs(bound - obj) / max(abs(objective_value), abs(obj), EPS)
+
+
+def _accept_stage_solution(status_name: str, solution_status_name: str, allow_incumbent: bool) -> bool:
+    if status_name == "Optimal" and solution_status_name == "Optimal Solution Found":
+        return True
+    if not allow_incumbent:
+        return False
+    return solution_status_name in {"Optimal Solution Found", "Solution Found"} and status_name in {"Optimal", "Not Solved"}
 
 
 def _solve_lexicographic(
     model: pulp.LpProblem,
-    solver: pulp.LpSolver,
+    scenario: Scenario,
     stages: list[_ObjectiveStage],
     *,
     mode_label: str,
-) -> dict[str, float]:
+    allow_incumbent: bool,
+    capture_solver_log: bool,
+) -> dict[str, Any]:
     values: dict[str, float] = {}
+    stage_details: list[dict[str, Any]] = []
+    solve_started = time.perf_counter()
+    total_time_budget = (
+        float(scenario.stage2.milp_time_limit_seconds)
+        if scenario.stage2.milp_time_limit_seconds is not None
+        else None
+    )
     for idx, stage in enumerate(stages, start=1):
+        elapsed_before = time.perf_counter() - solve_started
+        stage_time_limit = None
+        if total_time_budget is not None:
+            stage_time_limit = max(total_time_budget - elapsed_before, 0.0)
+            if stage_time_limit <= 1e-6:
+                break
+
+        log_path = _solver_log_path() if capture_solver_log else None
+        solver = _build_solver(
+            scenario,
+            time_limit_seconds=stage_time_limit,
+            log_path=(str(log_path) if log_path is not None else None),
+        )
         model.sense = stage.sense
         model.setObjective(stage.expr)
-        _require_optimal(model, solver, f"{mode_label}-stage-{idx}-{stage.name}")
+        stage_started = time.perf_counter()
+        status_code = model.solve(solver)
+        elapsed_seconds = time.perf_counter() - stage_started
+        status_name = pulp.LpStatus.get(status_code, str(status_code))
+        solution_status_code = getattr(model, "sol_status", None)
+        solution_status_name = pulp.LpSolution.get(solution_status_code, str(solution_status_code))
         optimum = float(pulp.value(stage.expr) or 0.0)
+        relative_gap = None
+        if log_path is not None:
+            relative_gap = _parse_cbc_relative_gap(log_path, stage.sense, optimum)
+            try:
+                log_path.unlink(missing_ok=True)
+            except OSError:
+                pass
+        accepted = _accept_stage_solution(status_name, solution_status_name, allow_incumbent)
+        stage_details.append(
+            {
+                "name": stage.name,
+                "status": status_name,
+                "solution_status": solution_status_name,
+                "objective_value": optimum,
+                "elapsed_seconds": elapsed_seconds,
+                "relative_gap": relative_gap,
+                "accepted": accepted,
+                "time_limit_seconds": stage_time_limit,
+            }
+        )
+        if not accepted:
+            raise RuntimeError(
+                f"Stage2-1 joint MILP {mode_label}-stage-{idx}-{stage.name} solve did not return an acceptable incumbent: "
+                f"status={status_name}, solution_status={solution_status_name}"
+            )
         values[stage.name] = optimum
         if idx >= len(stages):
             continue
@@ -115,7 +245,27 @@ def _solve_lexicographic(
             model += stage.expr >= optimum - 1e-6
         else:
             model += stage.expr <= optimum + 1e-6
-    return values
+    if not stage_details:
+        raise RuntimeError(f"Stage2-1 joint MILP {mode_label} exhausted its window-level time budget before a feasible solve")
+
+    all_optimal = (
+        len(stage_details) == len(stages)
+        and all(detail["solution_status"] == "Optimal Solution Found" for detail in stage_details)
+    )
+    relative_gap = max(
+        (float(detail["relative_gap"]) for detail in stage_details if detail["relative_gap"] is not None),
+        default=(0.0 if all_optimal else None),
+    )
+    return {
+        "objective_values": values,
+        "stage_details": stage_details,
+        "overall_status": ("Optimal" if all_optimal else "AcceptedIncumbent"),
+        "overall_solution_status": stage_details[-1]["solution_status"],
+        "relative_gap": relative_gap,
+        "elapsed_seconds": time.perf_counter() - solve_started,
+        "completed_stage_count": len(stage_details),
+        "planned_stage_count": len(stages),
+    }
 
 
 def _build_task_segments(tasks: list[Task], segments: list[Segment]) -> dict[str, list[Segment]]:
@@ -272,9 +422,27 @@ def _solve_regular_window_milp(
     initial_remaining: dict[str, float],
     initial_cross_link: dict[str, str | None],
     milp_mode: str,
+    profile_callback: Callable[[dict[str, Any]], None] | None = None,
+    profile_context: dict[str, Any] | None = None,
 ) -> _WindowSolveResult:
     if not tasks or not window_segments:
-        return _WindowSolveResult(schedule={}, remaining_end={task.task_id: initial_remaining.get(task.task_id, float(task.data)) for task in tasks})
+        return _WindowSolveResult(
+            schedule={},
+            remaining_end={task.task_id: initial_remaining.get(task.task_id, float(task.data)) for task in tasks},
+            profiling={
+                "solver_status": "Skipped",
+                "solver_solution_status": "Skipped",
+                "objective_values": {},
+                "stage_details": [],
+                "elapsed_seconds": 0.0,
+                "relative_gap": None,
+                "candidate_path_count": 0,
+                "promoted_task_count": 0,
+                "promoted_task_segment_count": 0,
+                "variable_count": 0,
+                "constraint_count": 0,
+            },
+        )
 
     mode = _normalized_milp_mode(milp_mode)
     rolling_mode = mode == "rolling"
@@ -301,11 +469,14 @@ def _solve_regular_window_milp(
         path_limits_by_task_segment=rolling_path_limits,
     )
 
-    solver = _build_solver(scenario)
     model = pulp.LpProblem("stage2_regular_joint_milp_window", pulp.LpMaximize)
 
     horizon_end = float(window_segments[-1].end)
     due_task_ids = {task.task_id for task in tasks if task.deadline <= horizon_end + EPS}
+    allow_incumbent = rolling_mode and (
+        scenario.stage2.milp_time_limit_seconds is not None or scenario.stage2.milp_relative_gap is not None
+    )
+    capture_solver_log = allow_incumbent
 
     remaining_vars: dict[tuple[str, int], pulp.LpVariable] = {}
     first_switch_vars: dict[str, pulp.LpVariable] = {}
@@ -434,7 +605,57 @@ def _solve_regular_window_milp(
     stages.append(_ObjectiveStage(name="switch", sense=pulp.LpMinimize, expr=switch_expr))
     if not rolling_mode:
         stages = [stages[0], stages[-2], stages[-1]]
-    _solve_lexicographic(model, solver, stages, mode_label=mode)
+
+    profile_base = dict(profile_context or {})
+    profile_base.update(
+        {
+            "candidate_path_count": len(candidate_records),
+            "promoted_task_count": len({task_id for task_id, _ in (rolling_path_limits or {}).keys()}),
+            "promoted_task_segment_count": len(rolling_path_limits or {}),
+            "variable_count": len(model.variables()),
+            "constraint_count": len(model.constraints),
+            "planned_objective_layers": [stage.name for stage in stages],
+        }
+    )
+    if profile_callback is not None:
+        profile_callback(
+            {
+                **profile_base,
+                "window_phase": "started",
+                "solver_status": "Running",
+                "solver_solution_status": "Running",
+                "objective_values": {},
+                "stage_details": [],
+                "elapsed_seconds": 0.0,
+                "relative_gap": None,
+            }
+        )
+
+    try:
+        solve_profile = _solve_lexicographic(
+            model,
+            scenario,
+            stages,
+            mode_label=mode,
+            allow_incumbent=allow_incumbent,
+            capture_solver_log=capture_solver_log,
+        )
+    except Exception as exc:
+        if profile_callback is not None:
+            profile_callback(
+                {
+                    **profile_base,
+                    "window_phase": "failed",
+                    "solver_status": "Failed",
+                    "solver_solution_status": "Failed",
+                    "objective_values": {},
+                    "stage_details": [],
+                    "elapsed_seconds": 0.0,
+                    "relative_gap": None,
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+            )
+        raise
 
     schedule: dict[tuple[str, int], Allocation] = {}
     remaining_end: dict[str, float] = {}
@@ -457,7 +678,22 @@ def _solve_regular_window_milp(
     for task in tasks:
         tail_index = len(task_segments[task.task_id])
         remaining_end[task.task_id] = float(remaining_vars[(task.task_id, tail_index)].value() or initial_remaining.get(task.task_id, float(task.data)))
-    return _WindowSolveResult(schedule=schedule, remaining_end=remaining_end)
+    profiling = {
+        **profile_base,
+        "solver_status": solve_profile["overall_status"],
+        "solver_solution_status": solve_profile["overall_solution_status"],
+        "objective_values": {
+            stage.name: solve_profile["objective_values"].get(stage.name)
+            for stage in stages
+        },
+        "stage_details": solve_profile["stage_details"],
+        "elapsed_seconds": solve_profile["elapsed_seconds"],
+        "relative_gap": solve_profile["relative_gap"],
+        "completed_objective_layers": int(solve_profile["completed_stage_count"]),
+    }
+    if profile_callback is not None:
+        profile_callback({**profiling, "window_phase": "finished"})
+    return _WindowSolveResult(schedule=schedule, remaining_end=remaining_end, profiling=profiling)
 
 
 def _commit_window_prefix(
@@ -502,6 +738,21 @@ def _commit_window_prefix(
     return committed_chunk
 
 
+def _rolling_profile_path(scenario: Scenario) -> Path | None:
+    configured = scenario.metadata.get("stage2_rolling_profile_path")
+    if configured in {None, ""}:
+        return None
+    return Path(str(configured))
+
+
+def _append_profile_record(profile_path: Path | None, payload: dict[str, Any]) -> None:
+    if profile_path is None:
+        return
+    profile_path.parent.mkdir(parents=True, exist_ok=True)
+    with profile_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
+
+
 def build_regular_baseline_full_milp(
     scenario: Scenario,
     plan: list[ScheduledWindow],
@@ -544,8 +795,19 @@ def build_regular_baseline_rolling_milp(
     remaining_by_task = {task.task_id: float(task.data) for task in regular_tasks}
     prev_cross_link = {task.task_id: None for task in regular_tasks}
     schedule: dict[tuple[str, int], Allocation] = {}
+    profile_rows: list[dict[str, Any]] = []
+    scenario.metadata["stage2_rolling_window_profiles"] = profile_rows
+    profile_path = _rolling_profile_path(scenario)
+    if profile_path is not None and profile_path.exists():
+        profile_path.unlink()
+
+    def write_profile(row: dict[str, Any]) -> None:
+        _append_profile_record(profile_path, row)
+        if row.get("window_phase") in {"finished", "failed", "skipped"}:
+            profile_rows.append(dict(row))
 
     start_pos = 0
+    window_index = 0
     while start_pos < len(segments):
         horizon_stop = min(start_pos + horizon_len, len(segments))
         commit_stop = min(start_pos + commit_len, len(segments))
@@ -561,6 +823,19 @@ def build_regular_baseline_rolling_milp(
             and task.arrival < window_end - EPS
             and task.deadline > window_start + EPS
         ]
+        profile_context = {
+            "window_index": window_index,
+            "window_segment_start_index": int(window_segments[0].index),
+            "window_segment_end_index": int(window_segments[-1].index),
+            "window_segment_count": len(window_segments),
+            "commit_segment_start_index": int(segments[start_pos].index),
+            "commit_segment_end_index": int(segments[commit_stop - 1].index),
+            "commit_segment_count": max(commit_stop - start_pos, 0),
+            "window_time_start": window_start,
+            "window_time_end": window_end,
+            "active_task_count": len(active_tasks),
+            "due_task_count": sum(1 for task in active_tasks if float(task.deadline) <= window_end + EPS),
+        }
         if active_tasks:
             window_result = _solve_regular_window_milp(
                 scenario=scenario,
@@ -570,6 +845,8 @@ def build_regular_baseline_rolling_milp(
                 initial_remaining=remaining_by_task,
                 initial_cross_link=prev_cross_link,
                 milp_mode="rolling",
+                profile_callback=write_profile,
+                profile_context=profile_context,
             )
             committed_chunk = _commit_window_prefix(
                 scenario=scenario,
@@ -582,11 +859,31 @@ def build_regular_baseline_rolling_milp(
             )
             schedule.update(committed_chunk)
         else:
+            write_profile(
+                {
+                    **profile_context,
+                    "window_phase": "skipped",
+                    "solver_status": "SkippedNoActiveTasks",
+                    "solver_solution_status": "SkippedNoActiveTasks",
+                    "candidate_path_count": 0,
+                    "promoted_task_count": 0,
+                    "promoted_task_segment_count": 0,
+                    "variable_count": 0,
+                    "constraint_count": 0,
+                    "planned_objective_layers": [],
+                    "completed_objective_layers": 0,
+                    "objective_values": {},
+                    "stage_details": [],
+                    "elapsed_seconds": 0.0,
+                    "relative_gap": None,
+                }
+            )
             for segment in segments[start_pos:commit_stop]:
                 for task in regular_tasks:
                     if task.arrival <= segment.start < task.deadline:
                         prev_cross_link[task.task_id] = None
         start_pos = commit_stop
+        window_index += 1
 
     completed = {
         task.task_id: remaining_by_task.get(task.task_id, float(task.data)) <= _completion_tolerance(scenario, task) + 1e-9

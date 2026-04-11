@@ -4,7 +4,7 @@ import json
 from dataclasses import asdict
 from itertools import islice, product
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 import networkx as nx
 
@@ -393,6 +393,101 @@ def build_segments(
         if end > start:
             segments.append(Segment(index=idx, start=start, end=end))
     return segments
+
+
+def _segment_state_signature(
+    scenario: Scenario,
+    scheduled_windows: Iterable,
+    segment: Segment,
+    tasks: Iterable[Task],
+) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
+    active_task_ids = tuple(
+        sorted(
+            task.task_id
+            for task in tasks
+            if float(task.arrival) <= float(segment.start) < float(task.deadline)
+        )
+    )
+    active_a_ids = tuple(sorted(link.link_id for link in active_intra_links(scenario, "A", segment.start)))
+    active_b_ids = tuple(sorted(link.link_id for link in active_intra_links(scenario, "B", segment.start)))
+    active_cross_ids = tuple(sorted(window.window_id for window in active_cross_links(scheduled_windows, segment.start)))
+    return active_task_ids, active_a_ids, active_b_ids, active_cross_ids
+
+
+def compress_segments(
+    scenario: Scenario,
+    scheduled_windows: Iterable,
+    segments: list[Segment],
+    tasks: Iterable[Task] | None = None,
+) -> tuple[list[Segment], dict[str, Any]]:
+    task_list = list(tasks) if tasks is not None else list(scenario.tasks)
+    window_list = list(scheduled_windows)
+    if not segments:
+        return [], {
+            "segment_compression_enabled": True,
+            "event_segment_count_raw": 0,
+            "event_segment_count_compressed": 0,
+            "event_segment_reduction": 0,
+            "event_segment_compression_ratio": 1.0,
+            "segment_compression_groups": [],
+        }
+
+    compressed: list[Segment] = []
+    groups: list[dict[str, Any]] = []
+    current_start = float(segments[0].start)
+    current_end = float(segments[0].end)
+    current_signature = _segment_state_signature(scenario, window_list, segments[0], task_list)
+    current_start_index = int(segments[0].index)
+    current_end_index = int(segments[0].index)
+
+    for segment in segments[1:]:
+        signature = _segment_state_signature(scenario, window_list, segment, task_list)
+        if signature == current_signature:
+            current_end = float(segment.end)
+            current_end_index = int(segment.index)
+            continue
+
+        compressed_index = len(compressed)
+        compressed.append(Segment(index=compressed_index, start=current_start, end=current_end))
+        groups.append(
+            {
+                "compressed_index": compressed_index,
+                "raw_start_index": current_start_index,
+                "raw_end_index": current_end_index,
+                "raw_segment_count": current_end_index - current_start_index + 1,
+                "start": current_start,
+                "end": current_end,
+            }
+        )
+        current_start = float(segment.start)
+        current_end = float(segment.end)
+        current_signature = signature
+        current_start_index = int(segment.index)
+        current_end_index = int(segment.index)
+
+    compressed_index = len(compressed)
+    compressed.append(Segment(index=compressed_index, start=current_start, end=current_end))
+    groups.append(
+        {
+            "compressed_index": compressed_index,
+            "raw_start_index": current_start_index,
+            "raw_end_index": current_end_index,
+            "raw_segment_count": current_end_index - current_start_index + 1,
+            "start": current_start,
+            "end": current_end,
+        }
+    )
+
+    raw_count = len(segments)
+    compressed_count = len(compressed)
+    return compressed, {
+        "segment_compression_enabled": True,
+        "event_segment_count_raw": raw_count,
+        "event_segment_count_compressed": compressed_count,
+        "event_segment_reduction": raw_count - compressed_count,
+        "event_segment_compression_ratio": (compressed_count / raw_count) if raw_count else 1.0,
+        "segment_compression_groups": groups,
+    }
 
 
 def active_intra_links(scenario: Scenario, domain: str, time_point: float) -> list[TemporalLink]:

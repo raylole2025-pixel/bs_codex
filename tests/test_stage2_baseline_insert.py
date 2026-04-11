@@ -492,6 +492,63 @@ class Stage2BaselineInsertTests(unittest.TestCase):
         self.assertAlmostEqual(delivered["E1"], 12.0, delta=1e-6)
         self.assertGreater(delivered["R_hi"], delivered["R_lo"])
 
+    def test_regular_rolling_route_switch_does_not_surface_as_preemption(self) -> None:
+        payload = copy.deepcopy(BASE_PAYLOAD)
+        payload["planning_end"] = 8.0
+        payload["capacities"] = {"A": 4.0, "B": 4.0, "X": 4.0}
+        payload["stage1"]["rho"] = 0.0
+        payload["stage2"].update(
+            {
+                "milp_mode": "rolling",
+                "milp_horizon_segments": 4,
+                "milp_commit_segments": 2,
+                "milp_rolling_path_limit": 1,
+                "milp_rolling_high_path_limit": 2,
+                "milp_rolling_promoted_tasks_per_segment": 1,
+                "milp_time_limit_seconds": 60.0,
+                "milp_relative_gap": 0.05,
+            }
+        )
+        payload["candidate_windows"] = [
+            {"id": "X1", "a": "A1", "b": "B1", "start": 0.0, "end": 4.0, "delay": 0.0},
+            {"id": "X2", "a": "A2", "b": "B2", "start": 4.0, "end": 8.0, "delay": 0.0},
+        ]
+        payload["tasks"] = [
+            {
+                "id": "R_base",
+                "src": "A1",
+                "dst": "B2",
+                "arrival": 0.0,
+                "deadline": 8.0,
+                "data": 20.0,
+                "weight": 1.0,
+                "max_rate": 4.0,
+                "type": "reg",
+            },
+            {
+                "id": "R_hot1",
+                "src": "A1",
+                "dst": "B2",
+                "arrival": 2.0,
+                "deadline": 8.0,
+                "data": 8.0,
+                "weight": 6.0,
+                "max_rate": 4.0,
+                "type": "reg",
+            },
+        ]
+        scenario = _load_payload(payload)
+        local_plan = [
+            ScheduledWindow(window_id="X1", a="A1", b="B1", start=0.0, end=4.0, on=0.0, off=4.0, delay=0.0),
+            ScheduledWindow(window_id="X2", a="A2", b="B2", start=4.0, end=8.0, on=4.0, off=8.0, delay=0.0),
+        ]
+        result = run_stage2(scenario, local_plan)
+        base_allocations = _task_allocation(result, "R_base")
+        self.assertEqual(result.n_preemptions, 0)
+        self.assertTrue(base_allocations)
+        self.assertTrue(all(not alloc.is_preempted for alloc in base_allocations))
+        self.assertGreater(len({alloc.path_id for alloc in base_allocations}), 1)
+
     def test_legacy_insertion_horizon_is_ignored_and_deadline_horizon_is_used(self) -> None:
         payload = copy.deepcopy(BASE_PAYLOAD)
         payload["planning_end"] = 5.0

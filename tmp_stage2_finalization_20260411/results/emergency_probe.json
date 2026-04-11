@@ -1,0 +1,161 @@
+{
+  "name": "emergency_probe",
+  "success": true,
+  "elapsed_seconds": 0.038930999930016696,
+  "solver_mode": "two_phase_event_insert+joint_milp_rolling",
+  "cr_reg": 0.0,
+  "cr_emg": 1.0,
+  "u_cross": 0.624999625,
+  "u_all": 0.624999625,
+  "n_preemptions": 1,
+  "success_counts": {
+    "reg": 0,
+    "total": 1
+  },
+  "success_rates": {
+    "reg": 0.0,
+    "total": 0.5
+  },
+  "metadata": {
+    "prefer_milp": true,
+    "milp_mode": "rolling",
+    "milp_horizon_segments": 20,
+    "milp_commit_segments": 10,
+    "milp_rolling_path_limit": 1,
+    "milp_rolling_high_path_limit": 2,
+    "milp_rolling_promoted_tasks_per_segment": 1,
+    "milp_time_limit_seconds": 60.0,
+    "milp_relative_gap": 0.05,
+    "event_segment_count": 1,
+    "event_segment_count_raw": 1,
+    "regular_task_count": 1,
+    "elapsed_seconds": 0.03892339998856187,
+    "rolling_window_profile_count": 1,
+    "rolling_window_profiles": [
+      {
+        "window_index": 0,
+        "window_segment_start_index": 0,
+        "window_segment_end_index": 0,
+        "window_segment_count": 1,
+        "commit_segment_start_index": 0,
+        "commit_segment_end_index": 0,
+        "commit_segment_count": 1,
+        "window_time_start": 0.0,
+        "window_time_end": 8.0,
+        "active_task_count": 1,
+        "due_task_count": 1,
+        "candidate_path_count": 1,
+        "promoted_task_count": 0,
+        "promoted_task_segment_count": 0,
+        "variable_count": 6,
+        "constraint_count": 8,
+        "planned_objective_layers": [
+          "completion",
+          "progress",
+          "load_balance",
+          "switch"
+        ],
+        "solver_status": "Optimal",
+        "solver_solution_status": "Optimal Solution Found",
+        "objective_values": {
+          "completion": 1.0,
+          "progress": 0.125,
+          "load_balance": 3.999996,
+          "switch": 0.0
+        },
+        "stage_details": [
+          {
+            "name": "completion",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 1.0,
+            "elapsed_seconds": 0.00887040002271533,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99999939999543
+          },
+          {
+            "name": "progress",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.125,
+            "elapsed_seconds": 0.008898800006136298,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.99072140001226
+          },
+          {
+            "name": "load_balance",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 3.999996,
+            "elapsed_seconds": 0.009109800099395216,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.981419699965045
+          },
+          {
+            "name": "switch",
+            "status": "Optimal",
+            "solution_status": "Optimal Solution Found",
+            "objective_value": 0.0,
+            "elapsed_seconds": 0.009789700037799776,
+            "relative_gap": 0.0,
+            "accepted": true,
+            "time_limit_seconds": 59.97188959992491
+          }
+        ],
+        "elapsed_seconds": 0.0382876000367105,
+        "relative_gap": 0.0,
+        "completed_objective_layers": 4,
+        "window_phase": "finished"
+      }
+    ]
+  },
+  "allocation_analysis": {
+    "allocation_count": 3,
+    "preempted_allocation_count": 0,
+    "any_preempted_allocation": false,
+    "switched_task_ids": [
+      "R1"
+    ],
+    "paused_task_ids": [
+      "R1"
+    ],
+    "task_details": {
+      "R1": {
+        "segment_indices": [
+          0,
+          2
+        ],
+        "path_ids": [
+          "R1:0:X1:0:0:split0",
+          "R1:0:X1:0:0:split1:split1"
+        ],
+        "delivered": [
+          3.999996,
+          7.999992
+        ],
+        "is_preempted_flags": [
+          false,
+          false
+        ]
+      },
+      "E1": {
+        "segment_indices": [
+          1
+        ],
+        "path_ids": [
+          "E1:1:X1:0:0"
+        ],
+        "delivered": [
+          8.0
+        ],
+        "is_preempted_flags": [
+          false
+        ]
+      }
+    }
+  },
+  "probe_type": "emergency_controlled_preemption"
+}

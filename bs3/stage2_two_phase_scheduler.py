@@ -5,7 +5,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 from .models import Allocation, PathCandidate, ScheduledWindow, Scenario, Segment, Stage2Result, Task
-from .scenario import active_cross_links, active_intra_links, build_segments, generate_candidate_paths
+from .scenario import active_cross_links, active_intra_links, build_segments, compress_segments, generate_candidate_paths
 from .stage2_regular_joint_milp import build_regular_baseline_joint_milp
 
 EPS = 1e-9
@@ -71,8 +71,14 @@ class BaselineInsertScheduler:
     def run(self, plan: list[ScheduledWindow]) -> Stage2Result:
         started_at = time.perf_counter()
         regular_tasks = [task for task in self.scenario.tasks if task.task_type == "reg"]
+        self.scenario.metadata["stage2_rolling_window_profiles"] = []
+        self.scenario.metadata.pop("stage2_segment_compression_result", None)
         segments = build_segments(self.scenario, plan, regular_tasks)
-        initial_event_segment_count = len(segments)
+        raw_event_segment_count = len(segments)
+        if self._segment_compression_enabled():
+            segments, compression_result = compress_segments(self.scenario, plan, segments, regular_tasks)
+            self.scenario.metadata["stage2_segment_compression_result"] = compression_result
+        effective_event_segment_count = len(segments)
         baseline_schedule, _ = self._build_regular_baseline(plan, segments)
         committed: dict[tuple[str, int], Allocation] = dict(baseline_schedule)
         actual_remaining = {task.task_id: float(task.data) for task in self.scenario.tasks}
@@ -190,7 +196,8 @@ class BaselineInsertScheduler:
         u_cross = sum(usage for edge_id, usage in edge_usage.items() if edge_id in cross_edge_ids) / cross_denominator if cross_denominator > self.numeric_tolerance else 0.0
         u_all = sum(edge_usage.values()) / all_denominator if all_denominator > self.numeric_tolerance else 0.0
         metadata = self._build_result_metadata(
-            event_segment_count=initial_event_segment_count,
+            event_segment_count=effective_event_segment_count,
+            event_segment_count_raw=raw_event_segment_count,
             regular_task_count=len(regular_tasks),
             elapsed_seconds=time.perf_counter() - started_at,
         )
@@ -325,14 +332,19 @@ class BaselineInsertScheduler:
             return f"two_phase_event_insert+joint_milp_{self.scenario.stage2.milp_mode}"
         return "two_phase_event_insert+sequential_baseline"
 
+    def _segment_compression_enabled(self) -> bool:
+        compression_cfg = self.scenario.metadata.get("stage2_segment_compression")
+        return isinstance(compression_cfg, dict) and bool(compression_cfg.get("enabled"))
+
     def _build_result_metadata(
         self,
         *,
         event_segment_count: int,
+        event_segment_count_raw: int,
         regular_task_count: int,
         elapsed_seconds: float,
     ) -> dict[str, float | int | bool | None | str]:
-        return {
+        metadata: dict[str, float | int | bool | None | str | list | dict] = {
             "prefer_milp": bool(self.scenario.stage2.prefer_milp),
             "milp_mode": str(self.scenario.stage2.milp_mode),
             "milp_horizon_segments": int(self.scenario.stage2.milp_horizon_segments),
@@ -343,9 +355,21 @@ class BaselineInsertScheduler:
             "milp_time_limit_seconds": self.scenario.stage2.milp_time_limit_seconds,
             "milp_relative_gap": self.scenario.stage2.milp_relative_gap,
             "event_segment_count": int(event_segment_count),
+            "event_segment_count_raw": int(event_segment_count_raw),
             "regular_task_count": int(regular_task_count),
             "elapsed_seconds": float(elapsed_seconds),
         }
+        rolling_profile_path = self.scenario.metadata.get("stage2_rolling_profile_path")
+        if rolling_profile_path:
+            metadata["rolling_window_profile_path"] = str(rolling_profile_path)
+        rolling_profiles = self.scenario.metadata.get("stage2_rolling_window_profiles")
+        if isinstance(rolling_profiles, list) and rolling_profiles:
+            metadata["rolling_window_profile_count"] = len(rolling_profiles)
+            metadata["rolling_window_profiles"] = rolling_profiles
+        compression_result = self.scenario.metadata.get("stage2_segment_compression_result")
+        if isinstance(compression_result, dict):
+            metadata.update(dict(compression_result))
+        return metadata
 
     def _build_regular_baseline_sequential(
         self,
