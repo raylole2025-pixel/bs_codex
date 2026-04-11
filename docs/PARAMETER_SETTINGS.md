@@ -2,8 +2,7 @@
 
 更新时间：2026-04-11
 
-本文件只保留当前实现仍然有效的参数。  
-旧参数和旧别名已经从模板、CLI 和场景加载入口中清掉。
+本文档只保留当前实现仍然有效的参数。旧参数和旧别名已经从模板、CLI 和场景加载入口中移除。
 
 ## 1. 场景 JSON
 
@@ -53,6 +52,8 @@
 | --- | --- |
 | `k_paths` | `2` |
 | `completion_tolerance` | `1e-6` |
+| `regular_baseline_mode` | `null` |
+| `regular_repair_enabled` | `null` |
 | `prefer_milp` | `true` |
 | `milp_mode` | `rolling` |
 | `milp_horizon_segments` | `16` |
@@ -64,13 +65,28 @@
 | `milp_rolling_promoted_tasks_per_segment` | `2` |
 | `milp_time_limit_seconds` | `null` |
 | `milp_relative_gap` | `null` |
+| `repair_block_max_count` | `3` |
+| `repair_expand_segments` | `1` |
+| `repair_max_block_segments` | `8` |
+| `repair_min_active_tasks` | `2` |
+| `repair_util_threshold` | `0.75` |
+| `repair_candidate_path_limit` | `2` |
+| `repair_time_limit_seconds` | `null` |
+| `repair_accept_epsilon` | `1e-6` |
 | `label_keep_limit` | `null` |
 
 说明：
 
-- `milp_mode` 只接受 `rolling` 或 `full`
-- `Stage2-1` 当前同时保留 `rolling MILP` 和 `full MILP`
-- `Stage2-2` 为事件驱动临机插入，使用固定的三层流程：无扰动插入、受限单任务抢占、best-effort
+- `regular_baseline_mode` 可选：`stage1_greedy`、`stage1_greedy_repair`、`rolling_milp`、`full_milp`
+- 当未显式设置 `regular_baseline_mode` 时，按 legacy `prefer_milp + milp_mode` 兼容解析：
+  - `prefer_milp=true && milp_mode=rolling -> rolling_milp`
+  - `prefer_milp=true && milp_mode=full -> full_milp`
+  - `prefer_milp=false -> stage1_greedy_repair`
+- `stage1_greedy` 使用固定 Stage1 方案上的 segment-major greedy 常态基线构造
+- `stage1_greedy_repair` 先生成 `stage1_greedy` baseline，再对少量高负载 block 做局部 MILP repair
+- repair 的完成保护约束是：`block end remaining <= baseline remaining + epsilon`
+- `rolling_milp` 和 `full_milp` 旧模式继续保留，用于对照或 ablation
+- `Stage2-2` 仍然是事件驱动 emergency insertion / local repair / controlled preemption 主流程，只是消费新的 `baseline_schedule`
 
 ## 2. CLI 默认值
 
