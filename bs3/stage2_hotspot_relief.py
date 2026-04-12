@@ -11,6 +11,15 @@ from .scenario import build_segments, generate_candidate_paths
 from .stage2_regular_joint_milp import solve_regular_hotspot_local_milp
 
 EPS = 1e-9
+_AUGMENT_STAGE_ORDER = {
+    "raw_overlap": 0,
+    "schedulable": 1,
+    "conflict_free": 2,
+    "relief_path_ready": 3,
+    "shortlisted": 4,
+    "selected": 5,
+    "applied": 6,
+}
 
 
 @dataclass(frozen=True)
@@ -126,6 +135,28 @@ def _regular_tasks(scenario: Scenario):
     return [task for task in scenario.tasks if task.task_type == "reg"]
 
 
+def _augment_candidate_debug_record(window: CandidateWindow) -> dict[str, Any]:
+    return {
+        "window_id": window.window_id,
+        "overlap_duration": 0.0,
+        "scheduled_on": None,
+        "scheduled_off": None,
+        "estimated_divertable_rate": 0.0,
+        "feasible_path_count": 0,
+        "delay_penalty": 0.0,
+        "switch_penalty": 0.0,
+        "relief_score": 0.0,
+        "final_stage_reached": "raw_overlap",
+        "rejection_reason": "other",
+    }
+
+
+def _promote_augment_stage(record: dict[str, Any], stage: str) -> None:
+    current = str(record.get("final_stage_reached") or "raw_overlap")
+    if _AUGMENT_STAGE_ORDER.get(stage, -1) >= _AUGMENT_STAGE_ORDER.get(current, -1):
+        record["final_stage_reached"] = stage
+
+
 def _peak_like_threshold_from_peak(q_peak: float) -> float:
     if float(q_peak) <= EPS:
         return 0.995
@@ -144,6 +175,18 @@ def _schedule_candidate_against_plan(
     t_pre: float,
     d_min: float,
 ) -> ScheduledWindow | None:
+    result = _schedule_candidate_against_plan_detailed(plan, window, t_pre=t_pre, d_min=d_min)
+    scheduled = result.get("scheduled_window")
+    return scheduled if isinstance(scheduled, ScheduledWindow) else None
+
+
+def _schedule_candidate_against_plan_detailed(
+    plan: list[ScheduledWindow],
+    window: CandidateWindow,
+    *,
+    t_pre: float,
+    d_min: float,
+) -> dict[str, Any]:
     occupied_by_node: dict[str, list[tuple[float, float]]] = defaultdict(list)
     for scheduled in sorted(plan, key=lambda item: (float(item.on), float(item.off), item.window_id)):
         occupied = (float(scheduled.on) - float(t_pre), float(scheduled.off))
@@ -157,10 +200,32 @@ def _schedule_candidate_against_plan(
                 latest = float(end)
         return latest
 
+    if float(window.end) - float(window.start) + EPS < float(d_min):
+        return {
+            "scheduled_window": None,
+            "pass_t_pre_and_d_min": False,
+            "pass_conflict_check": False,
+            "real_schedulable": False,
+            "rejection_reason": "duration_below_d_min",
+            "had_terminal_conflict": False,
+            "scheduled_on": None,
+            "scheduled_off": None,
+        }
+
     t_on = max(float(window.start), latest_end_before(window.a) + float(t_pre), latest_end_before(window.b) + float(t_pre))
+    had_terminal_conflict = float(t_on) > float(window.start) + EPS
     if float(window.end) - float(t_on) + EPS < float(d_min):
-        return None
-    return ScheduledWindow(
+        return {
+            "scheduled_window": None,
+            "pass_t_pre_and_d_min": True,
+            "pass_conflict_check": False,
+            "real_schedulable": False,
+            "rejection_reason": ("unschedulable_after_t_pre" if had_terminal_conflict else "duration_below_d_min"),
+            "had_terminal_conflict": had_terminal_conflict,
+            "scheduled_on": float(t_on),
+            "scheduled_off": float(window.end),
+        }
+    scheduled_window = ScheduledWindow(
         window_id=window.window_id,
         a=window.a,
         b=window.b,
@@ -172,6 +237,16 @@ def _schedule_candidate_against_plan(
         delay=float(window.delay),
         distance_km=window.distance_km,
     )
+    return {
+        "scheduled_window": scheduled_window,
+        "pass_t_pre_and_d_min": True,
+        "pass_conflict_check": True,
+        "real_schedulable": True,
+        "rejection_reason": None,
+        "had_terminal_conflict": had_terminal_conflict,
+        "scheduled_on": float(scheduled_window.on),
+        "scheduled_off": float(scheduled_window.off),
+    }
 
 
 def _candidate_paths_via_window(
@@ -523,32 +598,71 @@ def _collect_augment_candidates(
     hot_ranges: list[HotRange],
     classifications: dict[str, HotRangeClassification],
     contributing_tasks: dict[str, list[HotTaskContribution]],
-) -> list[AugmentCandidate]:
+) -> tuple[list[AugmentCandidate], dict[str, dict[str, Any]]]:
     plan_window_ids = {window.window_id for window in plan}
     tasks_by_id = {task.task_id: task for task in _regular_tasks(scenario)}
     segment_lookup = {segment.index: segment for segment in segments}
     candidates: list[AugmentCandidate] = []
+    debug_by_range: dict[str, dict[str, Any]] = {}
     min_overlap = max(float(scenario.stage1.d_min), 300.0)
     for hot_range in hot_ranges:
         contributors = contributing_tasks.get(hot_range.range_id, [])
-        if not contributors:
-            continue
         structural_priority = 1 if bool(classifications.get(hot_range.range_id) and classifications[hot_range.range_id].structural) else 0
         per_range: list[AugmentCandidate] = []
         segment_set = set(hot_range.segment_indices)
+        funnel_counts = {
+            "raw_overlap_candidate_count": 0,
+            "real_schedulable_candidate_count": 0,
+            "pass_t_pre_and_d_min_count": 0,
+            "pass_conflict_check_count": 0,
+            "pass_relief_path_generation_count": 0,
+            "shortlisted_candidate_count": 0,
+            "selected_candidate_count": 0,
+            "applied_candidate_count": 0,
+        }
+        candidate_records: dict[str, dict[str, Any]] = {}
         for window in scenario.candidate_windows:
             if window.window_id in plan_window_ids:
                 continue
-            scheduled_window = _schedule_candidate_against_plan(
+            record = _augment_candidate_debug_record(window)
+            record["delay_penalty"] = float(window.delay) / max(float(scenario.stage1.d_min), 1.0)
+            candidate_records[window.window_id] = record
+            overlap_duration = _window_overlap_duration(window.start, window.end, hot_range.start, hot_range.end)
+            record["overlap_duration"] = float(overlap_duration)
+            if overlap_duration <= EPS:
+                record["rejection_reason"] = "no_time_overlap_with_hot_range"
+                continue
+            funnel_counts["raw_overlap_candidate_count"] += 1
+            schedule_detail = _schedule_candidate_against_plan_detailed(
                 plan,
                 window,
                 t_pre=float(scenario.stage1.t_pre),
                 d_min=float(scenario.stage1.d_min),
             )
-            if scheduled_window is None:
+            record["scheduled_on"] = schedule_detail.get("scheduled_on")
+            record["scheduled_off"] = schedule_detail.get("scheduled_off")
+            if not bool(schedule_detail.get("pass_t_pre_and_d_min", False)):
+                record["rejection_reason"] = str(schedule_detail.get("rejection_reason") or "other")
+                continue
+            funnel_counts["pass_t_pre_and_d_min_count"] += 1
+            _promote_augment_stage(record, "schedulable")
+            if not bool(schedule_detail.get("pass_conflict_check", False)):
+                record["rejection_reason"] = str(schedule_detail.get("rejection_reason") or "other")
+                continue
+            funnel_counts["pass_conflict_check_count"] += 1
+            funnel_counts["real_schedulable_candidate_count"] += 1
+            _promote_augment_stage(record, "conflict_free")
+            scheduled_window = schedule_detail.get("scheduled_window")
+            if not isinstance(scheduled_window, ScheduledWindow):
+                record["rejection_reason"] = "other"
                 continue
             overlap_duration = _window_overlap_duration(scheduled_window.on, scheduled_window.off, hot_range.start, hot_range.end)
+            record["overlap_duration"] = float(overlap_duration)
             if overlap_duration + EPS < min_overlap:
+                record["rejection_reason"] = "no_time_overlap_with_hot_range"
+                continue
+            if not contributors:
+                record["rejection_reason"] = "no_feasible_relief_path"
                 continue
             feasible_task_ids: set[str] = set()
             divertable_rate = 0.0
@@ -584,11 +698,26 @@ def _collect_augment_candidates(
                         switch_penalty += 1.0
                     break
             if not feasible_task_ids or divertable_rate <= EPS or feasible_path_count <= 0:
+                record["estimated_divertable_rate"] = float(divertable_rate)
+                record["feasible_path_count"] = int(feasible_path_count)
+                record["switch_penalty"] = float(switch_penalty)
+                record["rejection_reason"] = "no_feasible_relief_path"
                 continue
-            delay_penalty = float(window.delay) / max(float(scenario.stage1.d_min), 1.0)
+            funnel_counts["pass_relief_path_generation_count"] += 1
+            _promote_augment_stage(record, "relief_path_ready")
+            delay_penalty = float(record["delay_penalty"])
             score = overlap_duration * divertable_rate / (1.0 + 0.15 * delay_penalty + 0.05 * switch_penalty)
             if score <= EPS:
+                record["estimated_divertable_rate"] = float(divertable_rate)
+                record["feasible_path_count"] = int(feasible_path_count)
+                record["switch_penalty"] = float(switch_penalty)
+                record["rejection_reason"] = "other"
                 continue
+            record["estimated_divertable_rate"] = float(divertable_rate)
+            record["feasible_path_count"] = int(feasible_path_count)
+            record["switch_penalty"] = float(switch_penalty)
+            record["relief_score"] = float(score)
+            record["rejection_reason"] = None
             per_range.append(
                 AugmentCandidate(
                     range_id=hot_range.range_id,
@@ -615,8 +744,36 @@ def _collect_augment_candidates(
                 item.window_id,
             )
         )
-        candidates.extend(per_range[: max(int(scenario.stage2.augment_top_windows_per_range), 0)])
-    return candidates
+        shortlist = per_range[: max(int(scenario.stage2.augment_top_windows_per_range), 0)]
+        funnel_counts["shortlisted_candidate_count"] = len(shortlist)
+        shortlisted_ids = {item.window_id for item in shortlist}
+        for candidate in shortlist:
+            record = candidate_records.get(candidate.window_id)
+            if record is None:
+                continue
+            _promote_augment_stage(record, "shortlisted")
+            record["rejection_reason"] = None
+        for candidate in per_range:
+            if candidate.window_id in shortlisted_ids:
+                continue
+            record = candidate_records.get(candidate.window_id)
+            if record is None:
+                continue
+            if _AUGMENT_STAGE_ORDER.get(str(record.get("final_stage_reached")), -1) >= _AUGMENT_STAGE_ORDER["relief_path_ready"]:
+                record["rejection_reason"] = "dominated_in_ranking"
+        candidates.extend(shortlist)
+        debug_by_range[hot_range.range_id] = {
+            "range_id": hot_range.range_id,
+            "funnel_counts": funnel_counts,
+            "candidate_records": candidate_records,
+            "augment_debug_top_candidates": [],
+            "fallback_local_swap": {
+                "attempted": False,
+                "accepted": False,
+                "reason": "not_attempted",
+            },
+        }
+    return candidates, debug_by_range
 
 
 def _select_augment_windows(
@@ -750,13 +907,13 @@ def _build_hot_range_alternative_diagnostics(
     schedule: dict[tuple[str, int], Allocation],
     hot_range: HotRange,
     contributors: list[HotTaskContribution],
-    augment_candidates: list[AugmentCandidate],
+    augment_range_debug: dict[str, Any] | None,
 ) -> dict[str, Any]:
     tasks_by_id = {task.task_id: task for task in _regular_tasks(scenario)}
     segment_lookup = {segment.index: segment for segment in segments}
     plan_window_ids = {window.window_id for window in plan}
-    selected_alternative_cross_window_ids: set[str] = set()
-    selected_alternative_path_count = 0
+    selected_window_alternative_cross_window_ids: set[str] = set()
+    selected_window_alternative_path_count = 0
     candidate_limit = max(int(scenario.stage2.hot_path_limit), int(scenario.stage2.k_paths), 6)
     for contribution in contributors:
         task = tasks_by_id.get(contribution.task_id)
@@ -779,33 +936,111 @@ def _build_hot_range_alternative_diagnostics(
                     continue
                 if tuple(candidate.edge_ids) == tuple(allocation.edge_ids):
                     continue
-                selected_alternative_path_count += 1
+                selected_window_alternative_path_count += 1
                 if (
                     candidate.cross_window_id in active_selected_window_ids
                     and candidate.cross_window_id not in current_cross_window_ids
                 ):
-                    selected_alternative_cross_window_ids.add(candidate.cross_window_id)
+                    selected_window_alternative_cross_window_ids.add(candidate.cross_window_id)
 
-    augment_path_count_by_window: dict[str, int] = {}
-    for candidate in augment_candidates:
-        if candidate.range_id != hot_range.range_id:
-            continue
-        augment_path_count_by_window[candidate.window_id] = max(
-            augment_path_count_by_window.get(candidate.window_id, 0),
-            int(candidate.feasible_path_count),
-        )
-
-    feasible_alternative_cross_window_ids = set(selected_alternative_cross_window_ids).union(augment_path_count_by_window)
-    feasible_alternative_path_count = selected_alternative_path_count + sum(augment_path_count_by_window.values())
+    augment_candidate_records = (
+        dict((augment_range_debug or {}).get("candidate_records") or {})
+    )
+    augment_ready_records = [
+        record
+        for record in augment_candidate_records.values()
+        if _AUGMENT_STAGE_ORDER.get(str(record.get("final_stage_reached")), -1) >= _AUGMENT_STAGE_ORDER["relief_path_ready"]
+    ]
+    augment_window_alternative_cross_window_ids = {
+        str(record.get("window_id"))
+        for record in augment_ready_records
+        if record.get("window_id")
+    }
+    augment_window_alternative_path_count = sum(int(record.get("feasible_path_count", 0) or 0) for record in augment_ready_records)
+    feasible_alternative_cross_window_ids = set(selected_window_alternative_cross_window_ids).union(augment_window_alternative_cross_window_ids)
+    feasible_alternative_path_count = selected_window_alternative_path_count + augment_window_alternative_path_count
     return {
-        "selected_alternative_cross_window_ids": tuple(sorted(selected_alternative_cross_window_ids)),
-        "augmentable_cross_window_ids": tuple(sorted(augment_path_count_by_window)),
+        "selected_window_alternative_cross_window_ids": tuple(sorted(selected_window_alternative_cross_window_ids)),
+        "selected_window_alternative_path_count": int(selected_window_alternative_path_count),
+        "augment_window_alternative_cross_window_ids": tuple(sorted(augment_window_alternative_cross_window_ids)),
+        "augment_window_alternative_path_count": int(augment_window_alternative_path_count),
+        "effective_new_augment_window_count": len(augment_window_alternative_cross_window_ids),
         "feasible_alternative_cross_window_ids": tuple(sorted(feasible_alternative_cross_window_ids)),
-        "selected_alternative_path_count": int(selected_alternative_path_count),
-        "augment_alternative_path_count": int(sum(augment_path_count_by_window.values())),
+        "selected_window_alternative_cross_window_count": len(selected_window_alternative_cross_window_ids),
+        "augment_window_alternative_cross_window_count": len(augment_window_alternative_cross_window_ids),
         "feasible_alternative_cross_window_count": len(feasible_alternative_cross_window_ids),
         "feasible_alternative_path_count": int(feasible_alternative_path_count),
     }
+
+
+def _finalize_augment_debug(
+    augment_debug_by_range: dict[str, dict[str, Any]],
+    selected_candidates: list[AugmentCandidate],
+    applied_window_ids: list[str],
+    removed_window_ids: list[str],
+) -> None:
+    selected_keys = {(candidate.range_id, candidate.window_id) for candidate in selected_candidates}
+    applied_window_id_set = set(applied_window_ids)
+    applied_keys = {
+        (candidate.range_id, candidate.window_id)
+        for candidate in selected_candidates
+        if candidate.window_id in applied_window_id_set
+    }
+    removed_window_id_set = set(removed_window_ids)
+
+    for range_id, debug in augment_debug_by_range.items():
+        records = dict(debug.get("candidate_records") or {})
+        funnel_counts = dict(debug.get("funnel_counts") or {})
+        funnel_counts["selected_candidate_count"] = 0
+        funnel_counts["applied_candidate_count"] = 0
+        for window_id, record in records.items():
+            key = (range_id, window_id)
+            if key in selected_keys:
+                _promote_augment_stage(record, "selected")
+                record["rejection_reason"] = None
+                funnel_counts["selected_candidate_count"] += 1
+            elif (
+                _AUGMENT_STAGE_ORDER.get(str(record.get("final_stage_reached")), -1) >= _AUGMENT_STAGE_ORDER["shortlisted"]
+                and record.get("rejection_reason") in {None, ""}
+            ):
+                record["rejection_reason"] = "budget_exhausted"
+            if key in applied_keys:
+                _promote_augment_stage(record, "applied")
+                record["rejection_reason"] = None
+                funnel_counts["applied_candidate_count"] += 1
+            elif key in selected_keys and window_id not in applied_window_id_set:
+                record["rejection_reason"] = (
+                    "removed_by_swap_rule" if window_id in removed_window_id_set else "terminal_conflict_after_insertion"
+                )
+
+        debug["funnel_counts"] = funnel_counts
+        ranked_records = sorted(
+            records.values(),
+            key=lambda record: (
+                -_AUGMENT_STAGE_ORDER.get(str(record.get("final_stage_reached")), -1),
+                -float(record.get("relief_score", 0.0) or 0.0),
+                -float(record.get("estimated_divertable_rate", 0.0) or 0.0),
+                -int(record.get("feasible_path_count", 0) or 0),
+                -float(record.get("overlap_duration", 0.0) or 0.0),
+                str(record.get("window_id") or ""),
+            ),
+        )
+        debug["augment_debug_top_candidates"] = [
+            {
+                "window_id": record.get("window_id"),
+                "overlap_duration": record.get("overlap_duration"),
+                "scheduled_on": record.get("scheduled_on"),
+                "scheduled_off": record.get("scheduled_off"),
+                "estimated_divertable_rate": record.get("estimated_divertable_rate"),
+                "feasible_path_count": record.get("feasible_path_count"),
+                "delay_penalty": record.get("delay_penalty"),
+                "switch_penalty": record.get("switch_penalty"),
+                "relief_score": record.get("relief_score"),
+                "final_stage_reached": record.get("final_stage_reached"),
+                "rejection_reason": record.get("rejection_reason"),
+            }
+            for record in ranked_records[:10]
+        ]
 
 
 def _hot_range_segment_indices(segments: list[Segment], hot_range: HotRange) -> list[int]:
@@ -1048,7 +1283,7 @@ def run_hotspot_relief(
         )
         for hot_range in hot_ranges
     }
-    augment_candidates = _collect_augment_candidates(
+    augment_candidates, augment_debug_by_range = _collect_augment_candidates(
         scenario,
         plan,
         segments,
@@ -1065,7 +1300,7 @@ def run_hotspot_relief(
             baseline_schedule,
             hot_range,
             contributions.get(hot_range.range_id, []),
-            augment_candidates,
+            augment_debug_by_range.get(hot_range.range_id),
         )
         for hot_range in hot_ranges
     }
@@ -1099,6 +1334,12 @@ def run_hotspot_relief(
         baseline_schedule,
         hot_ranges,
         selected_augment_candidates,
+    )
+    _finalize_augment_debug(
+        augment_debug_by_range,
+        selected_augment_candidates,
+        applied_augment_window_ids,
+        removed_window_ids,
     )
     augmented_segments = build_segments(scenario, augmented_plan, _regular_tasks(scenario))
     current_schedule = _remap_schedule_to_segments(segments, augmented_segments, baseline_schedule)
@@ -1143,6 +1384,9 @@ def run_hotspot_relief(
             "q_integral": float(hot_range.q_integral),
             "classification": asdict(classification),
             "alternative_diagnostics": alternative_diagnostics[hot_range.range_id],
+            "augment_funnel_counts": dict((augment_debug_by_range.get(hot_range.range_id) or {}).get("funnel_counts") or {}),
+            "augment_debug_top_candidates": list((augment_debug_by_range.get(hot_range.range_id) or {}).get("augment_debug_top_candidates") or []),
+            "fallback_local_swap": dict((augment_debug_by_range.get(hot_range.range_id) or {}).get("fallback_local_swap") or {}),
             "contributing_tasks": [asdict(item) for item in contributions[hot_range.range_id]],
             "selected_augment_windows": selected_augment_for_range,
             "applied_augment_windows": applied_augment_for_range,

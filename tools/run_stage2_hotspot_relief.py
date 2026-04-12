@@ -65,6 +65,8 @@ def main() -> None:
     parser.add_argument("--hotspot-topk-ranges", type=int, default=None, help="Override hotspot_topk_ranges")
     parser.add_argument("--local-peak-horizon-cap-segments", type=int, default=None, help="Override local_peak_horizon_cap_segments")
     parser.add_argument("--hot-path-limit", type=int, default=None, help="Override hot_path_limit")
+    parser.add_argument("--augment-top-windows-per-range", type=int, default=None, help="Override augment_top_windows_per_range")
+    parser.add_argument("--augment-window-budget", type=int, default=None, help="Override augment_window_budget")
     args = parser.parse_args()
 
     scenario_path = Path(args.scenario_path)
@@ -122,6 +124,16 @@ def main() -> None:
                 if args.hot_path_limit is not None
                 else scenario.stage2.hot_path_limit
             ),
+            augment_top_windows_per_range=(
+                int(args.augment_top_windows_per_range)
+                if args.augment_top_windows_per_range is not None
+                else scenario.stage2.augment_top_windows_per_range
+            ),
+            augment_window_budget=(
+                int(args.augment_window_budget)
+                if args.augment_window_budget is not None
+                else scenario.stage2.augment_window_budget
+            ),
         ),
         metadata={
             **dict(scenario.metadata),
@@ -137,6 +149,20 @@ def main() -> None:
     result = run_stage2(scenario, input_plan)
     hotspot_report = dict(result.metadata.get("hotspot_report") or {})
     before_after = dict(hotspot_report.get("before_after") or {})
+    unresolved_structural_hotspots = [
+        {
+            "range_id": item.get("range_id"),
+            "augment_funnel_counts": item.get("augment_funnel_counts", {}),
+            "top_rejected_augment_candidates": [
+                candidate
+                for candidate in item.get("augment_debug_top_candidates", [])
+                if candidate.get("rejection_reason")
+            ][:10],
+            "fallback_local_swap": item.get("fallback_local_swap", {}),
+            "rejection_reason": item.get("rejection_reason"),
+        }
+        for item in hotspot_report.get("structural_bottleneck", [])
+    ]
     summary = {
         "scenario_path": str(scenario_path),
         "plan_source": plan_source,
@@ -157,6 +183,8 @@ def main() -> None:
         "q_integral_after": result.metadata.get("q_integral_after"),
         "selected_augment_windows": hotspot_report.get("selected_augment_windows", []),
         "applied_augment_windows": hotspot_report.get("applied_augment_windows", []),
+        "augment_top_windows_per_range": scenario.stage2.augment_top_windows_per_range,
+        "augment_window_budget": scenario.stage2.augment_window_budget,
         "fixed_plan_structural_bottleneck": {
             "count": len(hotspot_report.get("structural_bottleneck", [])),
             "range_ids": [item["range_id"] for item in hotspot_report.get("structural_bottleneck", [])],
@@ -181,12 +209,17 @@ def main() -> None:
             "count": len(hotspot_report.get("reroute_improved", [])),
             "range_ids": [item["range_id"] for item in hotspot_report.get("reroute_improved", [])],
         },
+        "unresolved_structural_hotspots": unresolved_structural_hotspots,
         "hot_range_outcomes": [
             {
                 "range_id": item.get("range_id"),
                 "status": item.get("status"),
                 "accepted": item.get("accepted"),
                 "classification": item.get("classification"),
+                "alternative_diagnostics": item.get("alternative_diagnostics"),
+                "augment_funnel_counts": item.get("augment_funnel_counts"),
+                "augment_debug_top_candidates": item.get("augment_debug_top_candidates"),
+                "fallback_local_swap": item.get("fallback_local_swap"),
                 "selected_augment_windows": item.get("selected_augment_windows"),
                 "applied_augment_windows": item.get("applied_augment_windows"),
                 "used_augment_windows": item.get("used_augment_windows"),
