@@ -1,0 +1,21 @@
+{
+  "scenario_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_scenario_input.json",
+  "stage1_result_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_stage1_result.json",
+  "solver_mode": "two_phase_event_insert+stage1_greedy+hotspot_relief_local_peak_milp",
+  "plan_window_count_before": 12,
+  "plan_window_count_after": 14,
+  "cr_reg": 1.0,
+  "cr_emg": 1.0,
+  "u_cross": 0.5735656352520975,
+  "u_all": 0.01798552057742819,
+  "augment_windows_added": 2,
+  "hot_ranges_considered": 3,
+  "structural_hot_range_count": 2,
+  "q_peak_before": 1.0000000000000002,
+  "q_peak_after": 1.0000000000000002,
+  "peak_segment_count_before": 260,
+  "peak_segment_count_after": 246,
+  "q_integral_before": 32133.555410875,
+  "q_integral_after": 31640.0474564575,
+  "elapsed_seconds": 625.2136835999554
+}

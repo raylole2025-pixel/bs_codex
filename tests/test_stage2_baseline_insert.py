@@ -141,6 +141,19 @@ def _load_payload(payload: dict) -> Scenario:
             repair_candidate_path_limit=int(payload["stage2"].get("repair_candidate_path_limit", 2)),
             repair_time_limit_seconds=payload["stage2"].get("repair_time_limit_seconds"),
             repair_accept_epsilon=float(payload["stage2"].get("repair_accept_epsilon", 1e-6)),
+            hotspot_relief_enabled=bool(payload["stage2"].get("hotspot_relief_enabled", True)),
+            hotspot_util_threshold=float(payload["stage2"].get("hotspot_util_threshold", 0.95)),
+            hotspot_topk_ranges=int(payload["stage2"].get("hotspot_topk_ranges", 5)),
+            hotspot_expand_segments=int(payload["stage2"].get("hotspot_expand_segments", 2)),
+            hotspot_single_link_fraction_threshold=float(payload["stage2"].get("hotspot_single_link_fraction_threshold", 0.6)),
+            hotspot_top_tasks_per_range=int(payload["stage2"].get("hotspot_top_tasks_per_range", 12)),
+            augment_window_budget=int(payload["stage2"].get("augment_window_budget", 2)),
+            augment_top_windows_per_range=int(payload["stage2"].get("augment_top_windows_per_range", 3)),
+            hot_path_limit=int(payload["stage2"].get("hot_path_limit", 4)),
+            hot_promoted_tasks_per_segment=int(payload["stage2"].get("hot_promoted_tasks_per_segment", 8)),
+            local_peak_horizon_cap_segments=payload["stage2"].get("local_peak_horizon_cap_segments", 48),
+            local_peak_accept_epsilon=float(payload["stage2"].get("local_peak_accept_epsilon", 1e-6)),
+            fail_if_milp_disabled=bool(payload["stage2"].get("fail_if_milp_disabled", True)),
         ),
         planning_end=float(payload["planning_end"]),
         metadata=copy.deepcopy(payload.get("metadata", {})),
@@ -157,7 +170,7 @@ class Stage2BaselineInsertTests(unittest.TestCase):
     def test_stage1_greedy_baseline_builds_complete_schedule_and_not_worse_than_sequential(self) -> None:
         payload = copy.deepcopy(BASE_PAYLOAD)
         payload["planning_end"] = 3.0
-        payload["stage2"].update({"prefer_milp": False, "regular_baseline_mode": "stage1_greedy"})
+        payload["stage2"].update({"prefer_milp": False, "regular_baseline_mode": "stage1_greedy", "hotspot_relief_enabled": False})
         payload["tasks"] = [
             {
                 "id": "R1",
@@ -212,9 +225,9 @@ class Stage2BaselineInsertTests(unittest.TestCase):
         ]
         scenario = _load_payload(payload)
         result = run_stage2(scenario, PLAN)
-        self.assertEqual(result.solver_mode, "two_phase_event_insert+joint_milp_rolling")
+        self.assertEqual(result.solver_mode, "two_phase_event_insert+joint_milp_full")
         self.assertTrue(result.metadata["prefer_milp"])
-        self.assertEqual(result.metadata["milp_mode"], "rolling")
+        self.assertEqual(result.metadata["milp_mode"], "full")
         self.assertEqual(result.metadata["regular_task_count"], 1)
 
     def test_regular_baseline_uses_only_reserved_cross_slice(self) -> None:
@@ -451,6 +464,7 @@ class Stage2BaselineInsertTests(unittest.TestCase):
                 "prefer_milp": False,
                 "regular_baseline_mode": "stage1_greedy_repair",
                 "regular_repair_enabled": True,
+                "hotspot_relief_enabled": False,
                 "repair_block_max_count": 2,
                 "repair_util_threshold": 0.5,
             }
@@ -515,6 +529,7 @@ class Stage2BaselineInsertTests(unittest.TestCase):
                 "prefer_milp": False,
                 "regular_baseline_mode": "stage1_greedy_repair",
                 "regular_repair_enabled": True,
+                "hotspot_relief_enabled": False,
             }
         )
         payload["tasks"] = [
@@ -558,6 +573,7 @@ class Stage2BaselineInsertTests(unittest.TestCase):
             {
                 "prefer_milp": False,
                 "regular_baseline_mode": "full_milp",
+                "hotspot_relief_enabled": False,
             }
         )
         payload["candidate_windows"] = [
@@ -706,19 +722,15 @@ class Stage2BaselineInsertTests(unittest.TestCase):
         self.assertAlmostEqual(delivered["E1"], 12.0, delta=1e-6)
         self.assertGreater(delivered["R_hi"], delivered["R_lo"])
 
-    def test_regular_rolling_route_switch_does_not_surface_as_preemption(self) -> None:
+    def test_regular_route_switch_does_not_surface_as_preemption(self) -> None:
         payload = copy.deepcopy(BASE_PAYLOAD)
         payload["planning_end"] = 8.0
         payload["capacities"] = {"A": 4.0, "B": 4.0, "X": 4.0}
         payload["stage1"]["rho"] = 0.0
         payload["stage2"].update(
             {
-                "milp_mode": "rolling",
-                "milp_horizon_segments": 4,
-                "milp_commit_segments": 2,
-                "milp_rolling_path_limit": 1,
-                "milp_rolling_high_path_limit": 2,
-                "milp_rolling_promoted_tasks_per_segment": 1,
+                "milp_mode": "full",
+                "hotspot_relief_enabled": False,
                 "milp_time_limit_seconds": 60.0,
                 "milp_relative_gap": 0.05,
             }
@@ -736,17 +748,6 @@ class Stage2BaselineInsertTests(unittest.TestCase):
                 "deadline": 8.0,
                 "data": 20.0,
                 "weight": 1.0,
-                "max_rate": 4.0,
-                "type": "reg",
-            },
-            {
-                "id": "R_hot1",
-                "src": "A1",
-                "dst": "B2",
-                "arrival": 2.0,
-                "deadline": 8.0,
-                "data": 8.0,
-                "weight": 6.0,
                 "max_rate": 4.0,
                 "type": "reg",
             },

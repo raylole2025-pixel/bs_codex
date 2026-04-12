@@ -6,17 +6,18 @@ from dataclasses import dataclass
 
 from .models import Allocation, PathCandidate, ScheduledWindow, Scenario, Segment, Stage2Result, Task
 from .regular_routing_common import (
+    build_regular_schedule_diagnostics,
     empty_repair_metadata,
     is_regular_repair_enabled,
     resolve_regular_baseline_mode,
 )
 from .scenario import active_cross_links, active_intra_links, build_segments, compress_segments, generate_candidate_paths
+from .stage2_hotspot_relief import run_hotspot_relief
 from .stage2_regular_block_repair import repair_regular_baseline_blocks
 from .stage2_regular_greedy_baseline import build_regular_baseline_stage1_greedy
 from .stage2_regular_joint_milp import (
     build_regular_baseline_full_milp,
     build_regular_baseline_joint_milp,
-    build_regular_baseline_rolling_milp,
 )
 
 EPS = 1e-9
@@ -68,6 +69,9 @@ class TwoPhaseEventDrivenScheduler:
         self.task_by_id = {task.task_id: task for task in self.scenario.tasks}
         self._last_regular_baseline_mode = resolve_regular_baseline_mode(self.scenario.stage2)
         self._last_regular_baseline_source = self._last_regular_baseline_mode
+        self._hotspot_relief_active = False
+        self._hotspot_relief_metadata: dict[str, object] = {}
+        self._hotspot_relief_report: dict[str, object] = {}
 
     def _task_completion_tolerance(self, task: Task | float) -> float:
         data = float(task.data) if isinstance(task, Task) else float(task)
@@ -83,16 +87,29 @@ class TwoPhaseEventDrivenScheduler:
 
     def run(self, plan: list[ScheduledWindow]) -> Stage2Result:
         started_at = time.perf_counter()
+        self._hotspot_relief_active = False
+        self._hotspot_relief_metadata = {}
+        self._hotspot_relief_report = {}
         regular_tasks = [task for task in self.scenario.tasks if task.task_type == "reg"]
         self.scenario.metadata["stage2_rolling_window_profiles"] = []
         self.scenario.metadata.pop("stage2_segment_compression_result", None)
         segments = build_segments(self.scenario, plan, regular_tasks)
         raw_event_segment_count = len(segments)
-        if self._segment_compression_enabled():
+        hotspot_requested = bool(self.scenario.stage2.hotspot_relief_enabled)
+        if self._segment_compression_enabled() and not hotspot_requested:
             segments, compression_result = compress_segments(self.scenario, plan, segments, regular_tasks)
             self.scenario.metadata["stage2_segment_compression_result"] = compression_result
+        elif self._segment_compression_enabled() and hotspot_requested:
+            self.scenario.metadata["stage2_segment_compression_result"] = {
+                "event_segment_compression_disabled_for_hotspot_relief": True,
+                "event_segment_count_raw": raw_event_segment_count,
+                "event_segment_count_compressed": raw_event_segment_count,
+                "event_segment_compression_ratio": 1.0,
+            }
         effective_event_segment_count = len(segments)
         baseline_mode = resolve_regular_baseline_mode(self.scenario.stage2)
+        if hotspot_requested:
+            self._validate_hotspot_relief_mode(baseline_mode)
         baseline_schedule, baseline_completed, baseline_context = self._build_regular_baseline(plan, segments, baseline_mode)
         repair_metadata = empty_repair_metadata(baseline_completed)
         repair_metadata["regular_repair_enabled"] = is_regular_repair_enabled(self.scenario.stage2, baseline_mode)
@@ -106,6 +123,28 @@ class TwoPhaseEventDrivenScheduler:
             )
             baseline_completed = dict(repair_metadata.get("diagnostics_after", baseline_context["diagnostics"]).get("completed", baseline_completed))
             baseline_context["diagnostics"] = repair_metadata.get("diagnostics_after", baseline_context["diagnostics"])
+        baseline_diag = baseline_context.get("diagnostics")
+        if not isinstance(baseline_diag, dict):
+            baseline_diag = build_regular_schedule_diagnostics(self.scenario, plan, segments, baseline_schedule)
+            baseline_context["diagnostics"] = baseline_diag
+        if hotspot_requested:
+            hotspot_result = run_hotspot_relief(
+                scenario=self.scenario,
+                plan=plan,
+                segments=segments,
+                baseline_schedule=baseline_schedule,
+                baseline_diagnostics=baseline_diag,
+            )
+            plan = hotspot_result.plan
+            segments = hotspot_result.segments
+            effective_event_segment_count = len(segments)
+            baseline_schedule = hotspot_result.schedule
+            baseline_diag = hotspot_result.diagnostics
+            baseline_context["diagnostics"] = baseline_diag
+            baseline_completed = dict(baseline_diag.get("completed", baseline_completed))
+            self._hotspot_relief_metadata = dict(hotspot_result.metadata)
+            self._hotspot_relief_report = dict(hotspot_result.report)
+            self._hotspot_relief_active = bool(self._hotspot_relief_metadata.get("hot_ranges_considered", 0))
         self._last_regular_baseline_mode = baseline_mode
         if baseline_mode in {"rolling_milp", "full_milp"}:
             self._last_regular_baseline_source = baseline_mode
@@ -234,6 +273,7 @@ class TwoPhaseEventDrivenScheduler:
             regular_task_count=len(regular_tasks),
             elapsed_seconds=time.perf_counter() - started_at,
             repair_metadata=repair_metadata,
+            plan_window_count=len(plan),
         )
 
         return Stage2Result(
@@ -369,19 +409,26 @@ class TwoPhaseEventDrivenScheduler:
             schedule, completed = build_regular_baseline_full_milp(self.scenario, plan, segments)
             return schedule, completed, {}
         if mode == "rolling_milp":
-            schedule, completed = build_regular_baseline_rolling_milp(self.scenario, plan, segments)
+            schedule, completed = build_regular_baseline_full_milp(self.scenario, plan, segments)
             return schedule, completed, {}
         schedule, completed = build_regular_baseline_joint_milp(self.scenario, plan, segments)
         return schedule, completed, {}
 
     def _solver_mode_label(self) -> str:
-        if self._last_regular_baseline_source == "rolling_milp":
-            return "two_phase_event_insert+joint_milp_rolling"
-        if self._last_regular_baseline_source == "full_milp":
-            return "two_phase_event_insert+joint_milp_full"
-        if self._last_regular_baseline_source == "stage1_greedy_repair":
-            return "two_phase_event_insert+stage1_greedy_repair"
-        return "two_phase_event_insert+stage1_greedy"
+        if self._last_regular_baseline_source in {"rolling_milp", "full_milp"}:
+            label = "two_phase_event_insert+joint_milp_full"
+        elif self._last_regular_baseline_source == "stage1_greedy_repair":
+            label = "two_phase_event_insert+stage1_greedy_repair"
+        else:
+            label = "two_phase_event_insert+stage1_greedy"
+        if self._hotspot_relief_active:
+            return f"{label}+hotspot_relief_local_peak_milp"
+        return label
+
+    def _validate_hotspot_relief_mode(self, baseline_mode: str) -> None:
+        if not bool(self.scenario.stage2.hotspot_relief_enabled):
+            return
+        return
 
     def _segment_compression_enabled(self) -> bool:
         compression_cfg = self.scenario.metadata.get("stage2_segment_compression")
@@ -395,12 +442,14 @@ class TwoPhaseEventDrivenScheduler:
         regular_task_count: int,
         elapsed_seconds: float,
         repair_metadata: dict[str, object],
+        plan_window_count: int,
     ) -> dict[str, float | int | bool | None | str]:
         metadata: dict[str, float | int | bool | None | str | list | dict] = {
             "regular_baseline_mode": self._last_regular_baseline_mode,
             "regular_baseline_source": self._last_regular_baseline_source,
+            "solver_mode": self._solver_mode_label(),
             "prefer_milp": bool(self.scenario.stage2.prefer_milp),
-            "milp_mode": str(self.scenario.stage2.milp_mode),
+            "milp_mode": ("full" if self._last_regular_baseline_source in {"rolling_milp", "full_milp"} else str(self.scenario.stage2.milp_mode)),
             "milp_horizon_segments": int(self.scenario.stage2.milp_horizon_segments),
             "milp_commit_segments": int(self.scenario.stage2.milp_commit_segments),
             "milp_rolling_path_limit": int(self.scenario.stage2.milp_rolling_path_limit),
@@ -408,6 +457,7 @@ class TwoPhaseEventDrivenScheduler:
             "milp_rolling_promoted_tasks_per_segment": int(self.scenario.stage2.milp_rolling_promoted_tasks_per_segment),
             "milp_time_limit_seconds": self.scenario.stage2.milp_time_limit_seconds,
             "milp_relative_gap": self.scenario.stage2.milp_relative_gap,
+            "hotspot_relief_enabled": bool(self.scenario.stage2.hotspot_relief_enabled),
             "regular_repair_enabled": bool(repair_metadata.get("regular_repair_enabled", False)),
             "repair_block_count_considered": int(repair_metadata.get("repair_block_count_considered", 0)),
             "repair_block_count_accepted": int(repair_metadata.get("repair_block_count_accepted", 0)),
@@ -418,15 +468,13 @@ class TwoPhaseEventDrivenScheduler:
             "event_segment_count": int(event_segment_count),
             "event_segment_count_raw": int(event_segment_count_raw),
             "regular_task_count": int(regular_task_count),
+            "plan_window_count": int(plan_window_count),
             "elapsed_seconds": float(elapsed_seconds),
         }
-        rolling_profile_path = self.scenario.metadata.get("stage2_rolling_profile_path")
-        if rolling_profile_path:
-            metadata["rolling_window_profile_path"] = str(rolling_profile_path)
-        rolling_profiles = self.scenario.metadata.get("stage2_rolling_window_profiles")
-        if isinstance(rolling_profiles, list) and rolling_profiles:
-            metadata["rolling_window_profile_count"] = len(rolling_profiles)
-            metadata["rolling_window_profiles"] = rolling_profiles
+        if self._hotspot_relief_metadata:
+            metadata.update(dict(self._hotspot_relief_metadata))
+        if self._hotspot_relief_report:
+            metadata["hotspot_report"] = dict(self._hotspot_relief_report)
         compression_result = self.scenario.metadata.get("stage2_segment_compression_result")
         if isinstance(compression_result, dict):
             metadata.update(dict(compression_result))

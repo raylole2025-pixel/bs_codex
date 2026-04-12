@@ -1,0 +1,411 @@
+{
+  "reserved_cross_capacity": 800.0,
+  "u_cross": 0.6040573952627524,
+  "q_peak_max": 1.0000000000000002,
+  "q_peak_mean_unweighted": 0.7421797424109322,
+  "peak_segment_count": 259,
+  "peak_ranges_top10": [
+    {
+      "start": 37020.0,
+      "end": 39300.0,
+      "duration": 2280.0,
+      "segment_count": 37
+    },
+    {
+      "start": 25020.0,
+      "end": 27240.0,
+      "duration": 2220.0,
+      "segment_count": 37
+    },
+    {
+      "start": 32520.0,
+      "end": 34260.0,
+      "duration": 1740.0,
+      "segment_count": 30
+    },
+    {
+      "start": 23700.0,
+      "end": 24900.0,
+      "duration": 1200.0,
+      "segment_count": 18
+    },
+    {
+      "start": 30900.0,
+      "end": 31920.0,
+      "duration": 1020.0,
+      "segment_count": 16
+    },
+    {
+      "start": 16500.0,
+      "end": 17460.0,
+      "duration": 960.0,
+      "segment_count": 14
+    },
+    {
+      "start": 19564.472,
+      "end": 20436.621,
+      "duration": 872.1489999999976,
+      "segment_count": 13
+    },
+    {
+      "start": 9300.0,
+      "end": 10140.0,
+      "duration": 840.0,
+      "segment_count": 13
+    },
+    {
+      "start": 39720.0,
+      "end": 40560.0,
+      "duration": 840.0,
+      "segment_count": 14
+    },
+    {
+      "start": 2100.0,
+      "end": 2760.0,
+      "duration": 660.0,
+      "segment_count": 11
+    }
+  ],
+  "top_windows_by_mean_util": [
+    {
+      "window_id": "X017339",
+      "start": 23382.413,
+      "end": 29071.33,
+      "active_duration": 5688.917000000001,
+      "total_delivered": 4046976.401799999,
+      "mean_rate": 711.3790554159954,
+      "mean_util": 0.8892238192699942,
+      "peak_rate": 800.0000000000001,
+      "peak_util": 1.0000000000000002,
+      "saturated_segment_count": 45
+    },
+    {
+      "window_id": "X011843",
+      "start": 30730.506,
+      "end": 36303.985,
+      "active_duration": 5573.478999999999,
+      "total_delivered": 3776400.4700999996,
+      "mean_rate": 677.5661072913346,
+      "mean_util": 0.8469576341141682,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 36
+    },
+    {
+      "window_id": "X018334",
+      "start": 16403.636,
+      "end": 22099.452,
+      "active_duration": 5695.8160000000025,
+      "total_delivered": 3629941.1760000004,
+      "mean_rate": 637.2995855203186,
+      "mean_util": 0.7966244819003983,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 35
+    },
+    {
+      "window_id": "X015858",
+      "start": 13864.685,
+      "end": 19564.472,
+      "active_duration": 5699.787000000002,
+      "total_delivered": 3591113.6504000016,
+      "mean_rate": 630.0434823967984,
+      "mean_util": 0.787554352995998,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 30
+    },
+    {
+      "window_id": "X017844",
+      "start": 34161.892,
+      "end": 39848.604,
+      "active_duration": 5686.7119999999995,
+      "total_delivered": 3538946.1059000017,
+      "mean_rate": 622.3185042428739,
+      "mean_util": 0.7778981303035924,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 33
+    },
+    {
+      "window_id": "X020430",
+      "start": 8021.305,
+      "end": 13453.658,
+      "active_duration": 5432.352999999999,
+      "total_delivered": 3342570.4011999997,
+      "mean_rate": 615.3080260432266,
+      "mean_util": 0.7691350325540333,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 20
+    },
+    {
+      "window_id": "X008117",
+      "start": 1432.198,
+      "end": 6748.828,
+      "active_duration": 5316.63,
+      "total_delivered": 3204327.4764,
+      "mean_rate": 602.6989796920229,
+      "mean_util": 0.7533737246150287,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 5
+    },
+    {
+      "window_id": "X010844",
+      "start": 37705.356,
+      "end": 43200.0,
+      "active_duration": 5494.644,
+      "total_delivered": 3151328.1600000006,
+      "mean_rate": 573.5272676446373,
+      "mean_util": 0.7169090845557966,
+      "peak_rate": 800.0000000000001,
+      "peak_util": 1.0000000000000002,
+      "saturated_segment_count": 42
+    }
+  ],
+  "top_windows_by_total_delivered": [
+    {
+      "window_id": "X017339",
+      "start": 23382.413,
+      "end": 29071.33,
+      "active_duration": 5688.917000000001,
+      "total_delivered": 4046976.401799999,
+      "mean_rate": 711.3790554159954,
+      "mean_util": 0.8892238192699942,
+      "peak_rate": 800.0000000000001,
+      "peak_util": 1.0000000000000002,
+      "saturated_segment_count": 45
+    },
+    {
+      "window_id": "X011843",
+      "start": 30730.506,
+      "end": 36303.985,
+      "active_duration": 5573.478999999999,
+      "total_delivered": 3776400.4700999996,
+      "mean_rate": 677.5661072913346,
+      "mean_util": 0.8469576341141682,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 36
+    },
+    {
+      "window_id": "X018334",
+      "start": 16403.636,
+      "end": 22099.452,
+      "active_duration": 5695.8160000000025,
+      "total_delivered": 3629941.1760000004,
+      "mean_rate": 637.2995855203186,
+      "mean_util": 0.7966244819003983,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 35
+    },
+    {
+      "window_id": "X015858",
+      "start": 13864.685,
+      "end": 19564.472,
+      "active_duration": 5699.787000000002,
+      "total_delivered": 3591113.6504000016,
+      "mean_rate": 630.0434823967984,
+      "mean_util": 0.787554352995998,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 30
+    },
+    {
+      "window_id": "X017844",
+      "start": 34161.892,
+      "end": 39848.604,
+      "active_duration": 5686.7119999999995,
+      "total_delivered": 3538946.1059000017,
+      "mean_rate": 622.3185042428739,
+      "mean_util": 0.7778981303035924,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 33
+    },
+    {
+      "window_id": "X020430",
+      "start": 8021.305,
+      "end": 13453.658,
+      "active_duration": 5432.352999999999,
+      "total_delivered": 3342570.4011999997,
+      "mean_rate": 615.3080260432266,
+      "mean_util": 0.7691350325540333,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 20
+    },
+    {
+      "window_id": "X018838",
+      "start": 27187.57,
+      "end": 32874.668,
+      "active_duration": 5687.097999999998,
+      "total_delivered": 3260624.899799998,
+      "mean_rate": 573.3372099091662,
+      "mean_util": 0.7166715123864578,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 29
+    },
+    {
+      "window_id": "X008117",
+      "start": 1432.198,
+      "end": 6748.828,
+      "active_duration": 5316.63,
+      "total_delivered": 3204327.4764,
+      "mean_rate": 602.6989796920229,
+      "mean_util": 0.7533737246150287,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 5
+    }
+  ],
+  "windows_with_any_saturation": [
+    {
+      "window_id": "X017339",
+      "start": 23382.413,
+      "end": 29071.33,
+      "active_duration": 5688.917000000001,
+      "total_delivered": 4046976.401799999,
+      "mean_rate": 711.3790554159954,
+      "mean_util": 0.8892238192699942,
+      "peak_rate": 800.0000000000001,
+      "peak_util": 1.0000000000000002,
+      "saturated_segment_count": 45
+    },
+    {
+      "window_id": "X010844",
+      "start": 37705.356,
+      "end": 43200.0,
+      "active_duration": 5494.644,
+      "total_delivered": 3151328.1600000006,
+      "mean_rate": 573.5272676446373,
+      "mean_util": 0.7169090845557966,
+      "peak_rate": 800.0000000000001,
+      "peak_util": 1.0000000000000002,
+      "saturated_segment_count": 42
+    },
+    {
+      "window_id": "X011843",
+      "start": 30730.506,
+      "end": 36303.985,
+      "active_duration": 5573.478999999999,
+      "total_delivered": 3776400.4700999996,
+      "mean_rate": 677.5661072913346,
+      "mean_util": 0.8469576341141682,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 36
+    },
+    {
+      "window_id": "X018334",
+      "start": 16403.636,
+      "end": 22099.452,
+      "active_duration": 5695.8160000000025,
+      "total_delivered": 3629941.1760000004,
+      "mean_rate": 637.2995855203186,
+      "mean_util": 0.7966244819003983,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 35
+    },
+    {
+      "window_id": "X017844",
+      "start": 34161.892,
+      "end": 39848.604,
+      "active_duration": 5686.7119999999995,
+      "total_delivered": 3538946.1059000017,
+      "mean_rate": 622.3185042428739,
+      "mean_util": 0.7778981303035924,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 33
+    },
+    {
+      "window_id": "X015858",
+      "start": 13864.685,
+      "end": 19564.472,
+      "active_duration": 5699.787000000002,
+      "total_delivered": 3591113.6504000016,
+      "mean_rate": 630.0434823967984,
+      "mean_util": 0.787554352995998,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 30
+    },
+    {
+      "window_id": "X018838",
+      "start": 27187.57,
+      "end": 32874.668,
+      "active_duration": 5687.097999999998,
+      "total_delivered": 3260624.899799998,
+      "mean_rate": 573.3372099091662,
+      "mean_util": 0.7166715123864578,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 29
+    },
+    {
+      "window_id": "X006458",
+      "start": 20436.621,
+      "end": 25719.773,
+      "active_duration": 5283.152000000002,
+      "total_delivered": 2801533.7432,
+      "mean_rate": 530.2769526979347,
+      "mean_util": 0.6628461908724184,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 27
+    },
+    {
+      "window_id": "X020430",
+      "start": 8021.305,
+      "end": 13453.658,
+      "active_duration": 5432.352999999999,
+      "total_delivered": 3342570.4011999997,
+      "mean_rate": 615.3080260432266,
+      "mean_util": 0.7691350325540333,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 20
+    },
+    {
+      "window_id": "X022006",
+      "start": 430.729,
+      "end": 5852.174,
+      "active_duration": 5421.445,
+      "total_delivered": 2834473.6016,
+      "mean_rate": 522.8262209798311,
+      "mean_util": 0.6535327762247889,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 12
+    },
+    {
+      "window_id": "X020956",
+      "start": 7388.736,
+      "end": 12820.177,
+      "active_duration": 5431.441,
+      "total_delivered": 2938105.9135999996,
+      "mean_rate": 540.9440908223066,
+      "mean_util": 0.6761801135278833,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 7
+    },
+    {
+      "window_id": "X008117",
+      "start": 1432.198,
+      "end": 6748.828,
+      "active_duration": 5316.63,
+      "total_delivered": 3204327.4764,
+      "mean_rate": 602.6989796920229,
+      "mean_util": 0.7533737246150287,
+      "peak_rate": 800.0,
+      "peak_util": 1.0,
+      "saturated_segment_count": 5
+    }
+  ]
+}

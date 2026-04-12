@@ -1,0 +1,1685 @@
+{
+  "hot_ranges": [
+    {
+      "range_id": "hot_range_33",
+      "start": 25560.0,
+      "end": 27187.57,
+      "max_q_r": 1.0000000125,
+      "q_integral": 1625.3487981999997,
+      "classification": {
+        "single_link_fraction": 1.0,
+        "median_active_selected": 1.0,
+        "structural": false
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_042",
+          "delivered": 370023.5295999999,
+          "weighted_load": 740047.0591999998,
+          "segment_indices": [
+            401,
+            402,
+            403,
+            404,
+            405,
+            406,
+            407,
+            408,
+            409,
+            410,
+            411,
+            412,
+            413,
+            414,
+            415,
+            417,
+            418,
+            419,
+            420,
+            421,
+            422,
+            423,
+            424,
+            425,
+            426,
+            427
+          ],
+          "cross_window_ids": [
+            "X017339"
+          ]
+        },
+        {
+          "task_id": "N72X_041",
+          "delivered": 294902.33419999987,
+          "weighted_load": 589804.6683999997,
+          "segment_indices": [
+            401,
+            402,
+            403,
+            404,
+            410,
+            411,
+            412,
+            413,
+            414,
+            415,
+            416,
+            417,
+            418,
+            419,
+            420,
+            421,
+            422,
+            423,
+            424,
+            425,
+            426,
+            427
+          ],
+          "cross_window_ids": [
+            "X017339"
+          ]
+        },
+        {
+          "task_id": "N72X_038",
+          "delivered": 163960.79433291973,
+          "weighted_load": 491882.3829987592,
+          "segment_indices": [
+            403,
+            404,
+            405,
+            413,
+            414,
+            415,
+            416,
+            417,
+            418,
+            419,
+            420
+          ],
+          "cross_window_ids": [
+            "X017339"
+          ]
+        },
+        {
+          "task_id": "N72X_039",
+          "delivered": 139121.95366962068,
+          "weighted_load": 417365.86100886203,
+          "segment_indices": [
+            405,
+            406,
+            407,
+            408,
+            409
+          ],
+          "cross_window_ids": [
+            "X017339"
+          ]
+        },
+        {
+          "task_id": "N72X_037",
+          "delivered": 126126.0389875695,
+          "weighted_load": 378378.1169627085,
+          "segment_indices": [
+            405,
+            406,
+            407,
+            408,
+            409,
+            410
+          ],
+          "cross_window_ids": [
+            "X017339"
+          ]
+        },
+        {
+          "task_id": "N72X_040",
+          "delivered": 133002.2781,
+          "weighted_load": 266004.5562,
+          "segment_indices": [
+            401,
+            402,
+            403,
+            404,
+            420,
+            421,
+            422,
+            423,
+            424,
+            425
+          ],
+          "cross_window_ids": [
+            "X017339"
+          ]
+        },
+        {
+          "task_id": "N72X_043",
+          "delivered": 73030.62757999993,
+          "weighted_load": 146061.25515999986,
+          "segment_indices": [
+            411,
+            412,
+            413,
+            416,
+            417,
+            426,
+            427
+          ],
+          "cross_window_ids": [
+            "X017339"
+          ]
+        }
+      ],
+      "selected_augment_windows": [
+        "X023535",
+        "X002479"
+      ],
+      "status": "reroutable_candidate_pruned",
+      "accepted": false,
+      "used_augment_windows": [],
+      "candidate_solver_status": "Failed:RuntimeError"
+    },
+    {
+      "range_id": "hot_range_58",
+      "start": 41040.0,
+      "end": 42000.0,
+      "max_q_r": 1.00000000875,
+      "q_integral": 958.5225722175,
+      "classification": {
+        "single_link_fraction": 1.0,
+        "median_active_selected": 1.0,
+        "structural": false
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_071",
+          "delivered": 196975.95299999998,
+          "weighted_load": 590927.8589999999,
+          "segment_indices": [
+            649,
+            650,
+            651,
+            652,
+            653,
+            654,
+            655,
+            656,
+            657,
+            658,
+            659,
+            660,
+            661,
+            662,
+            663
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_072",
+          "delivered": 171621.75194350476,
+          "weighted_load": 343243.5038870095,
+          "segment_indices": [
+            649,
+            650,
+            651,
+            652,
+            653,
+            654,
+            655,
+            656,
+            657,
+            658,
+            659,
+            660,
+            661,
+            662,
+            663
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_066",
+          "delivered": 111071.99982373742,
+          "weighted_load": 222143.99964747485,
+          "segment_indices": [
+            651,
+            652,
+            653,
+            654,
+            655,
+            656,
+            657,
+            658,
+            659,
+            660
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_067",
+          "delivered": 105215.99724,
+          "weighted_load": 210431.99448,
+          "segment_indices": [
+            649,
+            651,
+            652,
+            656,
+            657,
+            658,
+            659,
+            660,
+            661,
+            662,
+            663
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_064",
+          "delivered": 97974.5565118626,
+          "weighted_load": 195949.1130237252,
+          "segment_indices": [
+            649,
+            650,
+            651,
+            652,
+            653,
+            654,
+            655
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_062",
+          "delivered": 39344.56169999986,
+          "weighted_load": 118033.68509999957,
+          "segment_indices": [
+            649,
+            650
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_068",
+          "delivered": 34914.056934,
+          "weighted_load": 34914.056934,
+          "segment_indices": [
+            656,
+            657,
+            658,
+            659,
+            660,
+            661,
+            662,
+            663
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_069",
+          "delivered": 9576.0,
+          "weighted_load": 9576.0,
+          "segment_indices": [
+            661,
+            662,
+            663
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        }
+      ],
+      "selected_augment_windows": [],
+      "status": "reroutable_candidate_pruned",
+      "accepted": false,
+      "used_augment_windows": [],
+      "candidate_solver_status": "Failed:RuntimeError"
+    },
+    {
+      "range_id": "hot_range_26",
+      "start": 19560.0,
+      "end": 20520.0,
+      "max_q_r": 1.00000000625,
+      "q_integral": 959.8445982535001,
+      "classification": {
+        "single_link_fraction": 0.9430630385615114,
+        "median_active_selected": 1.0,
+        "structural": false
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_031",
+          "delivered": 226640.97320152004,
+          "weighted_load": 453281.9464030401,
+          "segment_indices": [
+            304,
+            305,
+            306,
+            307,
+            308,
+            309,
+            310,
+            311,
+            312,
+            313,
+            314,
+            315,
+            316,
+            317,
+            318,
+            319
+          ],
+          "cross_window_ids": [
+            "X006458",
+            "X015858",
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_035",
+          "delivered": 83403.79158000066,
+          "weighted_load": 250211.37474000198,
+          "segment_indices": [
+            304,
+            306,
+            307,
+            308,
+            310,
+            312,
+            313,
+            314,
+            315,
+            318,
+            319
+          ],
+          "cross_window_ids": [
+            "X006458",
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_030",
+          "delivered": 106639.42800000001,
+          "weighted_load": 213278.85600000003,
+          "segment_indices": [
+            308,
+            309,
+            310,
+            311,
+            312,
+            313
+          ],
+          "cross_window_ids": [
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_028",
+          "delivered": 98003.99979315289,
+          "weighted_load": 196007.99958630578,
+          "segment_indices": [
+            304,
+            305,
+            306,
+            307,
+            308,
+            309
+          ],
+          "cross_window_ids": [
+            "X015858",
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_033",
+          "delivered": 146475.9710600004,
+          "weighted_load": 146475.9710600004,
+          "segment_indices": [
+            304,
+            306,
+            307,
+            308,
+            310,
+            311,
+            312,
+            313,
+            314,
+            315,
+            316,
+            317,
+            318,
+            319
+          ],
+          "cross_window_ids": [
+            "X015858",
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_029",
+          "delivered": 60476.073124799994,
+          "weighted_load": 120952.14624959999,
+          "segment_indices": [
+            311,
+            315,
+            316,
+            317,
+            318,
+            319
+          ],
+          "cross_window_ids": [
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_026",
+          "delivered": 19587.000006767423,
+          "weighted_load": 58761.00002030227,
+          "segment_indices": [
+            304,
+            305
+          ],
+          "cross_window_ids": [
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_034",
+          "delivered": 51638.451200000265,
+          "weighted_load": 51638.451200000265,
+          "segment_indices": [
+            304,
+            314,
+            315,
+            316,
+            317,
+            318,
+            319
+          ],
+          "cross_window_ids": [
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_032",
+          "delivered": 21312.888100000222,
+          "weighted_load": 21312.888100000222,
+          "segment_indices": [
+            304,
+            314,
+            315,
+            316,
+            317,
+            318,
+            319
+          ],
+          "cross_window_ids": [
+            "X015858",
+            "X018334"
+          ]
+        }
+      ],
+      "selected_augment_windows": [],
+      "status": "reroutable_candidate_pruned",
+      "accepted": false,
+      "used_augment_windows": [],
+      "candidate_solver_status": "Failed:RuntimeError"
+    },
+    {
+      "range_id": "hot_range_16",
+      "start": 14160.0,
+      "end": 14580.0,
+      "max_q_r": 1.00000000375,
+      "q_integral": 419.99998245000006,
+      "classification": {
+        "single_link_fraction": 1.0,
+        "median_active_selected": 1.0,
+        "structural": true
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_023",
+          "delivered": 100462.3734,
+          "weighted_load": 301387.1202,
+          "segment_indices": [
+            219,
+            220,
+            221,
+            222,
+            223
+          ],
+          "cross_window_ids": [
+            "X015858"
+          ]
+        },
+        {
+          "task_id": "N72X_024",
+          "delivered": 76346.0724,
+          "weighted_load": 152692.1448,
+          "segment_indices": [
+            219,
+            220,
+            221,
+            222,
+            223
+          ],
+          "cross_window_ids": [
+            "X015858"
+          ]
+        },
+        {
+          "task_id": "N72X_020",
+          "delivered": 80976.0,
+          "weighted_load": 80976.0,
+          "segment_indices": [
+            219,
+            220,
+            221,
+            222,
+            223
+          ],
+          "cross_window_ids": [
+            "X015858"
+          ]
+        },
+        {
+          "task_id": "N72X_022",
+          "delivered": 63843.1698,
+          "weighted_load": 63843.1698,
+          "segment_indices": [
+            219,
+            220,
+            221,
+            222,
+            223
+          ],
+          "cross_window_ids": [
+            "X015858"
+          ]
+        },
+        {
+          "task_id": "N72X_021",
+          "delivered": 14372.37036,
+          "weighted_load": 14372.37036,
+          "segment_indices": [
+            222,
+            223
+          ],
+          "cross_window_ids": [
+            "X015858"
+          ]
+        }
+      ],
+      "selected_augment_windows": [],
+      "status": "structural_bottleneck",
+      "accepted": false,
+      "used_augment_windows": [],
+      "candidate_solver_status": "skipped_structural"
+    },
+    {
+      "range_id": "hot_range_8",
+      "start": 9360.0,
+      "end": 9720.0,
+      "max_q_r": 1.00000000375,
+      "q_integral": 359.9999999895098,
+      "classification": {
+        "single_link_fraction": 0.6925207756170639,
+        "median_active_selected": 2.0,
+        "structural": true
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_015",
+          "delivered": 127872.0,
+          "weighted_load": 383616.0,
+          "segment_indices": [
+            146,
+            147,
+            148,
+            149,
+            150,
+            151
+          ],
+          "cross_window_ids": [
+            "X020430"
+          ]
+        },
+        {
+          "task_id": "N72X_014",
+          "delivered": 107352.0,
+          "weighted_load": 322056.0,
+          "segment_indices": [
+            146,
+            147,
+            148,
+            149,
+            150,
+            151
+          ],
+          "cross_window_ids": [
+            "X020956"
+          ]
+        },
+        {
+          "task_id": "N72X_016",
+          "delivered": 65720.1805116078,
+          "weighted_load": 131440.3610232156,
+          "segment_indices": [
+            146,
+            147,
+            148,
+            149,
+            150,
+            151
+          ],
+          "cross_window_ids": [
+            "X020956"
+          ]
+        },
+        {
+          "task_id": "N72X_013",
+          "delivered": 40851.4269,
+          "weighted_load": 122554.2807,
+          "segment_indices": [
+            146,
+            147,
+            148,
+            149,
+            150,
+            151
+          ],
+          "cross_window_ids": [
+            "X020956"
+          ]
+        },
+        {
+          "task_id": "N72X_012",
+          "delivered": 60456.83298,
+          "weighted_load": 120913.66596,
+          "segment_indices": [
+            146,
+            147,
+            148,
+            149,
+            150,
+            151
+          ],
+          "cross_window_ids": [
+            "X020956"
+          ]
+        },
+        {
+          "task_id": "N72X_011",
+          "delivered": 13619.5596,
+          "weighted_load": 40858.6788,
+          "segment_indices": [
+            151
+          ],
+          "cross_window_ids": [
+            "X020956"
+          ]
+        }
+      ],
+      "selected_augment_windows": [],
+      "status": "structural_bottleneck",
+      "accepted": false,
+      "used_augment_windows": [],
+      "candidate_solver_status": "skipped_structural"
+    }
+  ],
+  "structural_bottleneck": [
+    {
+      "range_id": "hot_range_16",
+      "start": 14160.0,
+      "end": 14580.0,
+      "max_q_r": 1.00000000375,
+      "q_integral": 419.99998245000006,
+      "classification": {
+        "single_link_fraction": 1.0,
+        "median_active_selected": 1.0,
+        "structural": true
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_023",
+          "delivered": 100462.3734,
+          "weighted_load": 301387.1202,
+          "segment_indices": [
+            219,
+            220,
+            221,
+            222,
+            223
+          ],
+          "cross_window_ids": [
+            "X015858"
+          ]
+        },
+        {
+          "task_id": "N72X_024",
+          "delivered": 76346.0724,
+          "weighted_load": 152692.1448,
+          "segment_indices": [
+            219,
+            220,
+            221,
+            222,
+            223
+          ],
+          "cross_window_ids": [
+            "X015858"
+          ]
+        },
+        {
+          "task_id": "N72X_020",
+          "delivered": 80976.0,
+          "weighted_load": 80976.0,
+          "segment_indices": [
+            219,
+            220,
+            221,
+            222,
+            223
+          ],
+          "cross_window_ids": [
+            "X015858"
+          ]
+        },
+        {
+          "task_id": "N72X_022",
+          "delivered": 63843.1698,
+          "weighted_load": 63843.1698,
+          "segment_indices": [
+            219,
+            220,
+            221,
+            222,
+            223
+          ],
+          "cross_window_ids": [
+            "X015858"
+          ]
+        },
+        {
+          "task_id": "N72X_021",
+          "delivered": 14372.37036,
+          "weighted_load": 14372.37036,
+          "segment_indices": [
+            222,
+            223
+          ],
+          "cross_window_ids": [
+            "X015858"
+          ]
+        }
+      ],
+      "selected_augment_windows": [],
+      "status": "structural_bottleneck",
+      "accepted": false,
+      "used_augment_windows": [],
+      "candidate_solver_status": "skipped_structural"
+    },
+    {
+      "range_id": "hot_range_8",
+      "start": 9360.0,
+      "end": 9720.0,
+      "max_q_r": 1.00000000375,
+      "q_integral": 359.9999999895098,
+      "classification": {
+        "single_link_fraction": 0.6925207756170639,
+        "median_active_selected": 2.0,
+        "structural": true
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_015",
+          "delivered": 127872.0,
+          "weighted_load": 383616.0,
+          "segment_indices": [
+            146,
+            147,
+            148,
+            149,
+            150,
+            151
+          ],
+          "cross_window_ids": [
+            "X020430"
+          ]
+        },
+        {
+          "task_id": "N72X_014",
+          "delivered": 107352.0,
+          "weighted_load": 322056.0,
+          "segment_indices": [
+            146,
+            147,
+            148,
+            149,
+            150,
+            151
+          ],
+          "cross_window_ids": [
+            "X020956"
+          ]
+        },
+        {
+          "task_id": "N72X_016",
+          "delivered": 65720.1805116078,
+          "weighted_load": 131440.3610232156,
+          "segment_indices": [
+            146,
+            147,
+            148,
+            149,
+            150,
+            151
+          ],
+          "cross_window_ids": [
+            "X020956"
+          ]
+        },
+        {
+          "task_id": "N72X_013",
+          "delivered": 40851.4269,
+          "weighted_load": 122554.2807,
+          "segment_indices": [
+            146,
+            147,
+            148,
+            149,
+            150,
+            151
+          ],
+          "cross_window_ids": [
+            "X020956"
+          ]
+        },
+        {
+          "task_id": "N72X_012",
+          "delivered": 60456.83298,
+          "weighted_load": 120913.66596,
+          "segment_indices": [
+            146,
+            147,
+            148,
+            149,
+            150,
+            151
+          ],
+          "cross_window_ids": [
+            "X020956"
+          ]
+        },
+        {
+          "task_id": "N72X_011",
+          "delivered": 13619.5596,
+          "weighted_load": 40858.6788,
+          "segment_indices": [
+            151
+          ],
+          "cross_window_ids": [
+            "X020956"
+          ]
+        }
+      ],
+      "selected_augment_windows": [],
+      "status": "structural_bottleneck",
+      "accepted": false,
+      "used_augment_windows": [],
+      "candidate_solver_status": "skipped_structural"
+    }
+  ],
+  "reroutable_candidate_pruned": [
+    {
+      "range_id": "hot_range_33",
+      "start": 25560.0,
+      "end": 27187.57,
+      "max_q_r": 1.0000000125,
+      "q_integral": 1625.3487981999997,
+      "classification": {
+        "single_link_fraction": 1.0,
+        "median_active_selected": 1.0,
+        "structural": false
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_042",
+          "delivered": 370023.5295999999,
+          "weighted_load": 740047.0591999998,
+          "segment_indices": [
+            401,
+            402,
+            403,
+            404,
+            405,
+            406,
+            407,
+            408,
+            409,
+            410,
+            411,
+            412,
+            413,
+            414,
+            415,
+            417,
+            418,
+            419,
+            420,
+            421,
+            422,
+            423,
+            424,
+            425,
+            426,
+            427
+          ],
+          "cross_window_ids": [
+            "X017339"
+          ]
+        },
+        {
+          "task_id": "N72X_041",
+          "delivered": 294902.33419999987,
+          "weighted_load": 589804.6683999997,
+          "segment_indices": [
+            401,
+            402,
+            403,
+            404,
+            410,
+            411,
+            412,
+            413,
+            414,
+            415,
+            416,
+            417,
+            418,
+            419,
+            420,
+            421,
+            422,
+            423,
+            424,
+            425,
+            426,
+            427
+          ],
+          "cross_window_ids": [
+            "X017339"
+          ]
+        },
+        {
+          "task_id": "N72X_038",
+          "delivered": 163960.79433291973,
+          "weighted_load": 491882.3829987592,
+          "segment_indices": [
+            403,
+            404,
+            405,
+            413,
+            414,
+            415,
+            416,
+            417,
+            418,
+            419,
+            420
+          ],
+          "cross_window_ids": [
+            "X017339"
+          ]
+        },
+        {
+          "task_id": "N72X_039",
+          "delivered": 139121.95366962068,
+          "weighted_load": 417365.86100886203,
+          "segment_indices": [
+            405,
+            406,
+            407,
+            408,
+            409
+          ],
+          "cross_window_ids": [
+            "X017339"
+          ]
+        },
+        {
+          "task_id": "N72X_037",
+          "delivered": 126126.0389875695,
+          "weighted_load": 378378.1169627085,
+          "segment_indices": [
+            405,
+            406,
+            407,
+            408,
+            409,
+            410
+          ],
+          "cross_window_ids": [
+            "X017339"
+          ]
+        },
+        {
+          "task_id": "N72X_040",
+          "delivered": 133002.2781,
+          "weighted_load": 266004.5562,
+          "segment_indices": [
+            401,
+            402,
+            403,
+            404,
+            420,
+            421,
+            422,
+            423,
+            424,
+            425
+          ],
+          "cross_window_ids": [
+            "X017339"
+          ]
+        },
+        {
+          "task_id": "N72X_043",
+          "delivered": 73030.62757999993,
+          "weighted_load": 146061.25515999986,
+          "segment_indices": [
+            411,
+            412,
+            413,
+            416,
+            417,
+            426,
+            427
+          ],
+          "cross_window_ids": [
+            "X017339"
+          ]
+        }
+      ],
+      "selected_augment_windows": [
+        "X023535",
+        "X002479"
+      ],
+      "status": "reroutable_candidate_pruned",
+      "accepted": false,
+      "used_augment_windows": [],
+      "candidate_solver_status": "Failed:RuntimeError"
+    },
+    {
+      "range_id": "hot_range_58",
+      "start": 41040.0,
+      "end": 42000.0,
+      "max_q_r": 1.00000000875,
+      "q_integral": 958.5225722175,
+      "classification": {
+        "single_link_fraction": 1.0,
+        "median_active_selected": 1.0,
+        "structural": false
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_071",
+          "delivered": 196975.95299999998,
+          "weighted_load": 590927.8589999999,
+          "segment_indices": [
+            649,
+            650,
+            651,
+            652,
+            653,
+            654,
+            655,
+            656,
+            657,
+            658,
+            659,
+            660,
+            661,
+            662,
+            663
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_072",
+          "delivered": 171621.75194350476,
+          "weighted_load": 343243.5038870095,
+          "segment_indices": [
+            649,
+            650,
+            651,
+            652,
+            653,
+            654,
+            655,
+            656,
+            657,
+            658,
+            659,
+            660,
+            661,
+            662,
+            663
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_066",
+          "delivered": 111071.99982373742,
+          "weighted_load": 222143.99964747485,
+          "segment_indices": [
+            651,
+            652,
+            653,
+            654,
+            655,
+            656,
+            657,
+            658,
+            659,
+            660
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_067",
+          "delivered": 105215.99724,
+          "weighted_load": 210431.99448,
+          "segment_indices": [
+            649,
+            651,
+            652,
+            656,
+            657,
+            658,
+            659,
+            660,
+            661,
+            662,
+            663
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_064",
+          "delivered": 97974.5565118626,
+          "weighted_load": 195949.1130237252,
+          "segment_indices": [
+            649,
+            650,
+            651,
+            652,
+            653,
+            654,
+            655
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_062",
+          "delivered": 39344.56169999986,
+          "weighted_load": 118033.68509999957,
+          "segment_indices": [
+            649,
+            650
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_068",
+          "delivered": 34914.056934,
+          "weighted_load": 34914.056934,
+          "segment_indices": [
+            656,
+            657,
+            658,
+            659,
+            660,
+            661,
+            662,
+            663
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_069",
+          "delivered": 9576.0,
+          "weighted_load": 9576.0,
+          "segment_indices": [
+            661,
+            662,
+            663
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        }
+      ],
+      "selected_augment_windows": [],
+      "status": "reroutable_candidate_pruned",
+      "accepted": false,
+      "used_augment_windows": [],
+      "candidate_solver_status": "Failed:RuntimeError"
+    },
+    {
+      "range_id": "hot_range_26",
+      "start": 19560.0,
+      "end": 20520.0,
+      "max_q_r": 1.00000000625,
+      "q_integral": 959.8445982535001,
+      "classification": {
+        "single_link_fraction": 0.9430630385615114,
+        "median_active_selected": 1.0,
+        "structural": false
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_031",
+          "delivered": 226640.97320152004,
+          "weighted_load": 453281.9464030401,
+          "segment_indices": [
+            304,
+            305,
+            306,
+            307,
+            308,
+            309,
+            310,
+            311,
+            312,
+            313,
+            314,
+            315,
+            316,
+            317,
+            318,
+            319
+          ],
+          "cross_window_ids": [
+            "X006458",
+            "X015858",
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_035",
+          "delivered": 83403.79158000066,
+          "weighted_load": 250211.37474000198,
+          "segment_indices": [
+            304,
+            306,
+            307,
+            308,
+            310,
+            312,
+            313,
+            314,
+            315,
+            318,
+            319
+          ],
+          "cross_window_ids": [
+            "X006458",
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_030",
+          "delivered": 106639.42800000001,
+          "weighted_load": 213278.85600000003,
+          "segment_indices": [
+            308,
+            309,
+            310,
+            311,
+            312,
+            313
+          ],
+          "cross_window_ids": [
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_028",
+          "delivered": 98003.99979315289,
+          "weighted_load": 196007.99958630578,
+          "segment_indices": [
+            304,
+            305,
+            306,
+            307,
+            308,
+            309
+          ],
+          "cross_window_ids": [
+            "X015858",
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_033",
+          "delivered": 146475.9710600004,
+          "weighted_load": 146475.9710600004,
+          "segment_indices": [
+            304,
+            306,
+            307,
+            308,
+            310,
+            311,
+            312,
+            313,
+            314,
+            315,
+            316,
+            317,
+            318,
+            319
+          ],
+          "cross_window_ids": [
+            "X015858",
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_029",
+          "delivered": 60476.073124799994,
+          "weighted_load": 120952.14624959999,
+          "segment_indices": [
+            311,
+            315,
+            316,
+            317,
+            318,
+            319
+          ],
+          "cross_window_ids": [
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_026",
+          "delivered": 19587.000006767423,
+          "weighted_load": 58761.00002030227,
+          "segment_indices": [
+            304,
+            305
+          ],
+          "cross_window_ids": [
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_034",
+          "delivered": 51638.451200000265,
+          "weighted_load": 51638.451200000265,
+          "segment_indices": [
+            304,
+            314,
+            315,
+            316,
+            317,
+            318,
+            319
+          ],
+          "cross_window_ids": [
+            "X018334"
+          ]
+        },
+        {
+          "task_id": "N72X_032",
+          "delivered": 21312.888100000222,
+          "weighted_load": 21312.888100000222,
+          "segment_indices": [
+            304,
+            314,
+            315,
+            316,
+            317,
+            318,
+            319
+          ],
+          "cross_window_ids": [
+            "X015858",
+            "X018334"
+          ]
+        }
+      ],
+      "selected_augment_windows": [],
+      "status": "reroutable_candidate_pruned",
+      "accepted": false,
+      "used_augment_windows": [],
+      "candidate_solver_status": "Failed:RuntimeError"
+    }
+  ],
+  "improved_after_augmentation": [],
+  "augment_candidates": [
+    {
+      "range_id": "hot_range_33",
+      "window_id": "X023535",
+      "overlap_duration": 1627.5699999999997,
+      "estimated_divertable_rate": 1369.007349,
+      "delay_penalty": 1.7759332158252147e-05,
+      "switch_penalty": 7.0,
+      "relief_score": 1650482.14392062,
+      "contributing_task_ids": [
+        "N72X_037",
+        "N72X_038",
+        "N72X_039",
+        "N72X_040",
+        "N72X_041",
+        "N72X_042",
+        "N72X_043"
+      ]
+    },
+    {
+      "range_id": "hot_range_33",
+      "window_id": "X002479",
+      "overlap_duration": 1627.5699999999997,
+      "estimated_divertable_rate": 1369.007349,
+      "delay_penalty": 1.814071608099872e-05,
+      "switch_penalty": 7.0,
+      "relief_score": 1650482.073979944,
+      "contributing_task_ids": [
+        "N72X_037",
+        "N72X_038",
+        "N72X_039",
+        "N72X_040",
+        "N72X_041",
+        "N72X_042",
+        "N72X_043"
+      ]
+    },
+    {
+      "range_id": "hot_range_33",
+      "window_id": "X006487",
+      "overlap_duration": 1627.5699999999997,
+      "estimated_divertable_rate": 1369.007349,
+      "delay_penalty": 1.8200025111168728e-05,
+      "switch_penalty": 7.0,
+      "relief_score": 1650482.063103467,
+      "contributing_task_ids": [
+        "N72X_037",
+        "N72X_038",
+        "N72X_039",
+        "N72X_040",
+        "N72X_041",
+        "N72X_042",
+        "N72X_043"
+      ]
+    },
+    {
+      "range_id": "hot_range_58",
+      "window_id": "X008666",
+      "overlap_duration": 821.3539999999994,
+      "estimated_divertable_rate": 1046.5011439,
+      "delay_penalty": 2.394177474884902e-05,
+      "switch_penalty": 8.0,
+      "relief_score": 613961.2111776333,
+      "contributing_task_ids": [
+        "N72X_062",
+        "N72X_064",
+        "N72X_066",
+        "N72X_067",
+        "N72X_068",
+        "N72X_069",
+        "N72X_071",
+        "N72X_072"
+      ]
+    },
+    {
+      "range_id": "hot_range_58",
+      "window_id": "X006963",
+      "overlap_duration": 816.1690000000017,
+      "estimated_divertable_rate": 1046.5011439,
+      "delay_penalty": 2.2436962231228165e-05,
+      "switch_penalty": 8.0,
+      "relief_score": 610085.5277470208,
+      "contributing_task_ids": [
+        "N72X_062",
+        "N72X_064",
+        "N72X_066",
+        "N72X_067",
+        "N72X_068",
+        "N72X_069",
+        "N72X_071",
+        "N72X_072"
+      ]
+    },
+    {
+      "range_id": "hot_range_58",
+      "window_id": "X011283",
+      "overlap_duration": 816.1050000000032,
+      "estimated_divertable_rate": 1046.5011439,
+      "delay_penalty": 1.7647800016205804e-05,
+      "switch_penalty": 8.0,
+      "relief_score": 610038.0008344405,
+      "contributing_task_ids": [
+        "N72X_062",
+        "N72X_064",
+        "N72X_066",
+        "N72X_067",
+        "N72X_068",
+        "N72X_069",
+        "N72X_071",
+        "N72X_072"
+      ]
+    },
+    {
+      "range_id": "hot_range_26",
+      "window_id": "X005876",
+      "overlap_duration": 960.0,
+      "estimated_divertable_rate": 1769.2022023,
+      "delay_penalty": 1.6652806023992832e-05,
+      "switch_penalty": 9.0,
+      "relief_score": 1171331.8540094323,
+      "contributing_task_ids": [
+        "N72X_026",
+        "N72X_028",
+        "N72X_029",
+        "N72X_030",
+        "N72X_031",
+        "N72X_032",
+        "N72X_033",
+        "N72X_034",
+        "N72X_035"
+      ]
+    },
+    {
+      "range_id": "hot_range_26",
+      "window_id": "X000774",
+      "overlap_duration": 960.0,
+      "estimated_divertable_rate": 1769.2022023,
+      "delay_penalty": 1.707099285323836e-05,
+      "switch_penalty": 9.0,
+      "relief_score": 1171331.8033368783,
+      "contributing_task_ids": [
+        "N72X_026",
+        "N72X_028",
+        "N72X_029",
+        "N72X_030",
+        "N72X_031",
+        "N72X_032",
+        "N72X_033",
+        "N72X_034",
+        "N72X_035"
+      ]
+    },
+    {
+      "range_id": "hot_range_26",
+      "window_id": "X014836",
+      "overlap_duration": 960.0,
+      "estimated_divertable_rate": 1769.2022023,
+      "delay_penalty": 1.732682900111928e-05,
+      "switch_penalty": 9.0,
+      "relief_score": 1171331.7723366907,
+      "contributing_task_ids": [
+        "N72X_026",
+        "N72X_028",
+        "N72X_029",
+        "N72X_030",
+        "N72X_031",
+        "N72X_032",
+        "N72X_033",
+        "N72X_034",
+        "N72X_035"
+      ]
+    }
+  ],
+  "selected_augment_windows": [
+    "X002479",
+    "X023535"
+  ],
+  "removed_plan_windows": [],
+  "stage1_peak_rescore_hook": {
+    "recommended": true,
+    "reason": "no_accepted_hotspot_relief_improvement"
+  },
+  "before_after": {
+    "before": {
+      "cr_reg": 0.8066666666666666,
+      "q_peak": 1.0000000125,
+      "q_integral": 35529.54661669277,
+      "peak_segment_count": 1
+    },
+    "after": {
+      "cr_reg": 0.8066666666666666,
+      "q_peak": 1.0000000125,
+      "q_integral": 35529.54661669277,
+      "peak_segment_count": 1
+    }
+  }
+}

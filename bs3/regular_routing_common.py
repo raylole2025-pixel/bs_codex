@@ -28,10 +28,12 @@ class ScoredPathOption:
 
 def resolve_regular_baseline_mode(stage2_config) -> str:
     raw_mode = str(getattr(stage2_config, "regular_baseline_mode", "") or "").strip().lower()
+    if raw_mode == "rolling_milp":
+        return "full_milp"
     if raw_mode in REGULAR_BASELINE_MODES:
         return raw_mode
     if bool(getattr(stage2_config, "prefer_milp", True)):
-        return "full_milp" if str(getattr(stage2_config, "milp_mode", "rolling")).strip().lower() == "full" else "rolling_milp"
+        return "full_milp"
     return "stage1_greedy_repair"
 
 

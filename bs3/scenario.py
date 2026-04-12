@@ -64,6 +64,26 @@ def _optional_float(value: object, name: str) -> float | None:
     return _float(value, name)
 
 
+def _bool(value: object, name: str) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)) and value in {0, 1}:
+        return bool(value)
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "y", "on"}:
+            return True
+        if normalized in {"0", "false", "no", "n", "off"}:
+            return False
+    raise ValueError(f"{name} must be boolean-like, got {value!r}")
+
+
+def _optional_bool(value: object, name: str) -> bool | None:
+    if value in {None, ""}:
+        return None
+    return _bool(value, name)
+
+
 def _required(data: dict, key: str):
     if key not in data:
         raise ValueError(f"Missing required field: {key}")
@@ -304,13 +324,14 @@ def load_scenario(path: str | Path) -> Scenario:
     )
     stage2_k_paths = int(stage2_cfg.get("k_paths", 2))
     raw_label_keep_limit = stage2_cfg.get("label_keep_limit")
-    raw_milp_mode = str(stage2_cfg.get("milp_mode", "rolling")).strip().lower()
+    raw_milp_mode = str(stage2_cfg.get("milp_mode", "full")).strip().lower()
     raw_milp_time_limit = stage2_cfg.get("milp_time_limit_seconds")
     raw_milp_relative_gap = stage2_cfg.get("milp_relative_gap")
     raw_milp_high_weight_threshold = stage2_cfg.get("milp_rolling_high_weight_threshold")
     raw_regular_baseline_mode = stage2_cfg.get("regular_baseline_mode")
     raw_regular_repair_enabled = stage2_cfg.get("regular_repair_enabled")
     raw_repair_time_limit = stage2_cfg.get("repair_time_limit_seconds")
+    raw_local_peak_horizon_cap = stage2_cfg.get("local_peak_horizon_cap_segments")
     stage2 = Stage2Config(
         k_paths=stage2_k_paths,
         completion_tolerance=_float(stage2_cfg.get("completion_tolerance", 1e-6), "stage2.completion_tolerance"),
@@ -318,7 +339,11 @@ def load_scenario(path: str | Path) -> Scenario:
             None
             if raw_regular_baseline_mode in {None, ""}
             else (
-                str(raw_regular_baseline_mode).strip().lower()
+                (
+                    "full_milp"
+                    if str(raw_regular_baseline_mode).strip().lower() == "rolling_milp"
+                    else str(raw_regular_baseline_mode).strip().lower()
+                )
                 if str(raw_regular_baseline_mode).strip().lower() in REGULAR_BASELINE_MODES
                 else None
             )
@@ -326,10 +351,10 @@ def load_scenario(path: str | Path) -> Scenario:
         regular_repair_enabled=(
             None
             if raw_regular_repair_enabled in {None, ""}
-            else bool(raw_regular_repair_enabled)
+            else _bool(raw_regular_repair_enabled, "stage2.regular_repair_enabled")
         ),
-        prefer_milp=bool(stage2_cfg.get("prefer_milp", True)),
-        milp_mode=raw_milp_mode if raw_milp_mode in {"full", "rolling"} else "rolling",
+        prefer_milp=_bool(stage2_cfg.get("prefer_milp", True), "stage2.prefer_milp"),
+        milp_mode="full" if raw_milp_mode in {"full", "rolling"} else "full",
         milp_horizon_segments=max(int(stage2_cfg.get("milp_horizon_segments", 16)), 1),
         milp_commit_segments=max(int(stage2_cfg.get("milp_commit_segments", 8)), 1),
         milp_rolling_path_limit=max(int(stage2_cfg.get("milp_rolling_path_limit", 1)), 1),
@@ -363,6 +388,35 @@ def load_scenario(path: str | Path) -> Scenario:
             else _float(raw_repair_time_limit, "stage2.repair_time_limit_seconds")
         ),
         repair_accept_epsilon=max(_float(stage2_cfg.get("repair_accept_epsilon", 1e-6), "stage2.repair_accept_epsilon"), 0.0),
+        hotspot_relief_enabled=_bool(stage2_cfg.get("hotspot_relief_enabled", True), "stage2.hotspot_relief_enabled"),
+        hotspot_util_threshold=max(_float(stage2_cfg.get("hotspot_util_threshold", 0.95), "stage2.hotspot_util_threshold"), 0.0),
+        hotspot_topk_ranges=max(int(stage2_cfg.get("hotspot_topk_ranges", 5)), 0),
+        hotspot_expand_segments=max(int(stage2_cfg.get("hotspot_expand_segments", 2)), 0),
+        hotspot_single_link_fraction_threshold=min(
+            max(
+                _float(
+                    stage2_cfg.get("hotspot_single_link_fraction_threshold", 0.6),
+                    "stage2.hotspot_single_link_fraction_threshold",
+                ),
+                0.0,
+            ),
+            1.0,
+        ),
+        hotspot_top_tasks_per_range=max(int(stage2_cfg.get("hotspot_top_tasks_per_range", 12)), 0),
+        augment_window_budget=max(int(stage2_cfg.get("augment_window_budget", 2)), 0),
+        augment_top_windows_per_range=max(int(stage2_cfg.get("augment_top_windows_per_range", 3)), 0),
+        hot_path_limit=max(int(stage2_cfg.get("hot_path_limit", 4)), 1),
+        hot_promoted_tasks_per_segment=max(int(stage2_cfg.get("hot_promoted_tasks_per_segment", 8)), 0),
+        local_peak_horizon_cap_segments=(
+            None
+            if raw_local_peak_horizon_cap in {None, ""}
+            else max(int(raw_local_peak_horizon_cap), 1)
+        ),
+        local_peak_accept_epsilon=max(
+            _float(stage2_cfg.get("local_peak_accept_epsilon", 1e-6), "stage2.local_peak_accept_epsilon"),
+            0.0,
+        ),
+        fail_if_milp_disabled=_bool(stage2_cfg.get("fail_if_milp_disabled", True), "stage2.fail_if_milp_disabled"),
         label_keep_limit=(int(raw_label_keep_limit) if raw_label_keep_limit not in {None, ""} else None),
     )
 
@@ -923,32 +977,7 @@ def scenario_to_dict(scenario: Scenario) -> dict:
             "elite_prune_count": scenario.stage1.elite_prune_count,
             "ga": asdict(scenario.stage1.ga),
         },
-        "stage2": {
-            "k_paths": scenario.stage2.k_paths,
-            "completion_tolerance": scenario.stage2.completion_tolerance,
-            "regular_baseline_mode": scenario.stage2.regular_baseline_mode,
-            "regular_repair_enabled": scenario.stage2.regular_repair_enabled,
-            "prefer_milp": scenario.stage2.prefer_milp,
-            "milp_mode": scenario.stage2.milp_mode,
-            "milp_horizon_segments": scenario.stage2.milp_horizon_segments,
-            "milp_commit_segments": scenario.stage2.milp_commit_segments,
-            "milp_rolling_path_limit": scenario.stage2.milp_rolling_path_limit,
-            "milp_rolling_high_path_limit": scenario.stage2.milp_rolling_high_path_limit,
-            "milp_rolling_high_weight_threshold": scenario.stage2.milp_rolling_high_weight_threshold,
-            "milp_rolling_high_competition_task_threshold": scenario.stage2.milp_rolling_high_competition_task_threshold,
-            "milp_rolling_promoted_tasks_per_segment": scenario.stage2.milp_rolling_promoted_tasks_per_segment,
-            "milp_time_limit_seconds": scenario.stage2.milp_time_limit_seconds,
-            "milp_relative_gap": scenario.stage2.milp_relative_gap,
-            "repair_block_max_count": scenario.stage2.repair_block_max_count,
-            "repair_expand_segments": scenario.stage2.repair_expand_segments,
-            "repair_max_block_segments": scenario.stage2.repair_max_block_segments,
-            "repair_min_active_tasks": scenario.stage2.repair_min_active_tasks,
-            "repair_util_threshold": scenario.stage2.repair_util_threshold,
-            "repair_candidate_path_limit": scenario.stage2.repair_candidate_path_limit,
-            "repair_time_limit_seconds": scenario.stage2.repair_time_limit_seconds,
-            "repair_accept_epsilon": scenario.stage2.repair_accept_epsilon,
-            "label_keep_limit": scenario.stage2.label_keep_limit,
-        },
+        "stage2": asdict(scenario.stage2),
         "hotspots": {
             "A": [
                 {

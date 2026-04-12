@@ -196,8 +196,8 @@ class Stage2Config:
     regular_repair_enabled: bool | None = None
     # 阶段2-1是否优先使用联合 MILP 进行常态任务基线规划
     prefer_milp: bool = True
-    # 阶段2-1 联合 MILP 的求解模式：full 或 rolling
-    milp_mode: str = "rolling"
+    # 阶段2-1 常态基线统一使用 full MILP；该字段保留用于兼容旧配置
+    milp_mode: str = "full"
     # rolling 模式下的展望窗口长度（按事件分段数计）
     milp_horizon_segments: int = 16
     # rolling 模式下每轮正式提交的分段数
@@ -232,6 +232,32 @@ class Stage2Config:
     repair_time_limit_seconds: float | None = None
     # repair 接受阈值
     repair_accept_epsilon: float = 1e-6
+    # 是否启用热点补窗 + 热点段候选扩张 + 局部峰值约束 MILP
+    hotspot_relief_enabled: bool = True
+    # 热点分段识别阈值（q_r）
+    hotspot_util_threshold: float = 0.95
+    # 最多考虑的热点区间数量
+    hotspot_topk_ranges: int = 5
+    # 热点区间局部 MILP 左右各扩的 segment 数
+    hotspot_expand_segments: int = 2
+    # 判定“单链路主导”的阈值
+    hotspot_single_link_fraction_threshold: float = 0.6
+    # 每个热点区间最多保留的热点贡献任务数
+    hotspot_top_tasks_per_range: int = 12
+    # 全局最多允许新增的补窗数量
+    augment_window_budget: int = 2
+    # 每个热点区间最多保留的补窗候选数量
+    augment_top_windows_per_range: int = 3
+    # 热点 task-segment 的候选路径上限
+    hot_path_limit: int = 4
+    # 每个热点分段最多提升为热点扩张候选的任务数
+    hot_promoted_tasks_per_segment: int = 8
+    # 单次局部峰值 MILP 的最大 horizon 长度；None 表示不截断
+    local_peak_horizon_cap_segments: int | None = 48
+    # 局部峰值 MILP 接受阈值
+    local_peak_accept_epsilon: float = 1e-6
+    # 启用热点补窗时，若未实际使用 MILP，则直接报错
+    fail_if_milp_disabled: bool = True
     # 控制每个时间段的 路径候选集大小（因为阶段2要选出每个时间段内的最优路径，所以要控制候选集大小，只保留支配解）
     label_keep_limit: int | None = None
 

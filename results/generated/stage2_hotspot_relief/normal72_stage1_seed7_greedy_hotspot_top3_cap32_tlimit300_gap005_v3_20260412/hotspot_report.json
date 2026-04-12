@@ -1,0 +1,1931 @@
+{
+  "hot_ranges": [
+    {
+      "range_id": "hot_range_21",
+      "start": 39720.0,
+      "end": 40560.0,
+      "max_q_r": 1.0000000000000002,
+      "q_integral": 840.0,
+      "classification": {
+        "hot_duration": 840.0,
+        "single_link_fraction": 0.8571428571428571,
+        "median_active_selected": 1.0,
+        "active_selected_count_distribution": [
+          [
+            1,
+            12
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "feasible_alternative_cross_window_count": 5,
+        "feasible_alternative_path_count": 3355,
+        "top_contributing_windows": [
+          "X010844",
+          "X017844"
+        ],
+        "structural": true,
+        "reroutable": true,
+        "primary_class": "structural",
+        "reason": "single_link_fraction>=0.600 and median_active_selected<=1",
+        "warnings": []
+      },
+      "alternative_diagnostics": {
+        "selected_alternative_cross_window_ids": [
+          "X010844",
+          "X017844"
+        ],
+        "augmentable_cross_window_ids": [
+          "X000270",
+          "X000272",
+          "X000793"
+        ],
+        "feasible_alternative_cross_window_ids": [
+          "X000270",
+          "X000272",
+          "X000793",
+          "X010844",
+          "X017844"
+        ],
+        "selected_alternative_path_count": 2971,
+        "augment_alternative_path_count": 384,
+        "feasible_alternative_cross_window_count": 5,
+        "feasible_alternative_path_count": 3355
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_065",
+          "delivered": 172368.0,
+          "weighted_load": 344736.0,
+          "segment_indices": [
+            627,
+            628,
+            629,
+            630,
+            631,
+            632,
+            633,
+            634,
+            635,
+            636,
+            637,
+            638,
+            639,
+            640
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_067",
+          "delivered": 156912.0,
+          "weighted_load": 313824.0,
+          "segment_indices": [
+            627,
+            628,
+            629,
+            630,
+            631,
+            632,
+            633,
+            634,
+            635,
+            636,
+            637,
+            638,
+            639,
+            640
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_072",
+          "delivered": 142824.0,
+          "weighted_load": 285648.0,
+          "segment_indices": [
+            627,
+            628,
+            629,
+            630,
+            631,
+            632,
+            633,
+            634,
+            635,
+            636,
+            637,
+            638,
+            639,
+            640
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_066",
+          "delivered": 125184.0,
+          "weighted_load": 250368.0,
+          "segment_indices": [
+            627,
+            628,
+            629,
+            630,
+            631,
+            632,
+            633,
+            634,
+            635,
+            636,
+            637,
+            638,
+            639,
+            640
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_064",
+          "delivered": 84151.45919999992,
+          "weighted_load": 168302.91839999985,
+          "segment_indices": [
+            627,
+            628,
+            629,
+            630,
+            631,
+            632,
+            633,
+            634,
+            635,
+            636,
+            637,
+            638,
+            639
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_068",
+          "delivered": 31157.380799999893,
+          "weighted_load": 31157.380799999893,
+          "segment_indices": [
+            627,
+            628,
+            640
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_070",
+          "delivered": 23460.812399999886,
+          "weighted_load": 23460.812399999886,
+          "segment_indices": [
+            627,
+            628,
+            640
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_069",
+          "delivered": 11355.733199999948,
+          "weighted_load": 11355.733199999948,
+          "segment_indices": [
+            627,
+            628
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        }
+      ],
+      "selected_augment_windows": [
+        "X000270",
+        "X000793"
+      ],
+      "applied_augment_windows": [
+        "X000270",
+        "X000793"
+      ],
+      "status": "improved_after_augmentation",
+      "accepted": true,
+      "used_augment_windows": [
+        "X000270",
+        "X000793"
+      ],
+      "candidate_solver_status": "Optimal",
+      "rejection_reason": null,
+      "objective_values": {
+        "completion": 8.0,
+        "progress": 1981598.9183999998,
+        "peak": 0.51503674,
+        "integral": 520.5180799850399,
+        "switch": 8.0
+      }
+    },
+    {
+      "range_id": "hot_range_5",
+      "start": 12820.177,
+      "end": 13453.658,
+      "max_q_r": 1.0000000000000002,
+      "q_integral": 633.4809999999998,
+      "classification": {
+        "hot_duration": 633.4809999999998,
+        "single_link_fraction": 1.0,
+        "median_active_selected": 1.0,
+        "active_selected_count_distribution": [
+          [
+            1,
+            10
+          ]
+        ],
+        "feasible_alternative_cross_window_count": 3,
+        "feasible_alternative_path_count": 1445,
+        "top_contributing_windows": [
+          "X020430"
+        ],
+        "structural": true,
+        "reroutable": true,
+        "primary_class": "structural",
+        "reason": "single_link_fraction>=0.9",
+        "warnings": []
+      },
+      "alternative_diagnostics": {
+        "selected_alternative_cross_window_ids": [],
+        "augmentable_cross_window_ids": [
+          "X000285",
+          "X000320",
+          "X000363"
+        ],
+        "feasible_alternative_cross_window_ids": [
+          "X000285",
+          "X000320",
+          "X000363"
+        ],
+        "selected_alternative_path_count": 1205,
+        "augment_alternative_path_count": 240,
+        "feasible_alternative_cross_window_count": 3,
+        "feasible_alternative_path_count": 1445
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_023",
+          "delivered": 159637.21199999994,
+          "weighted_load": 478911.6359999998,
+          "segment_indices": [
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206
+          ],
+          "cross_window_ids": [
+            "X020430"
+          ]
+        },
+        {
+          "task_id": "N72X_024",
+          "delivered": 132144.13659999994,
+          "weighted_load": 264288.2731999999,
+          "segment_indices": [
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206
+          ],
+          "cross_window_ids": [
+            "X020430"
+          ]
+        },
+        {
+          "task_id": "N72X_022",
+          "delivered": 98062.85879999997,
+          "weighted_load": 98062.85879999997,
+          "segment_indices": [
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206
+          ],
+          "cross_window_ids": [
+            "X020430"
+          ]
+        },
+        {
+          "task_id": "N72X_020",
+          "delivered": 82430.73700000005,
+          "weighted_load": 82430.73700000005,
+          "segment_indices": [
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206
+          ],
+          "cross_window_ids": [
+            "X020430"
+          ]
+        },
+        {
+          "task_id": "N72X_021",
+          "delivered": 34509.8555999999,
+          "weighted_load": 34509.8555999999,
+          "segment_indices": [
+            200,
+            202,
+            206
+          ],
+          "cross_window_ids": [
+            "X020430"
+          ]
+        }
+      ],
+      "selected_augment_windows": [],
+      "applied_augment_windows": [],
+      "status": "structural_bottleneck",
+      "accepted": false,
+      "used_augment_windows": [],
+      "candidate_solver_status": "skipped_no_applied_augment",
+      "rejection_reason": "structural hotspot has no applied augment window"
+    },
+    {
+      "range_id": "hot_range_19",
+      "start": 37020.0,
+      "end": 39300.0,
+      "max_q_r": 1.0,
+      "q_integral": 2280.0,
+      "classification": {
+        "hot_duration": 2280.0,
+        "single_link_fraction": 0.2972972972972973,
+        "median_active_selected": 2.0,
+        "active_selected_count_distribution": [
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            26
+          ]
+        ],
+        "feasible_alternative_cross_window_count": 5,
+        "feasible_alternative_path_count": 13279,
+        "top_contributing_windows": [
+          "X017844",
+          "X010844"
+        ],
+        "structural": false,
+        "reroutable": true,
+        "primary_class": "reroutable",
+        "reason": "multiple selected windows or feasible alternative paths exist",
+        "warnings": []
+      },
+      "alternative_diagnostics": {
+        "selected_alternative_cross_window_ids": [
+          "X010844",
+          "X017844"
+        ],
+        "augmentable_cross_window_ids": [
+          "X006999",
+          "X007554",
+          "X008665"
+        ],
+        "feasible_alternative_cross_window_ids": [
+          "X006999",
+          "X007554",
+          "X008665",
+          "X010844",
+          "X017844"
+        ],
+        "selected_alternative_path_count": 12751,
+        "augment_alternative_path_count": 528,
+        "feasible_alternative_cross_window_count": 5,
+        "feasible_alternative_path_count": 13279
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_062",
+          "delivered": 498420.0,
+          "weighted_load": 1495260.0,
+          "segment_indices": [
+            587,
+            588,
+            589,
+            590,
+            591,
+            592,
+            593,
+            594,
+            595,
+            596,
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            608,
+            609,
+            610,
+            611,
+            612,
+            613,
+            614,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_063",
+          "delivered": 456600.0,
+          "weighted_load": 1369800.0,
+          "segment_indices": [
+            590,
+            591,
+            592,
+            593,
+            594,
+            595,
+            596,
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            608,
+            609,
+            610,
+            611,
+            612,
+            613,
+            614
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_061",
+          "delivered": 450072.0,
+          "weighted_load": 1350216.0,
+          "segment_indices": [
+            583,
+            584,
+            585,
+            586,
+            587,
+            588,
+            589,
+            590,
+            591,
+            592,
+            593,
+            594,
+            595,
+            596,
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            608,
+            609,
+            610,
+            611,
+            612,
+            613
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_071",
+          "delivered": 423859.10400000005,
+          "weighted_load": 1271577.3120000002,
+          "segment_indices": [
+            583,
+            584,
+            585,
+            586,
+            587,
+            588,
+            589,
+            594,
+            595,
+            596,
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            608,
+            609,
+            610,
+            611,
+            612,
+            613,
+            614,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_072",
+          "delivered": 282840.0,
+          "weighted_load": 565680.0,
+          "segment_indices": [
+            583,
+            584,
+            585,
+            586,
+            587,
+            588,
+            589,
+            590,
+            591,
+            592,
+            593,
+            594,
+            595,
+            596,
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            612,
+            613,
+            614,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_064",
+          "delivered": 231148.54080000008,
+          "weighted_load": 462297.08160000015,
+          "segment_indices": [
+            598,
+            599,
+            600,
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            608,
+            609,
+            610,
+            611,
+            613,
+            614,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_067",
+          "delivered": 208112.28960000002,
+          "weighted_load": 416224.57920000004,
+          "segment_indices": [
+            594,
+            595,
+            596,
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            608,
+            609,
+            610,
+            611,
+            612,
+            613,
+            614,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_065",
+          "delivered": 200472.0,
+          "weighted_load": 400944.0,
+          "segment_indices": [
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            608,
+            609,
+            610,
+            611,
+            612,
+            613,
+            614,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_066",
+          "delivered": 180492.0,
+          "weighted_load": 360984.0,
+          "segment_indices": [
+            608,
+            609,
+            610,
+            611,
+            612,
+            613,
+            614,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_068",
+          "delivered": 140715.72000000003,
+          "weighted_load": 140715.72000000003,
+          "segment_indices": [
+            583,
+            584,
+            585,
+            586,
+            587,
+            588,
+            589,
+            590,
+            591,
+            592,
+            593,
+            594,
+            595,
+            596,
+            597,
+            598,
+            599,
+            600,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_069",
+          "delivered": 3191.999999999999,
+          "weighted_load": 3191.999999999999,
+          "segment_indices": [
+            619
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        }
+      ],
+      "selected_augment_windows": [],
+      "applied_augment_windows": [],
+      "status": "reroute_improved",
+      "accepted": true,
+      "used_augment_windows": [],
+      "candidate_solver_status": "AcceptedIncumbent",
+      "rejection_reason": null,
+      "objective_values": {
+        "completion": 6.0,
+        "progress": 6796440.691199999,
+        "peak": 0.99691738,
+        "integral": 1971.0219755999995,
+        "switch": 64.0
+      }
+    }
+  ],
+  "structural_bottleneck": [
+    {
+      "range_id": "hot_range_5",
+      "start": 12820.177,
+      "end": 13453.658,
+      "max_q_r": 1.0000000000000002,
+      "q_integral": 633.4809999999998,
+      "classification": {
+        "hot_duration": 633.4809999999998,
+        "single_link_fraction": 1.0,
+        "median_active_selected": 1.0,
+        "active_selected_count_distribution": [
+          [
+            1,
+            10
+          ]
+        ],
+        "feasible_alternative_cross_window_count": 3,
+        "feasible_alternative_path_count": 1445,
+        "top_contributing_windows": [
+          "X020430"
+        ],
+        "structural": true,
+        "reroutable": true,
+        "primary_class": "structural",
+        "reason": "single_link_fraction>=0.9",
+        "warnings": []
+      },
+      "alternative_diagnostics": {
+        "selected_alternative_cross_window_ids": [],
+        "augmentable_cross_window_ids": [
+          "X000285",
+          "X000320",
+          "X000363"
+        ],
+        "feasible_alternative_cross_window_ids": [
+          "X000285",
+          "X000320",
+          "X000363"
+        ],
+        "selected_alternative_path_count": 1205,
+        "augment_alternative_path_count": 240,
+        "feasible_alternative_cross_window_count": 3,
+        "feasible_alternative_path_count": 1445
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_023",
+          "delivered": 159637.21199999994,
+          "weighted_load": 478911.6359999998,
+          "segment_indices": [
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206
+          ],
+          "cross_window_ids": [
+            "X020430"
+          ]
+        },
+        {
+          "task_id": "N72X_024",
+          "delivered": 132144.13659999994,
+          "weighted_load": 264288.2731999999,
+          "segment_indices": [
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206
+          ],
+          "cross_window_ids": [
+            "X020430"
+          ]
+        },
+        {
+          "task_id": "N72X_022",
+          "delivered": 98062.85879999997,
+          "weighted_load": 98062.85879999997,
+          "segment_indices": [
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206
+          ],
+          "cross_window_ids": [
+            "X020430"
+          ]
+        },
+        {
+          "task_id": "N72X_020",
+          "delivered": 82430.73700000005,
+          "weighted_load": 82430.73700000005,
+          "segment_indices": [
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206
+          ],
+          "cross_window_ids": [
+            "X020430"
+          ]
+        },
+        {
+          "task_id": "N72X_021",
+          "delivered": 34509.8555999999,
+          "weighted_load": 34509.8555999999,
+          "segment_indices": [
+            200,
+            202,
+            206
+          ],
+          "cross_window_ids": [
+            "X020430"
+          ]
+        }
+      ],
+      "selected_augment_windows": [],
+      "applied_augment_windows": [],
+      "status": "structural_bottleneck",
+      "accepted": false,
+      "used_augment_windows": [],
+      "candidate_solver_status": "skipped_no_applied_augment",
+      "rejection_reason": "structural hotspot has no applied augment window"
+    }
+  ],
+  "structural_candidate_pruned": [],
+  "blocked_no_feasible_reroute": [],
+  "reroutable_candidate_pruned": [],
+  "improved_after_augmentation": [
+    {
+      "range_id": "hot_range_21",
+      "start": 39720.0,
+      "end": 40560.0,
+      "max_q_r": 1.0000000000000002,
+      "q_integral": 840.0,
+      "classification": {
+        "hot_duration": 840.0,
+        "single_link_fraction": 0.8571428571428571,
+        "median_active_selected": 1.0,
+        "active_selected_count_distribution": [
+          [
+            1,
+            12
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "feasible_alternative_cross_window_count": 5,
+        "feasible_alternative_path_count": 3355,
+        "top_contributing_windows": [
+          "X010844",
+          "X017844"
+        ],
+        "structural": true,
+        "reroutable": true,
+        "primary_class": "structural",
+        "reason": "single_link_fraction>=0.600 and median_active_selected<=1",
+        "warnings": []
+      },
+      "alternative_diagnostics": {
+        "selected_alternative_cross_window_ids": [
+          "X010844",
+          "X017844"
+        ],
+        "augmentable_cross_window_ids": [
+          "X000270",
+          "X000272",
+          "X000793"
+        ],
+        "feasible_alternative_cross_window_ids": [
+          "X000270",
+          "X000272",
+          "X000793",
+          "X010844",
+          "X017844"
+        ],
+        "selected_alternative_path_count": 2971,
+        "augment_alternative_path_count": 384,
+        "feasible_alternative_cross_window_count": 5,
+        "feasible_alternative_path_count": 3355
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_065",
+          "delivered": 172368.0,
+          "weighted_load": 344736.0,
+          "segment_indices": [
+            627,
+            628,
+            629,
+            630,
+            631,
+            632,
+            633,
+            634,
+            635,
+            636,
+            637,
+            638,
+            639,
+            640
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_067",
+          "delivered": 156912.0,
+          "weighted_load": 313824.0,
+          "segment_indices": [
+            627,
+            628,
+            629,
+            630,
+            631,
+            632,
+            633,
+            634,
+            635,
+            636,
+            637,
+            638,
+            639,
+            640
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_072",
+          "delivered": 142824.0,
+          "weighted_load": 285648.0,
+          "segment_indices": [
+            627,
+            628,
+            629,
+            630,
+            631,
+            632,
+            633,
+            634,
+            635,
+            636,
+            637,
+            638,
+            639,
+            640
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_066",
+          "delivered": 125184.0,
+          "weighted_load": 250368.0,
+          "segment_indices": [
+            627,
+            628,
+            629,
+            630,
+            631,
+            632,
+            633,
+            634,
+            635,
+            636,
+            637,
+            638,
+            639,
+            640
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_064",
+          "delivered": 84151.45919999992,
+          "weighted_load": 168302.91839999985,
+          "segment_indices": [
+            627,
+            628,
+            629,
+            630,
+            631,
+            632,
+            633,
+            634,
+            635,
+            636,
+            637,
+            638,
+            639
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_068",
+          "delivered": 31157.380799999893,
+          "weighted_load": 31157.380799999893,
+          "segment_indices": [
+            627,
+            628,
+            640
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_070",
+          "delivered": 23460.812399999886,
+          "weighted_load": 23460.812399999886,
+          "segment_indices": [
+            627,
+            628,
+            640
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        },
+        {
+          "task_id": "N72X_069",
+          "delivered": 11355.733199999948,
+          "weighted_load": 11355.733199999948,
+          "segment_indices": [
+            627,
+            628
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        }
+      ],
+      "selected_augment_windows": [
+        "X000270",
+        "X000793"
+      ],
+      "applied_augment_windows": [
+        "X000270",
+        "X000793"
+      ],
+      "status": "improved_after_augmentation",
+      "accepted": true,
+      "used_augment_windows": [
+        "X000270",
+        "X000793"
+      ],
+      "candidate_solver_status": "Optimal",
+      "rejection_reason": null,
+      "objective_values": {
+        "completion": 8.0,
+        "progress": 1981598.9183999998,
+        "peak": 0.51503674,
+        "integral": 520.5180799850399,
+        "switch": 8.0
+      }
+    }
+  ],
+  "reroute_improved": [
+    {
+      "range_id": "hot_range_19",
+      "start": 37020.0,
+      "end": 39300.0,
+      "max_q_r": 1.0,
+      "q_integral": 2280.0,
+      "classification": {
+        "hot_duration": 2280.0,
+        "single_link_fraction": 0.2972972972972973,
+        "median_active_selected": 2.0,
+        "active_selected_count_distribution": [
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            26
+          ]
+        ],
+        "feasible_alternative_cross_window_count": 5,
+        "feasible_alternative_path_count": 13279,
+        "top_contributing_windows": [
+          "X017844",
+          "X010844"
+        ],
+        "structural": false,
+        "reroutable": true,
+        "primary_class": "reroutable",
+        "reason": "multiple selected windows or feasible alternative paths exist",
+        "warnings": []
+      },
+      "alternative_diagnostics": {
+        "selected_alternative_cross_window_ids": [
+          "X010844",
+          "X017844"
+        ],
+        "augmentable_cross_window_ids": [
+          "X006999",
+          "X007554",
+          "X008665"
+        ],
+        "feasible_alternative_cross_window_ids": [
+          "X006999",
+          "X007554",
+          "X008665",
+          "X010844",
+          "X017844"
+        ],
+        "selected_alternative_path_count": 12751,
+        "augment_alternative_path_count": 528,
+        "feasible_alternative_cross_window_count": 5,
+        "feasible_alternative_path_count": 13279
+      },
+      "contributing_tasks": [
+        {
+          "task_id": "N72X_062",
+          "delivered": 498420.0,
+          "weighted_load": 1495260.0,
+          "segment_indices": [
+            587,
+            588,
+            589,
+            590,
+            591,
+            592,
+            593,
+            594,
+            595,
+            596,
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            608,
+            609,
+            610,
+            611,
+            612,
+            613,
+            614,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_063",
+          "delivered": 456600.0,
+          "weighted_load": 1369800.0,
+          "segment_indices": [
+            590,
+            591,
+            592,
+            593,
+            594,
+            595,
+            596,
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            608,
+            609,
+            610,
+            611,
+            612,
+            613,
+            614
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_061",
+          "delivered": 450072.0,
+          "weighted_load": 1350216.0,
+          "segment_indices": [
+            583,
+            584,
+            585,
+            586,
+            587,
+            588,
+            589,
+            590,
+            591,
+            592,
+            593,
+            594,
+            595,
+            596,
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            608,
+            609,
+            610,
+            611,
+            612,
+            613
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_071",
+          "delivered": 423859.10400000005,
+          "weighted_load": 1271577.3120000002,
+          "segment_indices": [
+            583,
+            584,
+            585,
+            586,
+            587,
+            588,
+            589,
+            594,
+            595,
+            596,
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            608,
+            609,
+            610,
+            611,
+            612,
+            613,
+            614,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_072",
+          "delivered": 282840.0,
+          "weighted_load": 565680.0,
+          "segment_indices": [
+            583,
+            584,
+            585,
+            586,
+            587,
+            588,
+            589,
+            590,
+            591,
+            592,
+            593,
+            594,
+            595,
+            596,
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            612,
+            613,
+            614,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_064",
+          "delivered": 231148.54080000008,
+          "weighted_load": 462297.08160000015,
+          "segment_indices": [
+            598,
+            599,
+            600,
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            608,
+            609,
+            610,
+            611,
+            613,
+            614,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_067",
+          "delivered": 208112.28960000002,
+          "weighted_load": 416224.57920000004,
+          "segment_indices": [
+            594,
+            595,
+            596,
+            597,
+            598,
+            599,
+            600,
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            608,
+            609,
+            610,
+            611,
+            612,
+            613,
+            614,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_065",
+          "delivered": 200472.0,
+          "weighted_load": 400944.0,
+          "segment_indices": [
+            601,
+            602,
+            603,
+            604,
+            605,
+            606,
+            607,
+            608,
+            609,
+            610,
+            611,
+            612,
+            613,
+            614,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_066",
+          "delivered": 180492.0,
+          "weighted_load": 360984.0,
+          "segment_indices": [
+            608,
+            609,
+            610,
+            611,
+            612,
+            613,
+            614,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_068",
+          "delivered": 140715.72000000003,
+          "weighted_load": 140715.72000000003,
+          "segment_indices": [
+            583,
+            584,
+            585,
+            586,
+            587,
+            588,
+            589,
+            590,
+            591,
+            592,
+            593,
+            594,
+            595,
+            596,
+            597,
+            598,
+            599,
+            600,
+            615,
+            616,
+            617,
+            618,
+            619
+          ],
+          "cross_window_ids": [
+            "X010844",
+            "X017844"
+          ]
+        },
+        {
+          "task_id": "N72X_069",
+          "delivered": 3191.999999999999,
+          "weighted_load": 3191.999999999999,
+          "segment_indices": [
+            619
+          ],
+          "cross_window_ids": [
+            "X010844"
+          ]
+        }
+      ],
+      "selected_augment_windows": [],
+      "applied_augment_windows": [],
+      "status": "reroute_improved",
+      "accepted": true,
+      "used_augment_windows": [],
+      "candidate_solver_status": "AcceptedIncumbent",
+      "rejection_reason": null,
+      "objective_values": {
+        "completion": 6.0,
+        "progress": 6796440.691199999,
+        "peak": 0.99691738,
+        "integral": 1971.0219755999995,
+        "switch": 64.0
+      }
+    }
+  ],
+  "augment_candidates": [
+    {
+      "range_id": "hot_range_21",
+      "window_id": "X000270",
+      "structural_priority": 1,
+      "scheduled_on": 39703.839,
+      "scheduled_off": 41143.06,
+      "scheduled_duration": 1439.2209999999977,
+      "overlap_duration": 840.0,
+      "estimated_divertable_rate": 1386.3999999999999,
+      "feasible_path_count": 128,
+      "delay_penalty": 0.0,
+      "switch_penalty": 8.0,
+      "relief_score": 831840.0,
+      "contributing_task_ids": [
+        "N72X_064",
+        "N72X_065",
+        "N72X_066",
+        "N72X_067",
+        "N72X_068",
+        "N72X_069",
+        "N72X_070",
+        "N72X_072"
+      ]
+    },
+    {
+      "range_id": "hot_range_21",
+      "window_id": "X000272",
+      "structural_priority": 1,
+      "scheduled_on": 39240.883,
+      "scheduled_off": 41332.213,
+      "scheduled_duration": 2091.3300000000017,
+      "overlap_duration": 840.0,
+      "estimated_divertable_rate": 1386.3999999999999,
+      "feasible_path_count": 128,
+      "delay_penalty": 0.0,
+      "switch_penalty": 8.0,
+      "relief_score": 831840.0,
+      "contributing_task_ids": [
+        "N72X_064",
+        "N72X_065",
+        "N72X_066",
+        "N72X_067",
+        "N72X_068",
+        "N72X_069",
+        "N72X_070",
+        "N72X_072"
+      ]
+    },
+    {
+      "range_id": "hot_range_21",
+      "window_id": "X000793",
+      "structural_priority": 1,
+      "scheduled_on": 39583.294,
+      "scheduled_off": 40682.189,
+      "scheduled_duration": 1098.8949999999968,
+      "overlap_duration": 840.0,
+      "estimated_divertable_rate": 1386.3999999999999,
+      "feasible_path_count": 128,
+      "delay_penalty": 0.0,
+      "switch_penalty": 8.0,
+      "relief_score": 831840.0,
+      "contributing_task_ids": [
+        "N72X_064",
+        "N72X_065",
+        "N72X_066",
+        "N72X_067",
+        "N72X_068",
+        "N72X_069",
+        "N72X_070",
+        "N72X_072"
+      ]
+    },
+    {
+      "range_id": "hot_range_5",
+      "window_id": "X000285",
+      "structural_priority": 1,
+      "scheduled_on": 12642.908,
+      "scheduled_off": 14975.638,
+      "scheduled_duration": 2332.7300000000014,
+      "overlap_duration": 633.4809999999998,
+      "estimated_divertable_rate": 978.2,
+      "feasible_path_count": 80,
+      "delay_penalty": 0.0,
+      "switch_penalty": 5.0,
+      "relief_score": 495736.8913599999,
+      "contributing_task_ids": [
+        "N72X_020",
+        "N72X_021",
+        "N72X_022",
+        "N72X_023",
+        "N72X_024"
+      ]
+    },
+    {
+      "range_id": "hot_range_5",
+      "window_id": "X000320",
+      "structural_priority": 1,
+      "scheduled_on": 12654.509,
+      "scheduled_off": 13628.073,
+      "scheduled_duration": 973.5640000000003,
+      "overlap_duration": 633.4809999999998,
+      "estimated_divertable_rate": 978.2,
+      "feasible_path_count": 80,
+      "delay_penalty": 0.0,
+      "switch_penalty": 5.0,
+      "relief_score": 495736.8913599999,
+      "contributing_task_ids": [
+        "N72X_020",
+        "N72X_021",
+        "N72X_022",
+        "N72X_023",
+        "N72X_024"
+      ]
+    },
+    {
+      "range_id": "hot_range_5",
+      "window_id": "X000363",
+      "structural_priority": 1,
+      "scheduled_on": 12739.859,
+      "scheduled_off": 13552.23,
+      "scheduled_duration": 812.3709999999992,
+      "overlap_duration": 633.4809999999998,
+      "estimated_divertable_rate": 978.2,
+      "feasible_path_count": 80,
+      "delay_penalty": 0.0,
+      "switch_penalty": 5.0,
+      "relief_score": 495736.8913599999,
+      "contributing_task_ids": [
+        "N72X_020",
+        "N72X_021",
+        "N72X_022",
+        "N72X_023",
+        "N72X_024"
+      ]
+    },
+    {
+      "range_id": "hot_range_19",
+      "window_id": "X006999",
+      "structural_priority": 0,
+      "scheduled_on": 36903.357,
+      "scheduled_off": 42158.996,
+      "scheduled_duration": 5255.638999999996,
+      "overlap_duration": 2280.0,
+      "estimated_divertable_rate": 2191.6,
+      "feasible_path_count": 176,
+      "delay_penalty": 0.0,
+      "switch_penalty": 11.0,
+      "relief_score": 3223772.9032258065,
+      "contributing_task_ids": [
+        "N72X_061",
+        "N72X_062",
+        "N72X_063",
+        "N72X_064",
+        "N72X_065",
+        "N72X_066",
+        "N72X_067",
+        "N72X_068",
+        "N72X_069",
+        "N72X_071",
+        "N72X_072"
+      ]
+    },
+    {
+      "range_id": "hot_range_19",
+      "window_id": "X007554",
+      "structural_priority": 0,
+      "scheduled_on": 36270.071,
+      "scheduled_off": 41526.758,
+      "scheduled_duration": 5256.686999999998,
+      "overlap_duration": 2280.0,
+      "estimated_divertable_rate": 2191.6,
+      "feasible_path_count": 176,
+      "delay_penalty": 0.0,
+      "switch_penalty": 11.0,
+      "relief_score": 3223772.9032258065,
+      "contributing_task_ids": [
+        "N72X_061",
+        "N72X_062",
+        "N72X_063",
+        "N72X_064",
+        "N72X_065",
+        "N72X_066",
+        "N72X_067",
+        "N72X_068",
+        "N72X_069",
+        "N72X_071",
+        "N72X_072"
+      ]
+    },
+    {
+      "range_id": "hot_range_19",
+      "window_id": "X008665",
+      "structural_priority": 0,
+      "scheduled_on": 35003.491,
+      "scheduled_off": 40262.274,
+      "scheduled_duration": 5258.782999999996,
+      "overlap_duration": 2280.0,
+      "estimated_divertable_rate": 2191.6,
+      "feasible_path_count": 176,
+      "delay_penalty": 0.0,
+      "switch_penalty": 11.0,
+      "relief_score": 3223772.9032258065,
+      "contributing_task_ids": [
+        "N72X_061",
+        "N72X_062",
+        "N72X_063",
+        "N72X_064",
+        "N72X_065",
+        "N72X_066",
+        "N72X_067",
+        "N72X_068",
+        "N72X_069",
+        "N72X_071",
+        "N72X_072"
+      ]
+    }
+  ],
+  "selected_augment_windows": [
+    "X000270",
+    "X000793"
+  ],
+  "applied_augment_windows": [
+    "X000270",
+    "X000793"
+  ],
+  "removed_plan_windows": [],
+  "stage1_peak_rescore_hook": {
+    "recommended": false,
+    "reason": "accepted_hotspot_relief_improvement_exists"
+  },
+  "sanity_warnings": [],
+  "before_after": {
+    "before": {
+      "cr_reg": 1.0,
+      "q_peak": 1.0000000000000002,
+      "q_integral": 32133.555410875,
+      "peak_like_threshold": 0.9999000000000002,
+      "peak_segment_count": 260
+    },
+    "after": {
+      "cr_reg": 1.0,
+      "q_peak": 1.0000000000000002,
+      "q_integral": 31652.45778853504,
+      "peak_like_threshold": 0.9999000000000002,
+      "peak_segment_count": 214
+    }
+  }
+}

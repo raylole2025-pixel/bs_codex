@@ -11,7 +11,7 @@ from typing import Any
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from bs3.models import ScheduledWindow
+from bs3.models import ScheduledWindow, Stage2Config
 from bs3.scenario import load_scenario
 from bs3.stage1 import activation_count, gateway_count
 from bs3.stage2 import run_stage2
@@ -80,13 +80,16 @@ def build_scenario_payload(
 
     stage2_cfg = dict(payload.get("stage2", {}))
     effective_k_paths = args.k_paths if args.k_paths is not None else stage2_cfg.get("k_paths", 2)
-    stage2_cfg.update(
-        {
-            "k_paths": effective_k_paths,
-            "completion_tolerance": stage2_cfg.get("completion_tolerance", 1e-6),
-        }
+    default_stage2 = asdict(
+        Stage2Config(
+            k_paths=effective_k_paths,
+            completion_tolerance=stage2_cfg.get("completion_tolerance", 1e-6),
+        )
     )
-    payload["stage2"] = stage2_cfg
+    default_stage2.update(stage2_cfg)
+    default_stage2["k_paths"] = effective_k_paths
+    default_stage2["completion_tolerance"] = stage2_cfg.get("completion_tolerance", 1e-6)
+    payload["stage2"] = default_stage2
     return payload
 
 

@@ -1,0 +1,33 @@
+{
+  "scenario_path": "results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_scenario_input.json",
+  "stage1_result_path": "results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_stage1_result.json",
+  "stage1_fr": 1.0,
+  "stage1_mean_completion_ratio": 1.0,
+  "plan_window_count": 12,
+  "stage2_cr_reg": 1.0,
+  "stage2_solver_mode": "two_phase_event_insert+stage1_greedy_repair",
+  "metadata": {
+    "regular_baseline_mode": "stage1_greedy_repair",
+    "regular_baseline_source": "stage1_greedy_repair",
+    "prefer_milp": false,
+    "milp_mode": "rolling",
+    "milp_horizon_segments": 16,
+    "milp_commit_segments": 8,
+    "milp_rolling_path_limit": 1,
+    "milp_rolling_high_path_limit": 2,
+    "milp_rolling_promoted_tasks_per_segment": 2,
+    "milp_time_limit_seconds": null,
+    "milp_relative_gap": null,
+    "regular_repair_enabled": true,
+    "repair_block_count_considered": 5,
+    "repair_block_count_accepted": 0,
+    "repair_total_improvement_peak": 0.0,
+    "repair_total_improvement_integral": 0.0,
+    "baseline_completed_count_before_repair": 72,
+    "baseline_completed_count_after_repair": 72,
+    "event_segment_count": 683,
+    "event_segment_count_raw": 683,
+    "regular_task_count": 72,
+    "elapsed_seconds": 5.70348810008727
+  }
+}

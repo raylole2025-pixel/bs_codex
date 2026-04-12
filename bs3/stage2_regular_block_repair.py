@@ -54,11 +54,25 @@ def repair_regular_baseline_blocks(
         )
         if not block_result["accepted"]:
             continue
-        current_schedule = block_result["schedule"]
-        current_diag = build_regular_schedule_diagnostics(scenario, plan, segments, current_schedule)
+        candidate_schedule = block_result["schedule"]
+        candidate_diag = build_regular_schedule_diagnostics(scenario, plan, segments, candidate_schedule)
+        current_completed = {task_id for task_id, done in current_diag["completed"].items() if done}
+        candidate_completed = {task_id for task_id, done in candidate_diag["completed"].items() if done}
+        current_peak, current_integral = _global_objective_from_diag(current_diag, segments)
+        candidate_peak, candidate_integral = _global_objective_from_diag(candidate_diag, segments)
+        epsilon = float(scenario.stage2.repair_accept_epsilon)
+        if not current_completed.issubset(candidate_completed):
+            continue
+        if candidate_peak + epsilon >= current_peak:
+            continue
+        if candidate_integral > current_integral + epsilon:
+            continue
+
+        current_schedule = candidate_schedule
+        current_diag = candidate_diag
         metadata["repair_block_count_accepted"] += 1
-        metadata["repair_total_improvement_peak"] += float(block_result["improvement_peak"])
-        metadata["repair_total_improvement_integral"] += float(block_result["improvement_integral"])
+        metadata["repair_total_improvement_peak"] += max(current_peak - candidate_peak, 0.0)
+        metadata["repair_total_improvement_integral"] += max(current_integral - candidate_integral, 0.0)
         metadata["diagnostics_after"] = current_diag
 
     metadata["baseline_completed_count_after_repair"] = sum(1 for done in current_diag["completed"].values() if done)
@@ -158,6 +172,12 @@ def _block_objective_from_diag(diagnostics: dict[str, Any], block_segments: list
     integral = sum(float(diagnostics["segment_metrics"].get(segment.index, {}).get("q_peak", 0.0)) * float(segment.duration) for segment in block_segments)
     switches = sum(float(diagnostics["segment_metrics"].get(segment.index, {}).get("switch_count", 0.0)) for segment in block_segments)
     return peak, integral, switches
+
+
+def _global_objective_from_diag(diagnostics: dict[str, Any], segments: list[Segment]) -> tuple[float, float]:
+    peak = max((float(diagnostics["segment_metrics"].get(segment.index, {}).get("q_peak", 0.0)) for segment in segments), default=0.0)
+    integral = sum(float(diagnostics["segment_metrics"].get(segment.index, {}).get("q_peak", 0.0)) * float(segment.duration) for segment in segments)
+    return peak, integral
 
 
 def _is_strictly_better(candidate: tuple[float, ...], baseline: tuple[float, ...], epsilon: float) -> bool:

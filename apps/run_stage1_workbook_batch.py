@@ -29,6 +29,7 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from bs3.distance_enrichment import enrich_scenario_distances
+from bs3.models import Stage2Config
 from bs3.pipeline import run_pipeline
 from bs3.scenario import load_scenario, scenario_to_dict
 from bs3.stage1_screening import screen_candidate_windows
@@ -384,10 +385,12 @@ def build_scenario_payload(
             "max_runtime_seconds": args.max_runtime_seconds,
         },
     }
-    payload["stage2"] = {
-        "k_paths": args.stage2_k_paths,
-        "completion_tolerance": 1e-6,
-    }
+    stage2_defaults = asdict(Stage2Config(k_paths=args.stage2_k_paths, completion_tolerance=1e-6))
+    stage2_overrides = dict(payload.get("stage2", {}))
+    stage2_defaults.update(stage2_overrides)
+    stage2_defaults["k_paths"] = args.stage2_k_paths
+    stage2_defaults["completion_tolerance"] = 1e-6
+    payload["stage2"] = stage2_defaults
     payload["tasks"] = tasks
     # 静态价值会在后续重新计算，因此先清空模板中已有的旧值。
     for window in payload.get("candidate_windows", []):

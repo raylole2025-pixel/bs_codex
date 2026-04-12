@@ -1,0 +1,35 @@
+{
+  "scenario_path": "results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_scenario_weighted.json",
+  "plan_source": "results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_stage1_result.json",
+  "solver_mode": "two_phase_event_insert+joint_milp_rolling+hotspot_relief_local_peak_milp",
+  "prefer_milp": true,
+  "plan_window_count_before": 12,
+  "plan_window_count_after": 14,
+  "cr_reg_before": 0.8066666666666666,
+  "cr_reg_after": 0.8066666666666666,
+  "q_peak_before": 1.0000000125,
+  "q_peak_after": 1.0000000125,
+  "peak_segment_count_before": 1,
+  "peak_segment_count_after": 1,
+  "q_integral_before": 35529.54661669277,
+  "q_integral_after": 35529.54661669277,
+  "fixed_plan_structural_bottleneck": {
+    "count": 2,
+    "range_ids": [
+      "hot_range_16",
+      "hot_range_8"
+    ]
+  },
+  "reroutable_but_candidate_pruned": {
+    "count": 3,
+    "range_ids": [
+      "hot_range_33",
+      "hot_range_58",
+      "hot_range_26"
+    ]
+  },
+  "improved_after_augmentation": {
+    "count": 0,
+    "range_ids": []
+  }
+}

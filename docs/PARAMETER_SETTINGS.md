@@ -1,14 +1,18 @@
-# BS3 参数设置总表
+# BS3 Parameter Settings
 
-更新时间：2026-04-11
+Updated: 2026-04-11
 
-本文档只保留当前实现仍然有效的参数。旧参数和旧别名已经从模板、CLI 和场景加载入口中移除。
+This document lists the Stage1/Stage2 parameters that are currently recognized by the codebase. The Stage2 section now includes the hotspot-relief path:
 
-## 1. 场景 JSON
+- hotspot-guided window augmentation
+- hotspot-segment candidate expansion
+- local peak-constrained MILP
 
-### 1.1 `stage1`
+## Scenario JSON
 
-| 参数 | 默认值 |
+### `stage1`
+
+| Field | Default |
 | --- | --- |
 | `rho` | `0.2` |
 | `t_pre` | `1800.0` |
@@ -29,14 +33,9 @@
 | `omega_hot` | `2/9` |
 | `elite_prune_count` | `6` |
 
-阶段一正式约束与排序：
+### `stage1.ga`
 
-- 可行性硬约束：`FR=1`、`eta_cap<=theta_cap`、`hotspot_coverage>=theta_hot`
-- 可行解排序：`activation_count`、`eta_cap`、`hotspot_coverage`
-
-### 1.2 `stage1.ga`
-
-| 参数 | 默认值 |
+| Field | Default |
 | --- | --- |
 | `population_size` | `60` |
 | `crossover_probability` | `0.9` |
@@ -46,16 +45,16 @@
 | `top_m` | `5` |
 | `max_runtime_seconds` | `null` |
 
-### 1.3 `stage2`
+### `stage2`
 
-| 参数 | 默认值 |
+| Field | Default |
 | --- | --- |
 | `k_paths` | `2` |
 | `completion_tolerance` | `1e-6` |
 | `regular_baseline_mode` | `null` |
 | `regular_repair_enabled` | `null` |
 | `prefer_milp` | `true` |
-| `milp_mode` | `rolling` |
+| `milp_mode` | `full` |
 | `milp_horizon_segments` | `16` |
 | `milp_commit_segments` | `8` |
 | `milp_rolling_path_limit` | `1` |
@@ -73,57 +72,79 @@
 | `repair_candidate_path_limit` | `2` |
 | `repair_time_limit_seconds` | `null` |
 | `repair_accept_epsilon` | `1e-6` |
+| `hotspot_relief_enabled` | `true` |
+| `hotspot_util_threshold` | `0.95` |
+| `hotspot_topk_ranges` | `5` |
+| `hotspot_expand_segments` | `2` |
+| `hotspot_single_link_fraction_threshold` | `0.6` |
+| `hotspot_top_tasks_per_range` | `12` |
+| `augment_window_budget` | `2` |
+| `augment_top_windows_per_range` | `3` |
+| `hot_path_limit` | `4` |
+| `hot_promoted_tasks_per_segment` | `8` |
+| `local_peak_horizon_cap_segments` | `48` |
+| `local_peak_accept_epsilon` | `1e-6` |
+| `fail_if_milp_disabled` | `true` |
 | `label_keep_limit` | `null` |
 
-说明：
+### Stage2 baseline mode rules
 
-- `regular_baseline_mode` 可选：`stage1_greedy`、`stage1_greedy_repair`、`rolling_milp`、`full_milp`
-- 当未显式设置 `regular_baseline_mode` 时，按 legacy `prefer_milp + milp_mode` 兼容解析：
-  - `prefer_milp=true && milp_mode=rolling -> rolling_milp`
-  - `prefer_milp=true && milp_mode=full -> full_milp`
-  - `prefer_milp=false -> stage1_greedy_repair`
-- `stage1_greedy` 使用固定 Stage1 方案上的 segment-major greedy 常态基线构造
-- `stage1_greedy_repair` 先生成 `stage1_greedy` baseline，再对少量高负载 block 做局部 MILP repair
-- repair 的完成保护约束是：`block end remaining <= baseline remaining + epsilon`
-- `rolling_milp` 和 `full_milp` 旧模式继续保留，用于对照或 ablation
-- `Stage2-2` 仍然是事件驱动 emergency insertion / local repair / controlled preemption 主流程，只是消费新的 `baseline_schedule`
+- `regular_baseline_mode` should be `full_milp` for the current Stage2-1 path; `rolling_milp` is only accepted as a backward-compatible alias and is normalized to `full_milp`.
+- If `regular_baseline_mode` is omitted:
+  - `prefer_milp=true` => `full_milp`
+  - `prefer_milp=false` => `stage1_greedy_repair`
 
-## 2. CLI 默认值
+### Hotspot-relief rules
 
-### 2.1 `apps/build_stage1_template_from_preprocess.py`
+- When `hotspot_relief_enabled=true` and `fail_if_milp_disabled=true`, Stage2 will raise an error if the run is not actually configured for the full MILP baseline.
+- Hotspot relief performs:
+  - hotspot profile construction over cross-segment load
+  - hot-range detection and structural-bottleneck classification
+  - optional window augmentation from `scenario.candidate_windows`
+  - local MILP re-optimization with peak and peak-integral objectives
 
-- `--cap-a=600.0 --cap-b=2000.0 --cap-x=1000.0`
-- `--theta-cap=0.08 --theta-hot=0.80`
-- `--rho=0.20 --t-pre=1800.0 --d-min=600.0`
-- `--hot-hop-limit=4 --alpha=0.85 --eta-x=0.90`
-- `--snapshot-seconds=600 --q-eval=4`
-- `--omega-fr=4/9 --omega-cap=3/9 --omega-hot=2/9`
-- `--elite-prune-count=6`
+## CLI / workbook injection
 
-### 2.2 `apps/run_stage1_workbook_batch.py`
+### `apps/run_stage1_workbook_batch.py`
 
-- `--base-scenario=inputs/templates/stage1_scenario_template.json`
-- `--output-root=results/generated/stage1_taskset_runs`
-- `--seed=7`
+- Writes Stage2 config using `Stage2Config` defaults plus CLI overrides.
+- This preserves the full Stage2 field set in generated scenario JSON.
 
-### 2.3 `apps/run_stage2_workbook_sheet.py`
+### `apps/run_stage2_workbook_sheet.py`
 
-- `--output-root=results/generated/stage2_taskset_runs`
+- Preserves and roundtrips all Stage2 fields from the base scenario.
+- `--k-paths` still overrides `stage2.k_paths`.
 
-## 3. 已删除的旧字段
+### `tools/run_stage2_hotspot_relief.py`
 
-以下字段现在会被视为旧字段，不再保留：
+Direct hotspot-relief experiment entry for fixed-plan validation.
 
-- `stage1.theta`
-- `stage1.theta_sr`
-- `stage1.theta_c`
-- `stage1.theta_eta0`
+Inputs:
+
+- `--scenario-path`
+- `--stage1-result-path` or `--fixed-plan-path`
+
+Outputs:
+
+- `result.json`
+- `result_summary.json`
+- `hotspot_report.json`
+- `before_after_load_summary.json`
+
+## Removed legacy fields
+
+The loader still rejects the following removed fields:
+
+- `stage1.k_paths`
 - `stage1.near_completion_ratio`
 - `stage1.omega_sr`
-- `stage1.viol_weight_sr`
+- `stage1.theta`
+- `stage1.theta_c`
+- `stage1.theta_eta0`
+- `stage1.theta_sr`
 - `stage1.viol_weight_cap`
 - `stage1.viol_weight_hot`
-- `stage1.k_paths`
-- `stage2.insertion_horizon_seconds`
+- `stage1.viol_weight_sr`
 - `stage2.affected_task_limit`
 - `stage2.best_effort_on_failure`
+- `stage2.insertion_horizon_seconds`

@@ -1,0 +1,166 @@
+{
+  "scenario_path": "results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_scenario_input.json",
+  "plan_source": "results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_stage1_result.json",
+  "solver_mode": "two_phase_event_insert+stage1_greedy+hotspot_relief_local_peak_milp",
+  "baseline_mode": "stage1_greedy",
+  "prefer_milp": false,
+  "plan_window_count_before": 12,
+  "plan_window_count_after": 13,
+  "cr_reg_before": 1.0,
+  "cr_reg_after": 1.0,
+  "q_peak_before": 1.0000000000000002,
+  "q_peak_after": 1.0000000000000002,
+  "peak_like_threshold_before": 0.9999000000000002,
+  "peak_like_threshold_after": 0.9999000000000002,
+  "peak_segment_count_before": 259,
+  "peak_segment_count_after": 259,
+  "q_integral_before": 32133.555410875,
+  "q_integral_after": 32133.555410875,
+  "selected_augment_windows": [
+    "X000270",
+    "X000272"
+  ],
+  "applied_augment_windows": [
+    "X000270"
+  ],
+  "fixed_plan_structural_bottleneck": {
+    "count": 1,
+    "range_ids": [
+      "hot_range_5"
+    ]
+  },
+  "structural_candidate_pruned": {
+    "count": 1,
+    "range_ids": [
+      "hot_range_21"
+    ]
+  },
+  "blocked_no_feasible_reroute": {
+    "count": 0,
+    "range_ids": []
+  },
+  "reroutable_but_candidate_pruned": {
+    "count": 1,
+    "range_ids": [
+      "hot_range_19"
+    ]
+  },
+  "improved_after_augmentation": {
+    "count": 0,
+    "range_ids": []
+  },
+  "reroute_improved": {
+    "count": 0,
+    "range_ids": []
+  },
+  "hot_range_outcomes": [
+    {
+      "range_id": "hot_range_21",
+      "status": "structural_candidate_pruned",
+      "accepted": false,
+      "classification": {
+        "hot_duration": 840.0,
+        "single_link_fraction": 0.8571428571428571,
+        "median_active_selected": 1.0,
+        "active_selected_count_distribution": [
+          [
+            1,
+            12
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "feasible_alternative_cross_window_count": 5,
+        "feasible_alternative_path_count": 3835,
+        "top_contributing_windows": [
+          "X010844",
+          "X017844"
+        ],
+        "structural": true,
+        "reroutable": true,
+        "primary_class": "structural",
+        "reason": "single_link_fraction>=0.600 and median_active_selected<=1",
+        "warnings": []
+      },
+      "selected_augment_windows": [
+        "X000270",
+        "X000272"
+      ],
+      "applied_augment_windows": [
+        "X000270"
+      ],
+      "used_augment_windows": [],
+      "candidate_solver_status": "Failed:RuntimeError",
+      "rejection_reason": "Failed:RuntimeError"
+    },
+    {
+      "range_id": "hot_range_5",
+      "status": "structural_bottleneck",
+      "accepted": false,
+      "classification": {
+        "hot_duration": 633.4809999999998,
+        "single_link_fraction": 1.0,
+        "median_active_selected": 1.0,
+        "active_selected_count_distribution": [
+          [
+            1,
+            10
+          ]
+        ],
+        "feasible_alternative_cross_window_count": 3,
+        "feasible_alternative_path_count": 1745,
+        "top_contributing_windows": [
+          "X020430"
+        ],
+        "structural": true,
+        "reroutable": true,
+        "primary_class": "structural",
+        "reason": "single_link_fraction>=0.9",
+        "warnings": []
+      },
+      "selected_augment_windows": [],
+      "applied_augment_windows": [],
+      "used_augment_windows": [],
+      "candidate_solver_status": "skipped_no_applied_augment",
+      "rejection_reason": "structural hotspot has no applied augment window"
+    },
+    {
+      "range_id": "hot_range_19",
+      "status": "reroutable_candidate_pruned",
+      "accepted": false,
+      "classification": {
+        "hot_duration": 2280.0,
+        "single_link_fraction": 0.2972972972972973,
+        "median_active_selected": 2.0,
+        "active_selected_count_distribution": [
+          [
+            1,
+            11
+          ],
+          [
+            2,
+            26
+          ]
+        ],
+        "feasible_alternative_cross_window_count": 5,
+        "feasible_alternative_path_count": 13939,
+        "top_contributing_windows": [
+          "X017844",
+          "X010844"
+        ],
+        "structural": false,
+        "reroutable": true,
+        "primary_class": "reroutable",
+        "reason": "multiple selected windows or feasible alternative paths exist",
+        "warnings": []
+      },
+      "selected_augment_windows": [],
+      "applied_augment_windows": [],
+      "used_augment_windows": [],
+      "candidate_solver_status": "Failed:RuntimeError",
+      "rejection_reason": "Failed:RuntimeError"
+    }
+  ]
+}

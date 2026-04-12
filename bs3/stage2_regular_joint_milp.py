@@ -473,7 +473,7 @@ def _solve_regular_window_milp(
 
     horizon_end = float(window_segments[-1].end)
     due_task_ids = {task.task_id for task in tasks if task.deadline <= horizon_end + EPS}
-    allow_incumbent = rolling_mode and (
+    allow_incumbent = (
         scenario.stage2.milp_time_limit_seconds is not None or scenario.stage2.milp_relative_gap is not None
     )
     capture_solver_log = allow_incumbent
@@ -897,6 +897,370 @@ def build_regular_baseline_joint_milp(
     plan: list[ScheduledWindow],
     segments: list[Segment],
 ) -> tuple[dict[tuple[str, int], Allocation], dict[str, bool]]:
-    if str(scenario.stage2.milp_mode).lower() == "full":
-        return build_regular_baseline_full_milp(scenario, plan, segments)
-    return build_regular_baseline_rolling_milp(scenario, plan, segments)
+    return build_regular_baseline_full_milp(scenario, plan, segments)
+
+
+def _edge_overlap_ratio(lhs_edge_ids: tuple[str, ...], rhs_edge_ids: tuple[str, ...]) -> float:
+    if not lhs_edge_ids or not rhs_edge_ids:
+        return 0.0
+    overlap = len(set(lhs_edge_ids).intersection(rhs_edge_ids))
+    return overlap / max(min(len(lhs_edge_ids), len(rhs_edge_ids)), 1)
+
+
+def _select_hotspot_candidates(
+    scenario: Scenario,
+    task: Task,
+    segment: Segment,
+    candidates: list[PathCandidate],
+    *,
+    baseline_edge_ids: tuple[str, ...],
+    hot_segment: bool,
+    hot_task_segment: bool,
+    hot_window_ids: set[str],
+    augmented_window_ids: set[str],
+) -> list[PathCandidate]:
+    if not candidates:
+        return []
+
+    base_limit = max(int(scenario.stage2.k_paths), 1)
+    hot_limit = max(int(scenario.stage2.hot_path_limit), base_limit, 4)
+    limit = hot_limit if hot_segment and hot_task_segment else base_limit
+    ranked = sorted(candidates, key=lambda path: (float(path.delay), int(path.hop_count), str(path.path_id)))
+
+    selected: list[PathCandidate] = []
+    seen: set[str] = set()
+
+    def take(paths: list[PathCandidate]) -> None:
+        for path in paths:
+            if path.path_id in seen:
+                continue
+            selected.append(path)
+            seen.add(path.path_id)
+            if len(selected) >= limit:
+                return
+
+    def take_one(paths: list[PathCandidate]) -> None:
+        for path in paths:
+            if path.path_id in seen:
+                continue
+            selected.append(path)
+            seen.add(path.path_id)
+            return
+
+    baseline_matches = [path for path in ranked if tuple(path.edge_ids) == tuple(baseline_edge_ids)]
+    if baseline_matches:
+        take_one(baseline_matches)
+    take_one(ranked)
+    if hot_segment and hot_task_segment:
+        low_overlap = sorted(
+            ranked,
+            key=lambda path: (
+                0 if path.cross_window_id is not None and path.cross_window_id not in hot_window_ids else 1,
+                _edge_overlap_ratio(tuple(path.edge_ids), tuple(baseline_edge_ids)),
+                float(path.delay),
+                int(path.hop_count),
+                str(path.path_id),
+            ),
+        )
+        relief_paths = [
+            path
+            for path in sorted(
+                ranked,
+                key=lambda path: (
+                    0 if path.cross_window_id in augmented_window_ids else 1,
+                    float(path.delay),
+                    int(path.hop_count),
+                    str(path.path_id),
+                ),
+            )
+            if path.cross_window_id in augmented_window_ids
+        ]
+        relief_oriented = sorted(
+            ranked,
+            key=lambda path: (
+                0 if path.cross_window_id in augmented_window_ids else 1,
+                0 if path.cross_window_id is not None and path.cross_window_id not in hot_window_ids else 1,
+                _edge_overlap_ratio(tuple(path.edge_ids), tuple(baseline_edge_ids)),
+                float(path.delay),
+                int(path.hop_count),
+                str(path.path_id),
+            ),
+        )
+        take_one(relief_paths)
+        take_one(low_overlap)
+        take(low_overlap)
+        take(relief_oriented)
+    take(ranked)
+    return selected[:limit]
+
+
+def solve_regular_hotspot_local_milp(
+    scenario: Scenario,
+    plan: list[ScheduledWindow],
+    segments: list[Segment],
+    current_schedule: dict[tuple[str, int], Allocation],
+    diagnostics: dict[str, Any],
+    horizon_segments: list[Segment],
+    active_tasks: list[Task],
+    hot_segment_indices: set[int],
+    hot_task_segments: set[tuple[str, int]],
+    hot_window_ids_by_segment: dict[int, tuple[str, ...]],
+    augmented_window_ids: set[str],
+) -> dict[str, Any]:
+    if not horizon_segments or not active_tasks:
+        return {"accepted": False, "solver_status": "Skipped"}
+
+    affected_task_ids = {task.task_id for task in active_tasks}
+    unaffected_task_ids = {
+        task_id
+        for (task_id, segment_index) in current_schedule
+        if task_id not in affected_task_ids and horizon_segments[0].index <= segment_index <= horizon_segments[-1].index
+    }
+    edge_capacities, cross_links_by_segment, reserved_cross = _build_edge_capacities(scenario, plan, horizon_segments)
+    fixed_cross_usage: dict[int, dict[str, float]] = defaultdict(lambda: defaultdict(float))
+    for (task_id, segment_index), alloc in current_schedule.items():
+        if task_id not in unaffected_task_ids:
+            continue
+        if segment_index not in edge_capacities:
+            continue
+        for edge_id in alloc.edge_ids:
+            if edge_id in edge_capacities[segment_index]:
+                edge_capacities[segment_index][edge_id] = max(0.0, float(edge_capacities[segment_index][edge_id]) - float(alloc.rate))
+        for cross_link in cross_links_by_segment.get(segment_index, ()):
+            if cross_link in alloc.edge_ids:
+                fixed_cross_usage[segment_index][cross_link] += float(alloc.rate)
+
+    task_segments = _build_task_segments(active_tasks, horizon_segments)
+    candidate_records: dict[tuple[str, int, int], _CandidateRecord] = {}
+    segment_candidates: dict[tuple[str, int], list[tuple[str, int, int]]] = defaultdict(list)
+    edge_to_candidates: dict[tuple[int, str], list[tuple[str, int, int]]] = defaultdict(list)
+    cross_to_candidates: dict[tuple[int, str], list[tuple[str, int, int]]] = defaultdict(list)
+    cross_choice_keys: dict[tuple[str, int], dict[str, list[tuple[str, int, int]]]] = defaultdict(lambda: defaultdict(list))
+    task_start_remaining: dict[str, float] = {}
+    task_end_remaining_limit: dict[str, float] = {}
+    initial_cross_link: dict[str, str | None] = {}
+    baseline_completed = diagnostics.get("completed", {})
+
+    for task in active_tasks:
+        local_segments = task_segments.get(task.task_id, [])
+        if not local_segments:
+            continue
+        first_segment = local_segments[0]
+        task_start_remaining[task.task_id] = float(diagnostics["remaining_before_trace"][task.task_id].get(first_segment.index, task.data))
+        task_end_remaining_limit[task.task_id] = float(diagnostics["remaining_after_trace"][task.task_id].get(horizon_segments[-1].index, task.data))
+        initial_cross_link[task.task_id] = diagnostics["previous_cross_link_trace"][task.task_id].get(first_segment.index)
+        for local_index, segment in enumerate(local_segments):
+            baseline_edge_ids = tuple(diagnostics["selected_path_key_trace"][task.task_id].get(segment.index) or tuple())
+            candidates = generate_candidate_paths(scenario, plan, task, segment, max(int(scenario.stage2.hot_path_limit), int(scenario.stage2.k_paths)))
+            selected_candidates = _select_hotspot_candidates(
+                scenario,
+                task,
+                segment,
+                candidates,
+                baseline_edge_ids=baseline_edge_ids,
+                hot_segment=segment.index in hot_segment_indices,
+                hot_task_segment=(task.task_id, segment.index) in hot_task_segments,
+                hot_window_ids=set(hot_window_ids_by_segment.get(segment.index, tuple())),
+                augmented_window_ids=augmented_window_ids,
+            )
+            for path_index, path in enumerate(selected_candidates):
+                effective_duration = _effective_duration(segment, task, path)
+                if effective_duration <= EPS:
+                    continue
+                rate_upper_bound = min(
+                    float(task.max_rate),
+                    min((float(edge_capacities[segment.index].get(edge_id, 0.0)) for edge_id in path.edge_ids), default=0.0),
+                )
+                if rate_upper_bound <= EPS:
+                    continue
+                key = (task.task_id, local_index, path_index)
+                candidate_records[key] = _CandidateRecord(
+                    task_id=task.task_id,
+                    local_index=local_index,
+                    segment_index=segment.index,
+                    path_index=path_index,
+                    path=path,
+                    effective_duration=effective_duration,
+                    rate_upper_bound=rate_upper_bound,
+                )
+                segment_candidates[(task.task_id, local_index)].append(key)
+                for edge_id in path.edge_ids:
+                    edge_to_candidates[(segment.index, edge_id)].append(key)
+                if path.cross_window_id is not None:
+                    cross_to_candidates[(segment.index, path.cross_window_id)].append(key)
+                    cross_choice_keys[(task.task_id, local_index)][path.cross_window_id].append(key)
+
+    if not candidate_records:
+        return {"accepted": False, "solver_status": "NoCandidates"}
+
+    model = pulp.LpProblem("stage2_regular_hotspot_local_peak", pulp.LpMaximize)
+    remaining_vars: dict[tuple[str, int], pulp.LpVariable] = {}
+    first_switch_vars: dict[str, pulp.LpVariable] = {}
+    transition_switch_vars: dict[tuple[str, int], pulp.LpVariable] = {}
+    completion_vars = {
+        task.task_id: pulp.LpVariable(f"y_{task.task_id}", cat=pulp.LpBinary)
+        for task in active_tasks
+        if bool(baseline_completed.get(task.task_id, False))
+    }
+    q_vars = {
+        segment.index: pulp.LpVariable(f"q_{segment.index}", lowBound=0.0, upBound=1.0)
+        for segment in horizon_segments
+    }
+    z_peak = pulp.LpVariable("z_peak_local", lowBound=0.0, upBound=1.0)
+    z_window = {
+        window_id: pulp.LpVariable(f"zw_{window_id}", cat=pulp.LpBinary)
+        for window_id in sorted(augmented_window_ids)
+    }
+    rate_vars = {
+        key: pulp.LpVariable(
+            f"x_{task_id}_{local_index}_{path_index}",
+            lowBound=0.0,
+            upBound=record.rate_upper_bound,
+        )
+        for key, record in candidate_records.items()
+        for task_id, local_index, path_index in [key]
+    }
+    choice_vars = {
+        key: pulp.LpVariable(f"z_{task_id}_{local_index}_{path_index}", cat=pulp.LpBinary)
+        for key in candidate_records
+        for task_id, local_index, path_index in [key]
+    }
+
+    progress_terms: list = []
+    for task in active_tasks:
+        local_segments = task_segments.get(task.task_id, [])
+        if not local_segments:
+            continue
+        start_remaining = float(task_start_remaining.get(task.task_id, task.data))
+        for local_index in range(len(local_segments) + 1):
+            remaining_vars[(task.task_id, local_index)] = pulp.LpVariable(
+                f"R_{task.task_id}_{local_index}",
+                lowBound=0.0,
+                upBound=max(start_remaining, 0.0),
+            )
+        first_switch_vars[task.task_id] = pulp.LpVariable(f"u0_{task.task_id}", cat=pulp.LpBinary)
+        for local_index in range(1, len(local_segments)):
+            transition_switch_vars[(task.task_id, local_index)] = pulp.LpVariable(f"u_{task.task_id}_{local_index}", cat=pulp.LpBinary)
+
+        model += remaining_vars[(task.task_id, 0)] == start_remaining
+        for local_index, segment in enumerate(local_segments):
+            keys = segment_candidates.get((task.task_id, local_index), [])
+            delivered_terms = [rate_vars[key] * candidate_records[key].effective_duration for key in keys]
+            if keys:
+                model += pulp.lpSum(choice_vars[key] for key in keys) <= 1.0
+                for key in keys:
+                    model += rate_vars[key] <= candidate_records[key].rate_upper_bound * choice_vars[key]
+                    if candidate_records[key].path.cross_window_id in z_window:
+                        model += choice_vars[key] <= z_window[candidate_records[key].path.cross_window_id]
+                        model += rate_vars[key] <= candidate_records[key].rate_upper_bound * z_window[candidate_records[key].path.cross_window_id]
+                model += _expr_sum(delivered_terms) <= remaining_vars[(task.task_id, local_index)]
+                for key in keys:
+                    progress_terms.append(float(task.weight) * rate_vars[key] * candidate_records[key].effective_duration)
+            model += remaining_vars[(task.task_id, local_index + 1)] == remaining_vars[(task.task_id, local_index)] - _expr_sum(delivered_terms)
+        tail_index = len(local_segments)
+        model += remaining_vars[(task.task_id, tail_index)] <= float(task_end_remaining_limit.get(task.task_id, task.data)) + float(scenario.stage2.local_peak_accept_epsilon)
+        if task.task_id in completion_vars:
+            model += remaining_vars[(task.task_id, tail_index)] <= _completion_tolerance(scenario, task) + start_remaining * (1.0 - completion_vars[task.task_id])
+
+    for segment in horizon_segments:
+        for edge_id, capacity in edge_capacities.get(segment.index, {}).items():
+            keys = edge_to_candidates.get((segment.index, edge_id), [])
+            if keys:
+                model += pulp.lpSum(rate_vars[key] for key in keys) <= float(capacity)
+        model += z_peak >= q_vars[segment.index]
+        if reserved_cross <= EPS or not cross_links_by_segment.get(segment.index):
+            model += q_vars[segment.index] == 0.0
+            continue
+        for cross_link in cross_links_by_segment.get(segment.index, ()):
+            keys = cross_to_candidates.get((segment.index, cross_link), [])
+            fixed_usage = float(fixed_cross_usage.get(segment.index, {}).get(cross_link, 0.0))
+            model += fixed_usage + pulp.lpSum(rate_vars[key] for key in keys) <= q_vars[segment.index] * float(reserved_cross)
+
+    if z_window:
+        model += pulp.lpSum(z_window.values()) <= int(scenario.stage2.augment_window_budget)
+
+    switch_terms: list = []
+    for task in active_tasks:
+        local_segments = task_segments.get(task.task_id, [])
+        if not local_segments:
+            continue
+        first_switch = first_switch_vars[task.task_id]
+        switch_terms.append(first_switch)
+        preferred = initial_cross_link.get(task.task_id)
+        first_choices = cross_choice_keys.get((task.task_id, 0), {})
+        if preferred is not None:
+            for cross_link, keys in first_choices.items():
+                if cross_link == preferred:
+                    continue
+                model += first_switch >= pulp.lpSum(choice_vars[key] for key in keys)
+        for local_index in range(1, len(local_segments)):
+            switch_var = transition_switch_vars[(task.task_id, local_index)]
+            switch_terms.append(switch_var)
+            prev_choices = cross_choice_keys.get((task.task_id, local_index - 1), {})
+            curr_choices = cross_choice_keys.get((task.task_id, local_index), {})
+            if not prev_choices or not curr_choices:
+                continue
+            for prev_cross, prev_keys in prev_choices.items():
+                for curr_cross, curr_keys in curr_choices.items():
+                    if prev_cross == curr_cross:
+                        continue
+                    model += switch_var >= pulp.lpSum(choice_vars[key] for key in prev_keys) + pulp.lpSum(choice_vars[key] for key in curr_keys) - 1.0
+
+    completion_expr = _expr_sum([float(task.weight) * completion_vars[task.task_id] for task in active_tasks if task.task_id in completion_vars])
+    progress_expr = _expr_sum(progress_terms)
+    peak_integral_expr = _expr_sum([float(segment.duration) * q_vars[segment.index] for segment in horizon_segments])
+    switch_expr = _expr_sum(switch_terms)
+    stages = [
+        _ObjectiveStage(name="completion", sense=pulp.LpMaximize, expr=completion_expr),
+        _ObjectiveStage(name="progress", sense=pulp.LpMaximize, expr=progress_expr),
+        _ObjectiveStage(name="peak", sense=pulp.LpMinimize, expr=z_peak),
+        _ObjectiveStage(name="integral", sense=pulp.LpMinimize, expr=peak_integral_expr),
+        _ObjectiveStage(name="switch", sense=pulp.LpMinimize, expr=switch_expr),
+    ]
+
+    allow_incumbent = scenario.stage2.milp_time_limit_seconds is not None or scenario.stage2.milp_relative_gap is not None
+    try:
+        solve_profile = _solve_lexicographic(
+            model,
+            scenario,
+            stages,
+            mode_label="hotspot_local_peak",
+            allow_incumbent=allow_incumbent,
+            capture_solver_log=allow_incumbent,
+        )
+    except Exception as exc:
+        return {"accepted": False, "solver_status": f"Failed:{type(exc).__name__}"}
+
+    updated_schedule = dict(current_schedule)
+    horizon_segment_indices = {segment.index for segment in horizon_segments}
+    for key in list(updated_schedule):
+        if key[0] in affected_task_ids and key[1] in horizon_segment_indices:
+            del updated_schedule[key]
+
+    used_augmented_windows: set[str] = set()
+    for key, record in candidate_records.items():
+        rate_value = float(rate_vars[key].value() or 0.0)
+        if rate_value <= EPS:
+            continue
+        delivered = rate_value * record.effective_duration
+        if delivered <= EPS:
+            continue
+        updated_schedule[(record.task_id, record.segment_index)] = Allocation(
+            task_id=record.task_id,
+            segment_index=record.segment_index,
+            path_id=record.path.path_id,
+            edge_ids=record.path.edge_ids,
+            rate=rate_value,
+            delivered=delivered,
+            task_type="reg",
+        )
+        if record.path.cross_window_id in augmented_window_ids:
+            used_augmented_windows.add(str(record.path.cross_window_id))
+
+    return {
+        "accepted": True,
+        "schedule": updated_schedule,
+        "solver_status": solve_profile.get("overall_status", "Accepted"),
+        "objective_values": dict(solve_profile.get("objective_values", {})),
+        "used_augment_windows": sorted(used_augmented_windows),
+    }
