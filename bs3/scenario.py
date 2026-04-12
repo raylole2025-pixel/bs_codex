@@ -332,6 +332,7 @@ def load_scenario(path: str | Path) -> Scenario:
     raw_regular_repair_enabled = stage2_cfg.get("regular_repair_enabled")
     raw_repair_time_limit = stage2_cfg.get("repair_time_limit_seconds")
     raw_local_peak_horizon_cap = stage2_cfg.get("local_peak_horizon_cap_segments")
+    raw_augment_selection_policy = stage2_cfg.get("augment_selection_policy")
     stage2 = Stage2Config(
         k_paths=stage2_k_paths,
         completion_tolerance=_float(stage2_cfg.get("completion_tolerance", 1e-6), "stage2.completion_tolerance"),
@@ -405,6 +406,11 @@ def load_scenario(path: str | Path) -> Scenario:
         hotspot_top_tasks_per_range=max(int(stage2_cfg.get("hotspot_top_tasks_per_range", 12)), 0),
         augment_window_budget=max(int(stage2_cfg.get("augment_window_budget", 2)), 0),
         augment_top_windows_per_range=max(int(stage2_cfg.get("augment_top_windows_per_range", 3)), 0),
+        augment_selection_policy=(
+            str(raw_augment_selection_policy).strip().lower()
+            if str(raw_augment_selection_policy).strip().lower() in {"global_score_only", "structural_coverage_first"}
+            else "global_score_only"
+        ),
         hot_path_limit=max(int(stage2_cfg.get("hot_path_limit", 4)), 1),
         hot_promoted_tasks_per_segment=max(int(stage2_cfg.get("hot_promoted_tasks_per_segment", 8)), 0),
         local_peak_horizon_cap_segments=(

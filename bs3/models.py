@@ -248,6 +248,8 @@ class Stage2Config:
     augment_window_budget: int = 2
     # 每个热点区间最多保留的补窗候选数量
     augment_top_windows_per_range: int = 3
+    # 补窗选择策略：纯全局打分，或先给 structural hotspot 预留 1 个槽位
+    augment_selection_policy: str = "global_score_only"
     # 热点 task-segment 的候选路径上限
     hot_path_limit: int = 4
     # 每个热点分段最多提升为热点扩张候选的任务数

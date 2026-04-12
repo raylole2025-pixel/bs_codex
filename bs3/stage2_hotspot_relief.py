@@ -20,6 +20,16 @@ _AUGMENT_STAGE_ORDER = {
     "selected": 5,
     "applied": 6,
 }
+_AUGMENT_SELECTION_POLICIES = {"global_score_only", "structural_coverage_first"}
+_AUGMENT_FUNNEL_STAGE_MEANINGS = {
+    "raw_overlap_candidate_count": "Physically overlaps the hot range before any insertion checks.",
+    "schedulable_after_t_pre_d_min_count": "Still satisfies the t_pre / d_min timing gate before terminal-conflict rejection.",
+    "conflict_free_count": "Can be inserted into the current plan without terminal occupancy conflict.",
+    "relief_path_ready_count": "Conflict-free and can generate at least one feasible relief path.",
+    "shortlisted_count": "Kept after per-hotspot candidate ranking/truncation.",
+    "selected_count": "Chosen by the global augment selection policy within the total budget.",
+    "applied_count": "Actually inserted into the plan after the final scheduling pass.",
+}
 
 
 @dataclass(frozen=True)
@@ -155,6 +165,57 @@ def _promote_augment_stage(record: dict[str, Any], stage: str) -> None:
     current = str(record.get("final_stage_reached") or "raw_overlap")
     if _AUGMENT_STAGE_ORDER.get(stage, -1) >= _AUGMENT_STAGE_ORDER.get(current, -1):
         record["final_stage_reached"] = stage
+
+
+def _augment_selection_policy(scenario: Scenario) -> str:
+    raw = str(getattr(scenario.stage2, "augment_selection_policy", "global_score_only") or "global_score_only").strip().lower()
+    return raw if raw in _AUGMENT_SELECTION_POLICIES else "global_score_only"
+
+
+def _augment_candidate_sort_key(candidate: AugmentCandidate) -> tuple[float | int | str, ...]:
+    return (
+        -int(candidate.structural_priority),
+        -float(candidate.relief_score),
+        -float(candidate.estimated_divertable_rate),
+        -int(candidate.feasible_path_count),
+        float(candidate.delay_penalty),
+        candidate.window_id,
+    )
+
+
+def _empty_augment_funnel_counts() -> dict[str, int]:
+    return {
+        "raw_overlap_candidate_count": 0,
+        "schedulable_after_t_pre_d_min_count": 0,
+        "conflict_free_count": 0,
+        "relief_path_ready_count": 0,
+        "shortlisted_count": 0,
+        "selected_count": 0,
+        "applied_count": 0,
+    }
+
+
+def _augment_rejection_breakdown(records: dict[str, dict[str, Any]]) -> dict[str, int]:
+    counter: Counter[str] = Counter()
+    for record in records.values():
+        reason = str(record.get("rejection_reason") or "").strip()
+        if reason:
+            counter[reason] += 1
+    return {reason: int(counter[reason]) for reason in sorted(counter)}
+
+
+def _hotspot_severity_sort_key(
+    hot_range: HotRange | None,
+    classification: HotRangeClassification | None,
+    range_id: str,
+) -> tuple[float | str, ...]:
+    return (
+        -float(hot_range.max_q_r) if hot_range is not None else 0.0,
+        -float(hot_range.q_integral) if hot_range is not None else 0.0,
+        -float(classification.hot_duration) if classification is not None else 0.0,
+        -float(classification.single_link_fraction) if classification is not None else 0.0,
+        range_id,
+    )
 
 
 def _peak_like_threshold_from_peak(q_peak: float) -> float:
@@ -610,16 +671,7 @@ def _collect_augment_candidates(
         structural_priority = 1 if bool(classifications.get(hot_range.range_id) and classifications[hot_range.range_id].structural) else 0
         per_range: list[AugmentCandidate] = []
         segment_set = set(hot_range.segment_indices)
-        funnel_counts = {
-            "raw_overlap_candidate_count": 0,
-            "real_schedulable_candidate_count": 0,
-            "pass_t_pre_and_d_min_count": 0,
-            "pass_conflict_check_count": 0,
-            "pass_relief_path_generation_count": 0,
-            "shortlisted_candidate_count": 0,
-            "selected_candidate_count": 0,
-            "applied_candidate_count": 0,
-        }
+        funnel_counts = _empty_augment_funnel_counts()
         candidate_records: dict[str, dict[str, Any]] = {}
         for window in scenario.candidate_windows:
             if window.window_id in plan_window_ids:
@@ -644,13 +696,12 @@ def _collect_augment_candidates(
             if not bool(schedule_detail.get("pass_t_pre_and_d_min", False)):
                 record["rejection_reason"] = str(schedule_detail.get("rejection_reason") or "other")
                 continue
-            funnel_counts["pass_t_pre_and_d_min_count"] += 1
+            funnel_counts["schedulable_after_t_pre_d_min_count"] += 1
             _promote_augment_stage(record, "schedulable")
             if not bool(schedule_detail.get("pass_conflict_check", False)):
                 record["rejection_reason"] = str(schedule_detail.get("rejection_reason") or "other")
                 continue
-            funnel_counts["pass_conflict_check_count"] += 1
-            funnel_counts["real_schedulable_candidate_count"] += 1
+            funnel_counts["conflict_free_count"] += 1
             _promote_augment_stage(record, "conflict_free")
             scheduled_window = schedule_detail.get("scheduled_window")
             if not isinstance(scheduled_window, ScheduledWindow):
@@ -703,7 +754,7 @@ def _collect_augment_candidates(
                 record["switch_penalty"] = float(switch_penalty)
                 record["rejection_reason"] = "no_feasible_relief_path"
                 continue
-            funnel_counts["pass_relief_path_generation_count"] += 1
+            funnel_counts["relief_path_ready_count"] += 1
             _promote_augment_stage(record, "relief_path_ready")
             delay_penalty = float(record["delay_penalty"])
             score = overlap_duration * divertable_rate / (1.0 + 0.15 * delay_penalty + 0.05 * switch_penalty)
@@ -736,16 +787,10 @@ def _collect_augment_candidates(
                 )
             )
         per_range.sort(
-            key=lambda item: (
-                -int(item.structural_priority),
-                -float(item.relief_score),
-                -float(item.estimated_divertable_rate),
-                -int(item.feasible_path_count),
-                item.window_id,
-            )
+            key=_augment_candidate_sort_key
         )
         shortlist = per_range[: max(int(scenario.stage2.augment_top_windows_per_range), 0)]
-        funnel_counts["shortlisted_candidate_count"] = len(shortlist)
+        funnel_counts["shortlisted_count"] = len(shortlist)
         shortlisted_ids = {item.window_id for item in shortlist}
         for candidate in shortlist:
             record = candidate_records.get(candidate.window_id)
@@ -766,6 +811,7 @@ def _collect_augment_candidates(
             "range_id": hot_range.range_id,
             "funnel_counts": funnel_counts,
             "candidate_records": candidate_records,
+            "rejection_breakdown": {},
             "augment_debug_top_candidates": [],
             "fallback_local_swap": {
                 "attempted": False,
@@ -780,48 +826,35 @@ def _select_augment_windows(
     scenario: Scenario,
     plan: list[ScheduledWindow],
     candidates: list[AugmentCandidate],
+    *,
+    hot_ranges: list[HotRange],
+    classifications: dict[str, HotRangeClassification],
 ) -> list[AugmentCandidate]:
     if not candidates or scenario.stage2.augment_window_budget <= 0:
         return []
+    policy = _augment_selection_policy(scenario)
     best_by_window: dict[str, AugmentCandidate] = {}
+    candidates_by_range: dict[str, list[AugmentCandidate]] = defaultdict(list)
     for candidate in candidates:
+        candidates_by_range[candidate.range_id].append(candidate)
         existing = best_by_window.get(candidate.window_id)
-        if existing is None or (
-            int(candidate.structural_priority),
-            float(candidate.relief_score),
-            float(candidate.estimated_divertable_rate),
-            int(candidate.feasible_path_count),
-            -float(candidate.delay_penalty),
-            candidate.window_id,
-        ) > (
-            int(existing.structural_priority),
-            float(existing.relief_score),
-            float(existing.estimated_divertable_rate),
-            int(existing.feasible_path_count),
-            -float(existing.delay_penalty),
-            existing.window_id,
-        ):
+        if existing is None or _augment_candidate_sort_key(candidate) < _augment_candidate_sort_key(existing):
             best_by_window[candidate.window_id] = candidate
-    ranked = sorted(
-        best_by_window.values(),
-        key=lambda item: (
-            -int(item.structural_priority),
-            -float(item.relief_score),
-            -float(item.estimated_divertable_rate),
-            -int(item.feasible_path_count),
-            float(item.delay_penalty),
-            item.window_id,
-        ),
-    )
+    for range_candidates in candidates_by_range.values():
+        range_candidates.sort(key=_augment_candidate_sort_key)
+    ranked = sorted(best_by_window.values(), key=_augment_candidate_sort_key)
     candidate_lookup = {window.window_id: window for window in scenario.candidate_windows}
     selected: list[AugmentCandidate] = []
     working_plan = list(plan)
-    for candidate in ranked:
-        if len(selected) >= int(scenario.stage2.augment_window_budget):
-            break
+    selected_window_ids: set[str] = set()
+    budget = int(scenario.stage2.augment_window_budget)
+
+    def try_select(candidate: AugmentCandidate) -> bool:
+        if len(selected) >= budget or candidate.window_id in selected_window_ids or int(candidate.feasible_path_count) <= 0:
+            return False
         base_window = candidate_lookup.get(candidate.window_id)
         if base_window is None:
-            continue
+            return False
         scheduled_window = _schedule_candidate_against_plan(
             working_plan,
             base_window,
@@ -829,9 +862,37 @@ def _select_augment_windows(
             d_min=float(scenario.stage1.d_min),
         )
         if scheduled_window is None:
-            continue
+            return False
         working_plan.append(scheduled_window)
         selected.append(candidate)
+        selected_window_ids.add(candidate.window_id)
+        return True
+
+    if policy == "structural_coverage_first":
+        hot_range_lookup = {hot_range.range_id: hot_range for hot_range in hot_ranges}
+        structural_range_ids = [
+            range_id
+            for range_id, range_candidates in candidates_by_range.items()
+            if range_candidates and bool(classifications.get(range_id) and classifications[range_id].structural)
+        ]
+        structural_range_ids.sort(
+            key=lambda range_id: _hotspot_severity_sort_key(
+                hot_range_lookup.get(range_id),
+                classifications.get(range_id),
+                range_id,
+            )
+        )
+        for range_id in structural_range_ids:
+            if len(selected) >= budget:
+                break
+            for candidate in candidates_by_range.get(range_id, []):
+                if try_select(candidate):
+                    break
+
+    for candidate in ranked:
+        if len(selected) >= budget:
+            break
+        try_select(candidate)
     return selected
 
 
@@ -991,14 +1052,14 @@ def _finalize_augment_debug(
     for range_id, debug in augment_debug_by_range.items():
         records = dict(debug.get("candidate_records") or {})
         funnel_counts = dict(debug.get("funnel_counts") or {})
-        funnel_counts["selected_candidate_count"] = 0
-        funnel_counts["applied_candidate_count"] = 0
+        funnel_counts["selected_count"] = 0
+        funnel_counts["applied_count"] = 0
         for window_id, record in records.items():
             key = (range_id, window_id)
             if key in selected_keys:
                 _promote_augment_stage(record, "selected")
                 record["rejection_reason"] = None
-                funnel_counts["selected_candidate_count"] += 1
+                funnel_counts["selected_count"] += 1
             elif (
                 _AUGMENT_STAGE_ORDER.get(str(record.get("final_stage_reached")), -1) >= _AUGMENT_STAGE_ORDER["shortlisted"]
                 and record.get("rejection_reason") in {None, ""}
@@ -1007,13 +1068,14 @@ def _finalize_augment_debug(
             if key in applied_keys:
                 _promote_augment_stage(record, "applied")
                 record["rejection_reason"] = None
-                funnel_counts["applied_candidate_count"] += 1
+                funnel_counts["applied_count"] += 1
             elif key in selected_keys and window_id not in applied_window_id_set:
                 record["rejection_reason"] = (
                     "removed_by_swap_rule" if window_id in removed_window_id_set else "terminal_conflict_after_insertion"
                 )
 
         debug["funnel_counts"] = funnel_counts
+        debug["rejection_breakdown"] = _augment_rejection_breakdown(records)
         ranked_records = sorted(
             records.values(),
             key=lambda record: (
@@ -1041,6 +1103,31 @@ def _finalize_augment_debug(
             }
             for record in ranked_records[:10]
         ]
+
+
+def _structurally_starved_by_selection_policy(
+    *,
+    classification: HotRangeClassification,
+    funnel_counts: dict[str, Any],
+    top_candidates: list[dict[str, Any]],
+) -> tuple[bool, str | None]:
+    if not bool(classification.structural):
+        return False, None
+    if int(funnel_counts.get("relief_path_ready_count", 0) or 0) <= 0:
+        return False, None
+    if int(funnel_counts.get("selected_count", 0) or 0) > 0 or int(funnel_counts.get("applied_count", 0) or 0) > 0:
+        return False, None
+    reasons = [
+        str(candidate.get("rejection_reason") or "").strip()
+        for candidate in top_candidates
+        if str(candidate.get("rejection_reason") or "").strip()
+    ]
+    if not reasons:
+        return False, None
+    dominant_reason, dominant_count = Counter(reasons).most_common(1)[0]
+    if dominant_reason not in {"budget_exhausted", "dominated_in_ranking"}:
+        return False, dominant_reason
+    return dominant_count >= max(1, len(reasons) // 2), dominant_reason
 
 
 def _hot_range_segment_indices(segments: list[Segment], hot_range: HotRange) -> list[int]:
@@ -1225,6 +1312,9 @@ def run_hotspot_relief(
             "augment_candidates_considered": 0,
             "augment_windows_selected": 0,
             "augment_windows_added": 0,
+            "augment_selection_policy": _augment_selection_policy(scenario),
+            "structural_hotspot_starvation_count": 0,
+            "structural_hotspot_starvation_range_ids": [],
             "selected_augment_windows": [],
             "applied_augment_windows": [],
             "q_peak_before": float(initial_summary["q_peak"]),
@@ -1249,6 +1339,9 @@ def run_hotspot_relief(
             "selected_augment_windows": [],
             "applied_augment_windows": [],
             "removed_plan_windows": [],
+            "augment_selection_policy": _augment_selection_policy(scenario),
+            "augment_funnel_stage_meanings": dict(_AUGMENT_FUNNEL_STAGE_MEANINGS),
+            "structural_hotspot_starvation": [],
             "sanity_warnings": [],
             "before_after": {
                 "before": initial_summary,
@@ -1326,7 +1419,13 @@ def run_hotspot_relief(
         for hot_range in hot_ranges
         for warning in classifications[hot_range.range_id].warnings
     ]
-    selected_augment_candidates = _select_augment_windows(scenario, plan, augment_candidates)
+    selected_augment_candidates = _select_augment_windows(
+        scenario,
+        plan,
+        augment_candidates,
+        hot_ranges=hot_ranges,
+        classifications=classifications,
+    )
     selected_augment_window_ids = [candidate.window_id for candidate in selected_augment_candidates]
     augmented_plan, removed_window_ids, applied_augment_window_ids = _apply_augmentation_to_plan(
         scenario,
@@ -1385,6 +1484,7 @@ def run_hotspot_relief(
             "classification": asdict(classification),
             "alternative_diagnostics": alternative_diagnostics[hot_range.range_id],
             "augment_funnel_counts": dict((augment_debug_by_range.get(hot_range.range_id) or {}).get("funnel_counts") or {}),
+            "augment_rejection_breakdown": dict((augment_debug_by_range.get(hot_range.range_id) or {}).get("rejection_breakdown") or {}),
             "augment_debug_top_candidates": list((augment_debug_by_range.get(hot_range.range_id) or {}).get("augment_debug_top_candidates") or []),
             "fallback_local_swap": dict((augment_debug_by_range.get(hot_range.range_id) or {}).get("fallback_local_swap") or {}),
             "contributing_tasks": [asdict(item) for item in contributions[hot_range.range_id]],
@@ -1395,7 +1495,16 @@ def run_hotspot_relief(
             "used_augment_windows": [],
             "candidate_solver_status": "not_attempted",
             "rejection_reason": None,
+            "structurally_starved_by_selection_policy": False,
+            "dominant_top_candidate_rejection_reason": None,
         }
+        starved_by_policy, dominant_reason = _structurally_starved_by_selection_policy(
+            classification=classification,
+            funnel_counts=range_report["augment_funnel_counts"],
+            top_candidates=range_report["augment_debug_top_candidates"],
+        )
+        range_report["structurally_starved_by_selection_policy"] = bool(starved_by_policy)
+        range_report["dominant_top_candidate_rejection_reason"] = dominant_reason
         if classification.structural and not applied_augment_for_range:
             range_report["status"] = "structural_bottleneck"
             range_report["candidate_solver_status"] = "skipped_no_applied_augment"
@@ -1489,6 +1598,9 @@ def run_hotspot_relief(
             }
         range_reports.append(range_report)
 
+    structural_starvation_items = [
+        item for item in range_reports if bool(item.get("structurally_starved_by_selection_policy"))
+    ]
     metadata = {
         "hotspot_relief_enabled": True,
         "structural_hot_range_count": sum(1 for item in classifications.values() if item.structural),
@@ -1497,6 +1609,9 @@ def run_hotspot_relief(
         "augment_candidates_considered": len(augment_candidates),
         "augment_windows_selected": len(selected_augment_window_ids),
         "augment_windows_added": len(applied_augment_window_ids),
+        "augment_selection_policy": _augment_selection_policy(scenario),
+        "structural_hotspot_starvation_count": len(structural_starvation_items),
+        "structural_hotspot_starvation_range_ids": [item["range_id"] for item in structural_starvation_items],
         "selected_augment_windows": list(selected_augment_window_ids),
         "applied_augment_windows": sorted(applied_augment_window_ids_set),
         "q_peak_before": float(baseline_aug_summary["q_peak"]),
@@ -1533,6 +1648,9 @@ def run_hotspot_relief(
         "selected_augment_windows": selected_augment_window_ids,
         "applied_augment_windows": sorted(applied_augment_window_ids_set),
         "removed_plan_windows": removed_window_ids,
+        "augment_selection_policy": _augment_selection_policy(scenario),
+        "augment_funnel_stage_meanings": dict(_AUGMENT_FUNNEL_STAGE_MEANINGS),
+        "structural_hotspot_starvation": structural_starvation_items,
         "stage1_peak_rescore_hook": stage1_peak_rescore_hook,
         "sanity_warnings": sanity_warnings,
         "before_after": {

@@ -67,6 +67,12 @@ def main() -> None:
     parser.add_argument("--hot-path-limit", type=int, default=None, help="Override hot_path_limit")
     parser.add_argument("--augment-top-windows-per-range", type=int, default=None, help="Override augment_top_windows_per_range")
     parser.add_argument("--augment-window-budget", type=int, default=None, help="Override augment_window_budget")
+    parser.add_argument(
+        "--augment-selection-policy",
+        choices=["global_score_only", "structural_coverage_first"],
+        default=None,
+        help="Override augment selection policy",
+    )
     args = parser.parse_args()
 
     scenario_path = Path(args.scenario_path)
@@ -134,6 +140,11 @@ def main() -> None:
                 if args.augment_window_budget is not None
                 else scenario.stage2.augment_window_budget
             ),
+            augment_selection_policy=(
+                str(args.augment_selection_policy)
+                if args.augment_selection_policy is not None
+                else scenario.stage2.augment_selection_policy
+            ),
         ),
         metadata={
             **dict(scenario.metadata),
@@ -153,22 +164,28 @@ def main() -> None:
         {
             "range_id": item.get("range_id"),
             "augment_funnel_counts": item.get("augment_funnel_counts", {}),
+            "structurally_starved_by_selection_policy": item.get("structurally_starved_by_selection_policy", False),
             "top_rejected_augment_candidates": [
                 candidate
                 for candidate in item.get("augment_debug_top_candidates", [])
                 if candidate.get("rejection_reason")
             ][:10],
+            "selected_augment_windows": item.get("selected_augment_windows", []),
+            "applied_augment_windows": item.get("applied_augment_windows", []),
             "fallback_local_swap": item.get("fallback_local_swap", {}),
             "rejection_reason": item.get("rejection_reason"),
         }
         for item in hotspot_report.get("structural_bottleneck", [])
     ]
+    hot_range_5 = next((item for item in hotspot_report.get("hot_ranges", []) if item.get("range_id") == "hot_range_5"), {})
+    structural_hotspot_starvation_range_ids = list(result.metadata.get("structural_hotspot_starvation_range_ids", []))
     summary = {
         "scenario_path": str(scenario_path),
         "plan_source": plan_source,
         "solver_mode": result.solver_mode,
         "baseline_mode": effective_regular_mode,
         "prefer_milp": result.metadata.get("prefer_milp"),
+        "augment_selection_policy": scenario.stage2.augment_selection_policy,
         "plan_window_count_before": len(input_plan),
         "plan_window_count_after": len(result.plan),
         "cr_reg_before": before_after.get("before", {}).get("cr_reg"),
@@ -185,6 +202,8 @@ def main() -> None:
         "applied_augment_windows": hotspot_report.get("applied_augment_windows", []),
         "augment_top_windows_per_range": scenario.stage2.augment_top_windows_per_range,
         "augment_window_budget": scenario.stage2.augment_window_budget,
+        "structural_hotspot_starvation_count": int(result.metadata.get("structural_hotspot_starvation_count", 0) or 0),
+        "structural_hotspot_starvation_range_ids": structural_hotspot_starvation_range_ids,
         "fixed_plan_structural_bottleneck": {
             "count": len(hotspot_report.get("structural_bottleneck", [])),
             "range_ids": [item["range_id"] for item in hotspot_report.get("structural_bottleneck", [])],
@@ -210,6 +229,21 @@ def main() -> None:
             "range_ids": [item["range_id"] for item in hotspot_report.get("reroute_improved", [])],
         },
         "unresolved_structural_hotspots": unresolved_structural_hotspots,
+        "hot_range_5_selected_applied_status": {
+            "selected_augment_windows": hot_range_5.get("selected_augment_windows", []),
+            "applied_augment_windows": hot_range_5.get("applied_augment_windows", []),
+            "status": hot_range_5.get("status"),
+            "structurally_starved_by_selection_policy": hot_range_5.get("structurally_starved_by_selection_policy", False),
+        },
+        "hot_range_5_top_candidate_rejection_reasons": [
+            candidate.get("rejection_reason")
+            for candidate in hot_range_5.get("augment_debug_top_candidates", [])
+            if candidate.get("rejection_reason")
+        ],
+        "fallback_local_swap_attempted": any(
+            bool(item.get("fallback_local_swap", {}).get("attempted"))
+            for item in hotspot_report.get("hot_ranges", [])
+        ),
         "hot_range_outcomes": [
             {
                 "range_id": item.get("range_id"),
@@ -218,7 +252,10 @@ def main() -> None:
                 "classification": item.get("classification"),
                 "alternative_diagnostics": item.get("alternative_diagnostics"),
                 "augment_funnel_counts": item.get("augment_funnel_counts"),
+                "augment_rejection_breakdown": item.get("augment_rejection_breakdown"),
                 "augment_debug_top_candidates": item.get("augment_debug_top_candidates"),
+                "structurally_starved_by_selection_policy": item.get("structurally_starved_by_selection_policy"),
+                "dominant_top_candidate_rejection_reason": item.get("dominant_top_candidate_rejection_reason"),
                 "fallback_local_swap": item.get("fallback_local_swap"),
                 "selected_augment_windows": item.get("selected_augment_windows"),
                 "applied_augment_windows": item.get("applied_augment_windows"),

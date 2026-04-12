@@ -1,0 +1,16 @@
+{
+  "before": {
+    "cr_reg": 1.0,
+    "q_peak": 1.0000000000000002,
+    "q_integral": 32133.555410875,
+    "peak_like_threshold": 0.9999000000000002,
+    "peak_segment_count": 261
+  },
+  "after": {
+    "cr_reg": 1.0,
+    "q_peak": 1.0000000000000002,
+    "q_integral": 31628.809537579902,
+    "peak_like_threshold": 0.9999000000000002,
+    "peak_segment_count": 245
+  }
+}
