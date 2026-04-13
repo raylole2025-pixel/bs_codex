@@ -73,6 +73,11 @@ def main() -> None:
         default=None,
         help="Override augment selection policy",
     )
+    parser.add_argument(
+        "--enable-structural-repair-gate",
+        action="store_true",
+        help="Enable the very-small structural repair gate for provisional structural augment slots",
+    )
     args = parser.parse_args()
 
     scenario_path = Path(args.scenario_path)
@@ -149,6 +154,7 @@ def main() -> None:
         metadata={
             **dict(scenario.metadata),
             "hotspot_augment_mode": args.augment_mode,
+            "structural_repair_gate_enabled": bool(args.enable_structural_repair_gate),
             **(
                 {"hotspot_fixed_plan_window_count": int(args.fixed_window_count)}
                 if args.fixed_window_count is not None
@@ -160,6 +166,7 @@ def main() -> None:
     result = run_stage2(scenario, input_plan)
     hotspot_report = dict(result.metadata.get("hotspot_report") or {})
     before_after = dict(hotspot_report.get("before_after") or {})
+    unresolved_structural_source = list(hotspot_report.get("structural_bottleneck", [])) + list(hotspot_report.get("structural_candidate_pruned", []))
     unresolved_structural_hotspots = [
         {
             "range_id": item.get("range_id"),
@@ -172,10 +179,19 @@ def main() -> None:
             ][:10],
             "selected_augment_windows": item.get("selected_augment_windows", []),
             "applied_augment_windows": item.get("applied_augment_windows", []),
+            "structural_repair_gate_attempted": item.get("structural_repair_gate_attempted", False),
+            "structural_repair_gate_accepted": item.get("structural_repair_gate_accepted", False),
+            "structural_repair_gate_rejection_reason": item.get("structural_repair_gate_rejection_reason"),
+            "structural_repair_gate_local_before_after": item.get("structural_repair_gate_local_before_after"),
+            "structural_repair_gate_solver_status": item.get("structural_repair_gate_solver_status"),
+            "structural_repair_gate_solver_error": item.get("structural_repair_gate_solver_error"),
+            "released_provisional_augment_windows": item.get("released_provisional_augment_windows", []),
+            "reallocated_augment_windows_after_release": item.get("reallocated_augment_windows_after_release", []),
+            "detailed_runtime_failure_type": item.get("detailed_runtime_failure_type"),
             "fallback_local_swap": item.get("fallback_local_swap", {}),
             "rejection_reason": item.get("rejection_reason"),
         }
-        for item in hotspot_report.get("structural_bottleneck", [])
+        for item in unresolved_structural_source
     ]
     hot_range_5 = next((item for item in hotspot_report.get("hot_ranges", []) if item.get("range_id") == "hot_range_5"), {})
     structural_hotspot_starvation_range_ids = list(result.metadata.get("structural_hotspot_starvation_range_ids", []))
@@ -186,6 +202,7 @@ def main() -> None:
         "baseline_mode": effective_regular_mode,
         "prefer_milp": result.metadata.get("prefer_milp"),
         "augment_selection_policy": scenario.stage2.augment_selection_policy,
+        "structural_repair_gate_enabled": bool(args.enable_structural_repair_gate),
         "plan_window_count_before": len(input_plan),
         "plan_window_count_after": len(result.plan),
         "cr_reg_before": before_after.get("before", {}).get("cr_reg"),
@@ -204,6 +221,8 @@ def main() -> None:
         "augment_window_budget": scenario.stage2.augment_window_budget,
         "structural_hotspot_starvation_count": int(result.metadata.get("structural_hotspot_starvation_count", 0) or 0),
         "structural_hotspot_starvation_range_ids": structural_hotspot_starvation_range_ids,
+        "released_provisional_augment_windows": hotspot_report.get("released_provisional_augment_windows", []),
+        "reallocated_augment_windows_after_release": hotspot_report.get("reallocated_augment_windows_after_release", []),
         "fixed_plan_structural_bottleneck": {
             "count": len(hotspot_report.get("structural_bottleneck", [])),
             "range_ids": [item["range_id"] for item in hotspot_report.get("structural_bottleneck", [])],
@@ -234,6 +253,15 @@ def main() -> None:
             "applied_augment_windows": hot_range_5.get("applied_augment_windows", []),
             "status": hot_range_5.get("status"),
             "structurally_starved_by_selection_policy": hot_range_5.get("structurally_starved_by_selection_policy", False),
+            "structural_repair_gate_attempted": hot_range_5.get("structural_repair_gate_attempted", False),
+            "structural_repair_gate_accepted": hot_range_5.get("structural_repair_gate_accepted", False),
+            "structural_repair_gate_rejection_reason": hot_range_5.get("structural_repair_gate_rejection_reason"),
+            "structural_repair_gate_local_before_after": hot_range_5.get("structural_repair_gate_local_before_after"),
+            "structural_repair_gate_solver_status": hot_range_5.get("structural_repair_gate_solver_status"),
+            "structural_repair_gate_solver_error": hot_range_5.get("structural_repair_gate_solver_error"),
+            "released_provisional_augment_windows": hot_range_5.get("released_provisional_augment_windows", []),
+            "reallocated_augment_windows_after_release": hot_range_5.get("reallocated_augment_windows_after_release", []),
+            "detailed_runtime_failure_type": hot_range_5.get("detailed_runtime_failure_type"),
         },
         "hot_range_5_top_candidate_rejection_reasons": [
             candidate.get("rejection_reason")
@@ -256,11 +284,21 @@ def main() -> None:
                 "augment_debug_top_candidates": item.get("augment_debug_top_candidates"),
                 "structurally_starved_by_selection_policy": item.get("structurally_starved_by_selection_policy"),
                 "dominant_top_candidate_rejection_reason": item.get("dominant_top_candidate_rejection_reason"),
+                "structural_repair_gate_attempted": item.get("structural_repair_gate_attempted"),
+                "structural_repair_gate_accepted": item.get("structural_repair_gate_accepted"),
+                "structural_repair_gate_rejection_reason": item.get("structural_repair_gate_rejection_reason"),
+                "structural_repair_gate_local_before_after": item.get("structural_repair_gate_local_before_after"),
+                "structural_repair_gate_solver_status": item.get("structural_repair_gate_solver_status"),
+                "structural_repair_gate_solver_error": item.get("structural_repair_gate_solver_error"),
+                "released_provisional_augment_windows": item.get("released_provisional_augment_windows"),
+                "reallocated_augment_windows_after_release": item.get("reallocated_augment_windows_after_release"),
+                "detailed_runtime_failure_type": item.get("detailed_runtime_failure_type"),
                 "fallback_local_swap": item.get("fallback_local_swap"),
                 "selected_augment_windows": item.get("selected_augment_windows"),
                 "applied_augment_windows": item.get("applied_augment_windows"),
                 "used_augment_windows": item.get("used_augment_windows"),
                 "candidate_solver_status": item.get("candidate_solver_status"),
+                "candidate_solver_error": item.get("candidate_solver_error"),
                 "rejection_reason": item.get("rejection_reason"),
             }
             for item in hotspot_report.get("hot_ranges", [])

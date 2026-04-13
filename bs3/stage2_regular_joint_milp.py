@@ -923,7 +923,8 @@ def _select_hotspot_candidates(
         return []
 
     base_limit = max(int(scenario.stage2.k_paths), 1)
-    hot_limit = max(int(scenario.stage2.hot_path_limit), base_limit, 4)
+    hot_min_limit = 3 if bool(scenario.metadata.get("structural_repair_gate_active", False)) else 4
+    hot_limit = max(int(scenario.stage2.hot_path_limit), base_limit, hot_min_limit)
     limit = hot_limit if hot_segment and hot_task_segment else base_limit
     ranked = sorted(candidates, key=lambda path: (float(path.delay), int(path.hop_count), str(path.path_id)))
 
@@ -994,6 +995,26 @@ def _select_hotspot_candidates(
     return selected[:limit]
 
 
+def _classify_hotspot_local_failure(message: str) -> str:
+    lowered = str(message).lower()
+    if "exhausted its window-level time budget before a feasible solve" in lowered:
+        return "failed_time_limit_without_incumbent"
+    if (
+        "status=infeasible" in lowered
+        or "solution_status=infeasible" in lowered
+        or "no solution exists" in lowered
+        or "infeasible or unbounded" in lowered
+    ):
+        return "failed_infeasible"
+    if "no candidate" in lowered:
+        return "failed_no_candidate_path_after_pruning"
+    if "status=not solved" in lowered and "solution found" not in lowered:
+        return "failed_time_limit_without_incumbent"
+    if "did not return an acceptable incumbent" in lowered:
+        return "failed_solver_runtime"
+    return "failed_exception_other"
+
+
 def solve_regular_hotspot_local_milp(
     scenario: Scenario,
     plan: list[ScheduledWindow],
@@ -1008,7 +1029,11 @@ def solve_regular_hotspot_local_milp(
     augmented_window_ids: set[str],
 ) -> dict[str, Any]:
     if not horizon_segments or not active_tasks:
-        return {"accepted": False, "solver_status": "Skipped"}
+        return {
+            "accepted": False,
+            "solver_status": "Skipped",
+            "detailed_runtime_failure_type": None,
+        }
 
     affected_task_ids = {task.task_id for task in active_tasks}
     unaffected_task_ids = {
@@ -1091,40 +1116,52 @@ def solve_regular_hotspot_local_milp(
                     cross_choice_keys[(task.task_id, local_index)][path.cross_window_id].append(key)
 
     if not candidate_records:
-        return {"accepted": False, "solver_status": "NoCandidates"}
+        return {
+            "accepted": False,
+            "solver_status": "NoCandidates",
+            "detailed_runtime_failure_type": "failed_no_candidate_path_after_pruning",
+        }
 
-    model = pulp.LpProblem("stage2_regular_hotspot_local_peak", pulp.LpMaximize)
-    remaining_vars: dict[tuple[str, int], pulp.LpVariable] = {}
-    first_switch_vars: dict[str, pulp.LpVariable] = {}
-    transition_switch_vars: dict[tuple[str, int], pulp.LpVariable] = {}
-    completion_vars = {
-        task.task_id: pulp.LpVariable(f"y_{task.task_id}", cat=pulp.LpBinary)
-        for task in active_tasks
-        if bool(baseline_completed.get(task.task_id, False))
-    }
-    q_vars = {
-        segment.index: pulp.LpVariable(f"q_{segment.index}", lowBound=0.0, upBound=1.0)
-        for segment in horizon_segments
-    }
-    z_peak = pulp.LpVariable("z_peak_local", lowBound=0.0, upBound=1.0)
-    z_window = {
-        window_id: pulp.LpVariable(f"zw_{window_id}", cat=pulp.LpBinary)
-        for window_id in sorted(augmented_window_ids)
-    }
-    rate_vars = {
-        key: pulp.LpVariable(
-            f"x_{task_id}_{local_index}_{path_index}",
-            lowBound=0.0,
-            upBound=record.rate_upper_bound,
-        )
-        for key, record in candidate_records.items()
-        for task_id, local_index, path_index in [key]
-    }
-    choice_vars = {
-        key: pulp.LpVariable(f"z_{task_id}_{local_index}_{path_index}", cat=pulp.LpBinary)
-        for key in candidate_records
-        for task_id, local_index, path_index in [key]
-    }
+    try:
+        model = pulp.LpProblem("stage2_regular_hotspot_local_peak", pulp.LpMaximize)
+        remaining_vars: dict[tuple[str, int], pulp.LpVariable] = {}
+        first_switch_vars: dict[str, pulp.LpVariable] = {}
+        transition_switch_vars: dict[tuple[str, int], pulp.LpVariable] = {}
+        completion_vars = {
+            task.task_id: pulp.LpVariable(f"y_{task.task_id}", cat=pulp.LpBinary)
+            for task in active_tasks
+            if bool(baseline_completed.get(task.task_id, False))
+        }
+        q_vars = {
+            segment.index: pulp.LpVariable(f"q_{segment.index}", lowBound=0.0, upBound=1.0)
+            for segment in horizon_segments
+        }
+        z_peak = pulp.LpVariable("z_peak_local", lowBound=0.0, upBound=1.0)
+        z_window = {
+            window_id: pulp.LpVariable(f"zw_{window_id}", cat=pulp.LpBinary)
+            for window_id in sorted(augmented_window_ids)
+        }
+        rate_vars = {
+            key: pulp.LpVariable(
+                f"x_{task_id}_{local_index}_{path_index}",
+                lowBound=0.0,
+                upBound=record.rate_upper_bound,
+            )
+            for key, record in candidate_records.items()
+            for task_id, local_index, path_index in [key]
+        }
+        choice_vars = {
+            key: pulp.LpVariable(f"z_{task_id}_{local_index}_{path_index}", cat=pulp.LpBinary)
+            for key in candidate_records
+            for task_id, local_index, path_index in [key]
+        }
+    except Exception as exc:
+        return {
+            "accepted": False,
+            "solver_status": f"Failed:{type(exc).__name__}",
+            "detailed_runtime_failure_type": "failed_model_build",
+            "solver_error": str(exc),
+        }
 
     progress_terms: list = []
     for task in active_tasks:
@@ -1228,8 +1265,22 @@ def solve_regular_hotspot_local_milp(
             allow_incumbent=allow_incumbent,
             capture_solver_log=allow_incumbent,
         )
+    except RuntimeError as exc:
+        return {
+            "accepted": False,
+            "solver_status": f"Failed:{type(exc).__name__}",
+            "detailed_runtime_failure_type": _classify_hotspot_local_failure(str(exc)),
+            "solver_error": str(exc),
+        }
     except Exception as exc:
-        return {"accepted": False, "solver_status": f"Failed:{type(exc).__name__}"}
+        return {
+            "accepted": False,
+            "solver_status": f"Failed:{type(exc).__name__}",
+            "detailed_runtime_failure_type": (
+                "failed_solver_runtime" if isinstance(exc, pulp.PulpSolverError) else "failed_exception_other"
+            ),
+            "solver_error": str(exc),
+        }
 
     updated_schedule = dict(current_schedule)
     horizon_segment_indices = {segment.index for segment in horizon_segments}
@@ -1261,6 +1312,7 @@ def solve_regular_hotspot_local_milp(
         "accepted": True,
         "schedule": updated_schedule,
         "solver_status": solve_profile.get("overall_status", "Accepted"),
+        "detailed_runtime_failure_type": None,
         "objective_values": dict(solve_profile.get("objective_values", {})),
         "used_augment_windows": sorted(used_augmented_windows),
     }

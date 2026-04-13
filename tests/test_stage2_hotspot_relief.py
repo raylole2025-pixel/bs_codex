@@ -10,6 +10,7 @@ from pathlib import Path
 from bs3.models import Allocation, ScheduledWindow
 from bs3.scenario import build_segments, load_scenario, scenario_to_dict
 from bs3.stage2 import run_stage2
+from bs3.stage2_regular_joint_milp import _classify_hotspot_local_failure
 from bs3.stage2_hotspot_relief import (
     AugmentCandidate,
     CrossSegmentProfileRow,
@@ -17,6 +18,7 @@ from bs3.stage2_hotspot_relief import (
     HotRangeClassification,
     _load_summary_from_profile,
     _select_augment_windows,
+    _structural_gate_accepts,
     build_cross_segment_profile,
     classify_hot_range,
     detect_hot_ranges,
@@ -359,6 +361,56 @@ class Stage2HotspotReliefTests(unittest.TestCase):
 
         self.assertEqual([candidate.window_id for candidate in selected_global], ["X2", "X3"])
         self.assertEqual([candidate.window_id for candidate in selected_structural], ["X1", "X2"])
+
+    def test_structural_gate_accepts_local_relief_without_completion_drop(self) -> None:
+        accepted = _structural_gate_accepts(
+            cr_reg_base=1.0,
+            cr_reg_new=1.0,
+            before_summary={
+                "q_peak": 1.0,
+                "q_integral": 10.0,
+                "peak_segment_count": 4,
+            },
+            after_summary={
+                "q_peak": 1.0,
+                "q_integral": 9.5,
+                "peak_segment_count": 4,
+            },
+            epsilon=1e-6,
+        )
+        rejected = _structural_gate_accepts(
+            cr_reg_base=1.0,
+            cr_reg_new=0.999,
+            before_summary={
+                "q_peak": 1.0,
+                "q_integral": 10.0,
+                "peak_segment_count": 4,
+            },
+            after_summary={
+                "q_peak": 0.9,
+                "q_integral": 8.0,
+                "peak_segment_count": 2,
+            },
+            epsilon=1e-6,
+        )
+
+        self.assertTrue(accepted)
+        self.assertFalse(rejected)
+
+    def test_hotspot_local_failure_classification_covers_infeasible_and_time_limit(self) -> None:
+        self.assertEqual(
+            _classify_hotspot_local_failure(
+                "Stage2-1 joint MILP hotspot_local_peak-stage-3-peak solve did not return an acceptable incumbent: "
+                "status=Infeasible, solution_status=No Solution Exists"
+            ),
+            "failed_infeasible",
+        )
+        self.assertEqual(
+            _classify_hotspot_local_failure(
+                "Stage2-1 joint MILP hotspot_local_peak exhausted its window-level time budget before a feasible solve"
+            ),
+            "failed_time_limit_without_incumbent",
+        )
 
     def test_hotspot_relief_improves_peak_without_degrading_completion(self) -> None:
         payload = _base_payload()

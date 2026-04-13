@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from statistics import median
 from typing import Any
 
@@ -581,6 +581,25 @@ def _relief_accepts(
     return False
 
 
+def _structural_gate_accepts(
+    *,
+    cr_reg_base: float,
+    cr_reg_new: float,
+    before_summary: dict[str, float | int],
+    after_summary: dict[str, float | int],
+    epsilon: float,
+) -> bool:
+    if float(cr_reg_new) + float(epsilon) < float(cr_reg_base):
+        return False
+    if int(after_summary["peak_segment_count"]) < int(before_summary["peak_segment_count"]):
+        return True
+    if float(after_summary["q_integral"]) < float(before_summary["q_integral"]) - epsilon:
+        return True
+    if float(after_summary["q_peak"]) < float(before_summary["q_peak"]) - epsilon:
+        return True
+    return False
+
+
 def _remap_schedule_to_segments(
     old_segments: list[Segment],
     new_segments: list[Segment],
@@ -642,6 +661,10 @@ def _candidate_path_exists_via_window(
 def _augment_mode(scenario: Scenario) -> str:
     raw_mode = str(scenario.metadata.get("hotspot_augment_mode", "augment_only")).strip().lower()
     return raw_mode if raw_mode in {"augment_only", "swap_if_budgeted"} else "augment_only"
+
+
+def _structural_repair_gate_enabled(scenario: Scenario) -> bool:
+    return bool(scenario.metadata.get("structural_repair_gate_enabled", False))
 
 
 def _fixed_plan_window_count(scenario: Scenario) -> int | None:
@@ -830,8 +853,28 @@ def _select_augment_windows(
     hot_ranges: list[HotRange],
     classifications: dict[str, HotRangeClassification],
 ) -> list[AugmentCandidate]:
+    return _select_augment_windows_with_details(
+        scenario,
+        plan,
+        candidates,
+        hot_ranges=hot_ranges,
+        classifications=classifications,
+    )["selected_candidates"]
+
+
+def _select_augment_windows_with_details(
+    scenario: Scenario,
+    plan: list[ScheduledWindow],
+    candidates: list[AugmentCandidate],
+    *,
+    hot_ranges: list[HotRange],
+    classifications: dict[str, HotRangeClassification],
+) -> dict[str, Any]:
     if not candidates or scenario.stage2.augment_window_budget <= 0:
-        return []
+        return {
+            "selected_candidates": [],
+            "provisional_reserved_keys": set(),
+        }
     policy = _augment_selection_policy(scenario)
     best_by_window: dict[str, AugmentCandidate] = {}
     candidates_by_range: dict[str, list[AugmentCandidate]] = defaultdict(list)
@@ -847,6 +890,7 @@ def _select_augment_windows(
     selected: list[AugmentCandidate] = []
     working_plan = list(plan)
     selected_window_ids: set[str] = set()
+    provisional_reserved_keys: set[tuple[str, str]] = set()
     budget = int(scenario.stage2.augment_window_budget)
 
     def try_select(candidate: AugmentCandidate) -> bool:
@@ -887,13 +931,17 @@ def _select_augment_windows(
                 break
             for candidate in candidates_by_range.get(range_id, []):
                 if try_select(candidate):
+                    provisional_reserved_keys.add((candidate.range_id, candidate.window_id))
                     break
 
     for candidate in ranked:
         if len(selected) >= budget:
             break
         try_select(candidate)
-    return selected
+    return {
+        "selected_candidates": selected,
+        "provisional_reserved_keys": provisional_reserved_keys,
+    }
 
 
 def _apply_augmentation_to_plan(
@@ -1130,6 +1178,179 @@ def _structurally_starved_by_selection_policy(
     return dominant_count >= max(1, len(reasons) // 2), dominant_reason
 
 
+def _profile_subset_summary(
+    profile: list[CrossSegmentProfileRow],
+    segment_indices: set[int],
+) -> dict[str, float | int]:
+    rows = [row for row in profile if row.segment_index in segment_indices]
+    if not rows:
+        return {
+            "q_peak": 0.0,
+            "q_integral": 0.0,
+            "peak_like_threshold": 0.995,
+            "peak_segment_count": 0,
+        }
+    return _load_summary_from_profile(rows)
+
+
+def _build_structural_gate_scenario(scenario: Scenario, horizon_length: int) -> Scenario:
+    gate_time_limit = scenario.stage2.milp_time_limit_seconds
+    if gate_time_limit in {None, 0, 0.0}:
+        gate_time_limit = 30.0
+    else:
+        gate_time_limit = min(float(gate_time_limit), 30.0)
+    gate_stage2 = replace(
+        scenario.stage2,
+        k_paths=min(max(int(scenario.stage2.k_paths), 1), 2),
+        hot_path_limit=min(max(int(scenario.stage2.hot_path_limit), 2), 3),
+        hot_promoted_tasks_per_segment=min(max(int(scenario.stage2.hot_promoted_tasks_per_segment), 1), 3),
+        hotspot_expand_segments=0,
+        local_peak_horizon_cap_segments=max(int(horizon_length), 1),
+        milp_time_limit_seconds=float(gate_time_limit),
+        augment_window_budget=1,
+    )
+    return replace(
+        scenario,
+        stage2=gate_stage2,
+        metadata={
+            **dict(scenario.metadata),
+            "structural_repair_gate_active": True,
+        },
+    )
+
+
+def _attempt_structural_repair_gate(
+    scenario: Scenario,
+    plan: list[ScheduledWindow],
+    segments: list[Segment],
+    current_schedule: dict[tuple[str, int], Allocation],
+    current_diagnostics: dict[str, Any],
+    current_profile: list[CrossSegmentProfileRow],
+    hot_range: HotRange,
+    classification: HotRangeClassification,
+    contributors: list[HotTaskContribution],
+    applied_augment_windows: list[str],
+) -> dict[str, Any]:
+    result: dict[str, Any] = {
+        "attempted": False,
+        "accepted": False,
+        "rejection_reason": None,
+        "local_before_after": None,
+        "used_augment_windows": [],
+        "detailed_runtime_failure_type": None,
+        "candidate_solver_status": "not_attempted",
+        "solver_error": None,
+        "schedule": None,
+        "objective_values": {},
+    }
+    if not classification.structural or len(applied_augment_windows) != 1:
+        return result
+
+    core_horizon = [segment for segment in segments if _window_overlap_duration(segment.start, segment.end, hot_range.start, hot_range.end) > EPS]
+    if not core_horizon:
+        result["attempted"] = True
+        result["rejection_reason"] = "failed_no_candidate_path_after_pruning"
+        result["candidate_solver_status"] = "SkippedNoCoreHorizon"
+        result["detailed_runtime_failure_type"] = "failed_no_candidate_path_after_pruning"
+        return result
+
+    tasks_by_id = {task.task_id: task for task in _regular_tasks(scenario)}
+    contributor_task_ids = [item.task_id for item in contributors if item.task_id in tasks_by_id]
+    if not contributor_task_ids:
+        result["attempted"] = True
+        result["rejection_reason"] = "failed_no_candidate_path_after_pruning"
+        result["candidate_solver_status"] = "SkippedNoContributors"
+        result["detailed_runtime_failure_type"] = "failed_no_candidate_path_after_pruning"
+        return result
+    active_tasks = [tasks_by_id[task_id] for task_id in contributor_task_ids[: min(len(contributor_task_ids), 6)]]
+
+    hot_window_ids_by_segment = _range_profile_summary(current_profile, hot_range)["hot_window_ids_by_segment"]
+    contributor_task_id_set = {task.task_id for task in active_tasks}
+    hot_task_segments = {
+        (task_id, segment_index)
+        for task_id, segment_index in _hot_task_segments_for_range(
+            _build_structural_gate_scenario(scenario, len(core_horizon)),
+            hot_range,
+            current_schedule,
+            hot_window_ids_by_segment,
+        )
+        if task_id in contributor_task_id_set
+    }
+    if not hot_task_segments:
+        hot_task_segments = {
+            (task_id, segment.index)
+            for task_id in contributor_task_id_set
+            for segment in core_horizon
+        }
+
+    gate_scenario = _build_structural_gate_scenario(scenario, len(core_horizon))
+    segment_index_set = {segment.index for segment in core_horizon}
+    before_summary = _profile_subset_summary(current_profile, segment_index_set)
+    current_cr_reg = _regular_completion_ratio_from_diagnostics(scenario, current_diagnostics)
+
+    result["attempted"] = True
+    local_result = solve_regular_hotspot_local_milp(
+        scenario=gate_scenario,
+        plan=plan,
+        segments=segments,
+        current_schedule=current_schedule,
+        diagnostics=current_diagnostics,
+        horizon_segments=core_horizon,
+        active_tasks=active_tasks,
+        hot_segment_indices=segment_index_set,
+        hot_task_segments=hot_task_segments,
+        hot_window_ids_by_segment=hot_window_ids_by_segment,
+        augmented_window_ids=set(applied_augment_windows),
+    )
+    result["candidate_solver_status"] = str(local_result.get("solver_status", "unknown"))
+    result["detailed_runtime_failure_type"] = local_result.get("detailed_runtime_failure_type")
+    result["solver_error"] = local_result.get("solver_error")
+    result["objective_values"] = dict(local_result.get("objective_values", {}))
+    if not bool(local_result.get("accepted", False)):
+        result["rejection_reason"] = str(
+            local_result.get("detailed_runtime_failure_type")
+            or local_result.get("solver_status")
+            or "failed_exception_other"
+        )
+        return result
+
+    candidate_schedule = dict(local_result["schedule"])
+    candidate_diagnostics = build_regular_schedule_diagnostics(scenario, plan, segments, candidate_schedule)
+    candidate_profile = build_cross_segment_profile(scenario, plan, segments, candidate_schedule)
+    candidate_summary = _profile_subset_summary(candidate_profile, segment_index_set)
+    candidate_cr_reg = _regular_completion_ratio_from_diagnostics(scenario, candidate_diagnostics)
+    epsilon = float(scenario.stage2.local_peak_accept_epsilon)
+    result["local_before_after"] = {
+        "before": {
+            "cr_reg": float(current_cr_reg),
+            **before_summary,
+        },
+        "after": {
+            "cr_reg": float(candidate_cr_reg),
+            **candidate_summary,
+        },
+    }
+    used_augment_windows = sorted(local_result.get("used_augment_windows", []))
+    if not any(window_id in set(applied_augment_windows) for window_id in used_augment_windows):
+        result["rejection_reason"] = "augment_window_not_used_by_gate"
+        result["used_augment_windows"] = used_augment_windows
+        return result
+    if not _structural_gate_accepts(
+        cr_reg_base=current_cr_reg,
+        cr_reg_new=candidate_cr_reg,
+        before_summary=before_summary,
+        after_summary=candidate_summary,
+        epsilon=epsilon,
+    ):
+        result["rejection_reason"] = "local_metrics_not_improved"
+        return result
+
+    result["accepted"] = True
+    result["schedule"] = candidate_schedule
+    result["used_augment_windows"] = used_augment_windows
+    return result
+
+
 def _hot_range_segment_indices(segments: list[Segment], hot_range: HotRange) -> list[int]:
     return [
         segment.index
@@ -1313,8 +1534,11 @@ def run_hotspot_relief(
             "augment_windows_selected": 0,
             "augment_windows_added": 0,
             "augment_selection_policy": _augment_selection_policy(scenario),
+            "structural_repair_gate_enabled": _structural_repair_gate_enabled(scenario),
             "structural_hotspot_starvation_count": 0,
             "structural_hotspot_starvation_range_ids": [],
+            "released_provisional_augment_windows": [],
+            "reallocated_augment_windows_after_release": [],
             "selected_augment_windows": [],
             "applied_augment_windows": [],
             "q_peak_before": float(initial_summary["q_peak"]),
@@ -1340,6 +1564,9 @@ def run_hotspot_relief(
             "applied_augment_windows": [],
             "removed_plan_windows": [],
             "augment_selection_policy": _augment_selection_policy(scenario),
+            "structural_repair_gate_enabled": _structural_repair_gate_enabled(scenario),
+            "released_provisional_augment_windows": [],
+            "reallocated_augment_windows_after_release": [],
             "augment_funnel_stage_meanings": dict(_AUGMENT_FUNNEL_STAGE_MEANINGS),
             "structural_hotspot_starvation": [],
             "sanity_warnings": [],
@@ -1419,13 +1646,105 @@ def run_hotspot_relief(
         for hot_range in hot_ranges
         for warning in classifications[hot_range.range_id].warnings
     ]
-    selected_augment_candidates = _select_augment_windows(
+    selection_details = _select_augment_windows_with_details(
         scenario,
         plan,
         augment_candidates,
         hot_ranges=hot_ranges,
         classifications=classifications,
     )
+    selected_augment_candidates = list(selection_details["selected_candidates"])
+    provisional_reserved_keys = set(selection_details.get("provisional_reserved_keys") or set())
+    gate_results_by_range: dict[str, dict[str, Any]] = {}
+    released_provisional_augment_windows: list[str] = []
+    reallocated_augment_windows_after_release: list[str] = []
+
+    if _structural_repair_gate_enabled(scenario) and _augment_selection_policy(scenario) == "structural_coverage_first":
+        provisional_plan, provisional_removed_window_ids, provisional_applied_augment_window_ids = _apply_augmentation_to_plan(
+            scenario,
+            plan,
+            baseline_schedule,
+            hot_ranges,
+            selected_augment_candidates,
+        )
+        provisional_segments = build_segments(scenario, provisional_plan, _regular_tasks(scenario))
+        provisional_schedule = _remap_schedule_to_segments(segments, provisional_segments, baseline_schedule)
+        provisional_diagnostics = build_regular_schedule_diagnostics(scenario, provisional_plan, provisional_segments, provisional_schedule)
+        provisional_profile = build_cross_segment_profile(scenario, provisional_plan, provisional_segments, provisional_schedule)
+        provisional_selected_by_range: dict[str, list[str]] = defaultdict(list)
+        provisional_applied_by_range: dict[str, list[str]] = defaultdict(list)
+        for candidate in selected_augment_candidates:
+            provisional_selected_by_range[candidate.range_id].append(candidate.window_id)
+            if candidate.window_id in provisional_applied_augment_window_ids:
+                provisional_applied_by_range[candidate.range_id].append(candidate.window_id)
+
+        released_window_id_set: set[str] = set()
+        for hot_range in hot_ranges:
+            classification = classifications[hot_range.range_id]
+            selected_for_range = sorted(provisional_selected_by_range.get(hot_range.range_id, []))
+            applied_for_range = sorted(provisional_applied_by_range.get(hot_range.range_id, []))
+            reserved_for_range = [
+                candidate
+                for candidate in selected_augment_candidates
+                if (candidate.range_id, candidate.window_id) in provisional_reserved_keys and candidate.range_id == hot_range.range_id
+            ]
+            if len(reserved_for_range) != 1 or len(selected_for_range) != 1 or len(applied_for_range) != 1:
+                continue
+            gate_result = _attempt_structural_repair_gate(
+                scenario,
+                provisional_plan,
+                provisional_segments,
+                provisional_schedule,
+                provisional_diagnostics,
+                provisional_profile,
+                hot_range,
+                classification,
+                contributions.get(hot_range.range_id, []),
+                applied_for_range,
+            )
+            gate_results_by_range[hot_range.range_id] = gate_result
+            if not bool(gate_result.get("accepted", False)):
+                released_window_id_set.update(applied_for_range)
+                released_provisional_augment_windows.extend(applied_for_range)
+
+        if released_window_id_set:
+            kept_selected_candidates = [
+                candidate
+                for candidate in selected_augment_candidates
+                if candidate.window_id not in released_window_id_set
+            ]
+            kept_plan, _, kept_applied_window_ids = _apply_augmentation_to_plan(
+                scenario,
+                plan,
+                baseline_schedule,
+                hot_ranges,
+                kept_selected_candidates,
+            )
+            remaining_candidates = [
+                candidate
+                for candidate in augment_candidates
+                if candidate.window_id not in released_window_id_set
+                and candidate.window_id not in {item.window_id for item in kept_selected_candidates}
+            ]
+            refill_scenario = replace(
+                scenario,
+                stage2=replace(
+                    scenario.stage2,
+                    augment_window_budget=len(released_window_id_set),
+                    augment_selection_policy="global_score_only",
+                ),
+            )
+            refill_details = _select_augment_windows_with_details(
+                refill_scenario,
+                kept_plan,
+                remaining_candidates,
+                hot_ranges=hot_ranges,
+                classifications=classifications,
+            )
+            refill_candidates = list(refill_details["selected_candidates"])
+            reallocated_augment_windows_after_release = [candidate.window_id for candidate in refill_candidates]
+            selected_augment_candidates = kept_selected_candidates + refill_candidates
+
     selected_augment_window_ids = [candidate.window_id for candidate in selected_augment_candidates]
     augmented_plan, removed_window_ids, applied_augment_window_ids = _apply_augmentation_to_plan(
         scenario,
@@ -1452,6 +1771,42 @@ def run_hotspot_relief(
     selected_augment_window_ids_set = set(selected_augment_window_ids)
     applied_augment_window_ids_set = set(applied_augment_window_ids)
 
+    if gate_results_by_range:
+        for hot_range in hot_ranges:
+            gate_result = gate_results_by_range.get(hot_range.range_id)
+            if not gate_result or not bool(gate_result.get("accepted", False)):
+                continue
+            applied_for_range = sorted(
+                candidate.window_id
+                for candidate in selected_augment_candidates
+                if candidate.range_id == hot_range.range_id and candidate.window_id in applied_augment_window_ids_set
+            )
+            if len(applied_for_range) != 1:
+                gate_result["accepted"] = False
+                gate_result["rejection_reason"] = "gate_revalidation_skipped_due_to_plan_change"
+                continue
+            refreshed_gate = _attempt_structural_repair_gate(
+                scenario,
+                augmented_plan,
+                augmented_segments,
+                current_schedule,
+                current_diagnostics,
+                current_profile,
+                hot_range,
+                classifications[hot_range.range_id],
+                contributions.get(hot_range.range_id, []),
+                applied_for_range,
+            )
+            gate_results_by_range[hot_range.range_id] = refreshed_gate
+            if not bool(refreshed_gate.get("accepted", False)):
+                continue
+            candidate_schedule = dict(refreshed_gate["schedule"])
+            current_schedule = candidate_schedule
+            current_diagnostics = build_regular_schedule_diagnostics(scenario, augmented_plan, augmented_segments, current_schedule)
+            current_profile = build_cross_segment_profile(scenario, augmented_plan, augmented_segments, current_schedule)
+            current_summary = _load_summary_from_profile(current_profile)
+            current_cr_reg = _regular_completion_ratio_from_diagnostics(scenario, current_diagnostics)
+
     range_reports: list[dict[str, Any]] = []
     for hot_range in hot_ranges:
         classification = classifications[hot_range.range_id]
@@ -1475,6 +1830,12 @@ def run_hotspot_relief(
             hot_window_ids_by_segment,
         )
         horizon = _horizon_segments_for_hot_range(scenario, augmented_segments, hot_range, profile=current_profile)
+        gate_result = dict(gate_results_by_range.get(hot_range.range_id) or {})
+        released_for_range = [
+            window_id
+            for window_id in released_provisional_augment_windows
+            if any(candidate.range_id == hot_range.range_id and candidate.window_id == window_id for candidate in augment_candidates)
+        ]
         range_report: dict[str, Any] = {
             "range_id": hot_range.range_id,
             "start": float(hot_range.start),
@@ -1494,9 +1855,19 @@ def run_hotspot_relief(
             "accepted": False,
             "used_augment_windows": [],
             "candidate_solver_status": "not_attempted",
+            "candidate_solver_error": None,
             "rejection_reason": None,
             "structurally_starved_by_selection_policy": False,
             "dominant_top_candidate_rejection_reason": None,
+            "structural_repair_gate_attempted": bool(gate_result.get("attempted", False)),
+            "structural_repair_gate_accepted": bool(gate_result.get("accepted", False)),
+            "structural_repair_gate_rejection_reason": gate_result.get("rejection_reason"),
+            "structural_repair_gate_local_before_after": gate_result.get("local_before_after"),
+            "structural_repair_gate_solver_status": gate_result.get("candidate_solver_status"),
+            "structural_repair_gate_solver_error": gate_result.get("solver_error"),
+            "released_provisional_augment_windows": released_for_range,
+            "reallocated_augment_windows_after_release": list(reallocated_augment_windows_after_release),
+            "detailed_runtime_failure_type": gate_result.get("detailed_runtime_failure_type"),
         }
         starved_by_policy, dominant_reason = _structurally_starved_by_selection_policy(
             classification=classification,
@@ -1505,10 +1876,26 @@ def run_hotspot_relief(
         )
         range_report["structurally_starved_by_selection_policy"] = bool(starved_by_policy)
         range_report["dominant_top_candidate_rejection_reason"] = dominant_reason
+        if bool(gate_result.get("accepted", False)):
+            range_report["accepted"] = True
+            range_report["status"] = "improved_after_augmentation"
+            range_report["used_augment_windows"] = sorted(gate_result.get("used_augment_windows", []))
+            range_report["candidate_solver_status"] = "gate_accept"
+            range_report["objective_values"] = dict(gate_result.get("objective_values", {}))
+            range_reports.append(range_report)
+            continue
         if classification.structural and not applied_augment_for_range:
-            range_report["status"] = "structural_bottleneck"
-            range_report["candidate_solver_status"] = "skipped_no_applied_augment"
-            range_report["rejection_reason"] = "structural hotspot has no applied augment window"
+            if bool(gate_result.get("attempted", False)):
+                range_report["status"] = "structural_candidate_pruned"
+                range_report["candidate_solver_status"] = "released_after_structural_gate"
+                range_report["rejection_reason"] = str(
+                    gate_result.get("rejection_reason") or "structural repair gate rejected provisional augment slot"
+                )
+                range_report["detailed_runtime_failure_type"] = gate_result.get("detailed_runtime_failure_type")
+            else:
+                range_report["status"] = "structural_bottleneck"
+                range_report["candidate_solver_status"] = "skipped_no_applied_augment"
+                range_report["rejection_reason"] = "structural hotspot has no applied augment window"
             range_reports.append(range_report)
             continue
 
@@ -1552,7 +1939,12 @@ def run_hotspot_relief(
         )
         if not local_result.get("accepted", False):
             range_report["candidate_solver_status"] = str(local_result.get("solver_status", "no_candidate_solution"))
-            range_report["rejection_reason"] = str(local_result.get("solver_status", "no_candidate_solution"))
+            range_report["rejection_reason"] = str(
+                local_result.get("detailed_runtime_failure_type")
+                or local_result.get("solver_status", "no_candidate_solution")
+            )
+            range_report["detailed_runtime_failure_type"] = local_result.get("detailed_runtime_failure_type")
+            range_report["candidate_solver_error"] = local_result.get("solver_error")
             range_reports.append(range_report)
             continue
 
@@ -1610,8 +2002,11 @@ def run_hotspot_relief(
         "augment_windows_selected": len(selected_augment_window_ids),
         "augment_windows_added": len(applied_augment_window_ids),
         "augment_selection_policy": _augment_selection_policy(scenario),
+        "structural_repair_gate_enabled": _structural_repair_gate_enabled(scenario),
         "structural_hotspot_starvation_count": len(structural_starvation_items),
         "structural_hotspot_starvation_range_ids": [item["range_id"] for item in structural_starvation_items],
+        "released_provisional_augment_windows": sorted(dict.fromkeys(released_provisional_augment_windows)),
+        "reallocated_augment_windows_after_release": list(reallocated_augment_windows_after_release),
         "selected_augment_windows": list(selected_augment_window_ids),
         "applied_augment_windows": sorted(applied_augment_window_ids_set),
         "q_peak_before": float(baseline_aug_summary["q_peak"]),
@@ -1649,6 +2044,9 @@ def run_hotspot_relief(
         "applied_augment_windows": sorted(applied_augment_window_ids_set),
         "removed_plan_windows": removed_window_ids,
         "augment_selection_policy": _augment_selection_policy(scenario),
+        "structural_repair_gate_enabled": _structural_repair_gate_enabled(scenario),
+        "released_provisional_augment_windows": sorted(dict.fromkeys(released_provisional_augment_windows)),
+        "reallocated_augment_windows_after_release": list(reallocated_augment_windows_after_release),
         "augment_funnel_stage_meanings": dict(_AUGMENT_FUNNEL_STAGE_MEANINGS),
         "structural_hotspot_starvation": structural_starvation_items,
         "stage1_peak_rescore_hook": stage1_peak_rescore_hook,

@@ -1,0 +1,122 @@
+{
+  "scenario_path": "results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_scenario_input.json",
+  "plan_source": "results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_stage1_result.json",
+  "full_run_status": {
+    "A_group_no_limit_exact": "timed_out_after_80m_without_output",
+    "D_group_no_limit_exact": "timed_out_after_30m_without_output"
+  },
+  "groups": {
+    "A": {
+      "policy": "global_score_only",
+      "hot_ranges_considered": 5,
+      "baseline_before_augment": {
+        "cr_reg": 1.0,
+        "q_peak": 1.0000000000000002,
+        "q_integral": 32133.555410875,
+        "peak_like_threshold": 0.9999000000000002,
+        "peak_segment_count": 259
+      },
+      "selected_augment_windows": [
+        "X001949",
+        "X007573",
+        "X008104",
+        "X008659"
+      ],
+      "applied_augment_windows": [
+        "X001949",
+        "X007573",
+        "X008104",
+        "X008659"
+      ],
+      "hot_range_5": {
+        "classification": {
+          "structural": true,
+          "reroutable": true,
+          "reason": "single_link_fraction>=0.9"
+        },
+        "selected_augment_windows": [],
+        "applied_augment_windows": [],
+        "reserved_provisional_augment_windows": [],
+        "gate": null
+      }
+    },
+    "D": {
+      "policy": "structural_coverage_first",
+      "hot_ranges_considered": 5,
+      "baseline_before_augment": {
+        "cr_reg": 1.0,
+        "q_peak": 1.0000000000000002,
+        "q_integral": 32133.555410875,
+        "peak_like_threshold": 0.9999000000000002,
+        "peak_segment_count": 259
+      },
+      "selected_augment_windows": [
+        "X000270",
+        "X000285",
+        "X001949",
+        "X000298"
+      ],
+      "applied_augment_windows": [
+        "X000270",
+        "X000285",
+        "X001949",
+        "X000298"
+      ],
+      "hot_range_5": {
+        "classification": {
+          "structural": true,
+          "reroutable": true,
+          "reason": "single_link_fraction>=0.9"
+        },
+        "selected_augment_windows": [
+          "X000285"
+        ],
+        "applied_augment_windows": [
+          "X000285"
+        ],
+        "reserved_provisional_augment_windows": [
+          "X000285"
+        ],
+        "gate": {
+          "attempted": true,
+          "accepted": true,
+          "rejection_reason": null,
+          "local_before_after": {
+            "before": {
+              "cr_reg": 1.0,
+              "q_peak": 1.0000000000000002,
+              "q_integral": 633.4809999999998,
+              "peak_like_threshold": 0.9999000000000002,
+              "peak_segment_count": 10
+            },
+            "after": {
+              "cr_reg": 1.0,
+              "q_peak": 0.5225795424999999,
+              "q_integral": 331.04421034415236,
+              "peak_like_threshold": 0.995,
+              "peak_segment_count": 0
+            }
+          },
+          "used_augment_windows": [
+            "X000285"
+          ],
+          "detailed_runtime_failure_type": null,
+          "candidate_solver_status": "AcceptedIncumbent",
+          "solver_error": null,
+          "objective_values": {
+            "completion": 2.0,
+            "progress": 981043.1009999997,
+            "peak": 0.52257954
+          }
+        }
+      },
+      "global_after_gate_only": {
+        "cr_reg": 1.0,
+        "q_peak": 1.0000000000000002,
+        "q_integral": 31831.118621219153,
+        "peak_like_threshold": 0.9999000000000002,
+        "peak_segment_count": 249
+      }
+    }
+  }
+}
