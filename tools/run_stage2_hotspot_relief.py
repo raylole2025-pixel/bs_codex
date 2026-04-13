@@ -62,6 +62,10 @@ def main() -> None:
     parser.add_argument("--fixed-window-count", type=int, default=None, help="Used only with --augment-mode=swap_if_budgeted")
     parser.add_argument("--milp-time-limit-seconds", type=float, default=None, help="Optional CBC time limit for local MILP")
     parser.add_argument("--milp-relative-gap", type=float, default=None, help="Optional CBC relative gap for local MILP")
+    parser.add_argument("--hotspot-total-time-limit-seconds", type=float, default=None, help="Hard bound for the full hotspot-relief pass")
+    parser.add_argument("--hotspot-per-range-time-limit-seconds", type=float, default=None, help="Hard bound per hotspot range across gate + local repair")
+    parser.add_argument("--structural-repair-gate-time-limit-seconds", type=float, default=None, help="Hard bound for the structural repair gate")
+    parser.add_argument("--hotspot-local-repair-time-limit-seconds", type=float, default=None, help="Hard bound for each local hotspot repair MILP")
     parser.add_argument("--hotspot-topk-ranges", type=int, default=None, help="Override hotspot_topk_ranges")
     parser.add_argument("--local-peak-horizon-cap-segments", type=int, default=None, help="Override local_peak_horizon_cap_segments")
     parser.add_argument("--hot-path-limit", type=int, default=None, help="Override hot_path_limit")
@@ -156,6 +160,26 @@ def main() -> None:
             "hotspot_augment_mode": args.augment_mode,
             "structural_repair_gate_enabled": bool(args.enable_structural_repair_gate),
             **(
+                {"hotspot_total_time_limit_seconds": float(args.hotspot_total_time_limit_seconds)}
+                if args.hotspot_total_time_limit_seconds is not None
+                else {}
+            ),
+            **(
+                {"hotspot_per_range_time_limit_seconds": float(args.hotspot_per_range_time_limit_seconds)}
+                if args.hotspot_per_range_time_limit_seconds is not None
+                else {}
+            ),
+            **(
+                {"structural_repair_gate_time_limit_seconds": float(args.structural_repair_gate_time_limit_seconds)}
+                if args.structural_repair_gate_time_limit_seconds is not None
+                else {}
+            ),
+            **(
+                {"hotspot_local_repair_time_limit_seconds": float(args.hotspot_local_repair_time_limit_seconds)}
+                if args.hotspot_local_repair_time_limit_seconds is not None
+                else {}
+            ),
+            **(
                 {"hotspot_fixed_plan_window_count": int(args.fixed_window_count)}
                 if args.fixed_window_count is not None
                 else {}
@@ -203,6 +227,12 @@ def main() -> None:
         "prefer_milp": result.metadata.get("prefer_milp"),
         "augment_selection_policy": scenario.stage2.augment_selection_policy,
         "structural_repair_gate_enabled": bool(args.enable_structural_repair_gate),
+        "elapsed_seconds": result.metadata.get("elapsed_seconds"),
+        "did_finish_within_bound": result.metadata.get("did_finish_within_bound"),
+        "hotspot_total_time_limit_seconds": result.metadata.get("hotspot_total_time_limit_seconds"),
+        "hotspot_per_range_time_limit_seconds": result.metadata.get("hotspot_per_range_time_limit_seconds"),
+        "structural_repair_gate_time_limit_seconds": result.metadata.get("structural_repair_gate_time_limit_seconds"),
+        "hotspot_local_repair_time_limit_seconds": result.metadata.get("hotspot_local_repair_time_limit_seconds"),
         "plan_window_count_before": len(input_plan),
         "plan_window_count_after": len(result.plan),
         "cr_reg_before": before_after.get("before", {}).get("cr_reg"),
@@ -223,6 +253,10 @@ def main() -> None:
         "structural_hotspot_starvation_range_ids": structural_hotspot_starvation_range_ids,
         "released_provisional_augment_windows": hotspot_report.get("released_provisional_augment_windows", []),
         "reallocated_augment_windows_after_release": hotspot_report.get("reallocated_augment_windows_after_release", []),
+        "bounded_time_budget_skipped": {
+            "count": len(hotspot_report.get("bounded_time_budget_skipped", [])),
+            "range_ids": [item["range_id"] for item in hotspot_report.get("bounded_time_budget_skipped", [])],
+        },
         "fixed_plan_structural_bottleneck": {
             "count": len(hotspot_report.get("structural_bottleneck", [])),
             "range_ids": [item["range_id"] for item in hotspot_report.get("structural_bottleneck", [])],
@@ -262,7 +296,14 @@ def main() -> None:
             "released_provisional_augment_windows": hot_range_5.get("released_provisional_augment_windows", []),
             "reallocated_augment_windows_after_release": hot_range_5.get("reallocated_augment_windows_after_release", []),
             "detailed_runtime_failure_type": hot_range_5.get("detailed_runtime_failure_type"),
+            "elapsed_seconds": hot_range_5.get("elapsed_seconds"),
+            "did_finish_within_range_bound": hot_range_5.get("did_finish_within_range_bound"),
         },
+        "structural_repair_gate_attempted": hot_range_5.get("structural_repair_gate_attempted", False),
+        "structural_repair_gate_accepted": hot_range_5.get("structural_repair_gate_accepted", False),
+        "structural_repair_gate_rejection_reason": hot_range_5.get("structural_repair_gate_rejection_reason"),
+        "structural_repair_gate_local_before_after": hot_range_5.get("structural_repair_gate_local_before_after"),
+        "detailed_runtime_failure_type": hot_range_5.get("detailed_runtime_failure_type"),
         "hot_range_5_top_candidate_rejection_reasons": [
             candidate.get("rejection_reason")
             for candidate in hot_range_5.get("augment_debug_top_candidates", [])
@@ -293,6 +334,8 @@ def main() -> None:
                 "released_provisional_augment_windows": item.get("released_provisional_augment_windows"),
                 "reallocated_augment_windows_after_release": item.get("reallocated_augment_windows_after_release"),
                 "detailed_runtime_failure_type": item.get("detailed_runtime_failure_type"),
+                "elapsed_seconds": item.get("elapsed_seconds"),
+                "did_finish_within_range_bound": item.get("did_finish_within_range_bound"),
                 "fallback_local_swap": item.get("fallback_local_swap"),
                 "selected_augment_windows": item.get("selected_augment_windows"),
                 "applied_augment_windows": item.get("applied_augment_windows"),

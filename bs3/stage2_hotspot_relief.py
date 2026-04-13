@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass, replace
 from statistics import median
+import time
 from typing import Any
 
 from .models import Allocation, CandidateWindow, ScheduledWindow, Scenario, Segment
@@ -667,6 +668,100 @@ def _structural_repair_gate_enabled(scenario: Scenario) -> bool:
     return bool(scenario.metadata.get("structural_repair_gate_enabled", False))
 
 
+def _metadata_time_limit_seconds(scenario: Scenario, key: str) -> float | None:
+    raw = scenario.metadata.get(key)
+    if raw in {None, "", 0, 0.0}:
+        return None
+    return max(float(raw), 0.0)
+
+
+def _structural_repair_gate_time_limit_seconds(scenario: Scenario) -> float | None:
+    return _metadata_time_limit_seconds(scenario, "structural_repair_gate_time_limit_seconds")
+
+
+def _hotspot_local_repair_time_limit_seconds(scenario: Scenario) -> float | None:
+    return _metadata_time_limit_seconds(scenario, "hotspot_local_repair_time_limit_seconds")
+
+
+def _hotspot_per_range_time_limit_seconds(scenario: Scenario) -> float | None:
+    return _metadata_time_limit_seconds(scenario, "hotspot_per_range_time_limit_seconds")
+
+
+def _hotspot_total_time_limit_seconds(scenario: Scenario) -> float | None:
+    return _metadata_time_limit_seconds(scenario, "hotspot_total_time_limit_seconds")
+
+
+def _remaining_budget_seconds(limit_seconds: float | None, consumed_seconds: float) -> float | None:
+    if limit_seconds is None:
+        return None
+    return max(float(limit_seconds) - max(float(consumed_seconds), 0.0), 0.0)
+
+
+def _total_elapsed_seconds(started_at: float) -> float:
+    return max(time.perf_counter() - float(started_at), 0.0)
+
+
+def _effective_solver_time_limit_seconds(
+    scenario: Scenario,
+    *caps: float | None,
+) -> float | None:
+    limits: list[float] = []
+    base_limit = scenario.stage2.milp_time_limit_seconds
+    if base_limit not in {None, "", 0, 0.0}:
+        limits.append(max(float(base_limit), 0.0))
+    for cap in caps:
+        if cap not in {None, "", 0, 0.0}:
+            limits.append(max(float(cap), 0.0))
+    return min(limits) if limits else None
+
+
+def _scenario_with_milp_time_limit(scenario: Scenario, time_limit_seconds: float | None) -> Scenario:
+    if time_limit_seconds in {None, "", 0, 0.0}:
+        return replace(
+            scenario,
+            stage2=replace(scenario.stage2, milp_time_limit_seconds=None),
+        )
+    return replace(
+        scenario,
+        stage2=replace(scenario.stage2, milp_time_limit_seconds=max(float(time_limit_seconds), 0.0)),
+    )
+
+
+def _bounded_skip_result(
+    *,
+    stage: str,
+    total_remaining_seconds: float | None,
+    range_remaining_seconds: float | None,
+) -> dict[str, Any]:
+    if total_remaining_seconds is not None and total_remaining_seconds <= EPS:
+        return {
+            "attempted": False,
+            "accepted": False,
+            "rejection_reason": f"{stage}_skipped_total_time_budget_exhausted",
+            "local_before_after": None,
+            "used_augment_windows": [],
+            "detailed_runtime_failure_type": "failed_time_limit_without_incumbent",
+            "candidate_solver_status": "SkippedTotalTimeBudget",
+            "solver_error": None,
+            "schedule": None,
+            "objective_values": {},
+        }
+    if range_remaining_seconds is not None and range_remaining_seconds <= EPS:
+        return {
+            "attempted": False,
+            "accepted": False,
+            "rejection_reason": f"{stage}_skipped_range_time_budget_exhausted",
+            "local_before_after": None,
+            "used_augment_windows": [],
+            "detailed_runtime_failure_type": "failed_time_limit_without_incumbent",
+            "candidate_solver_status": "SkippedRangeTimeBudget",
+            "solver_error": None,
+            "schedule": None,
+            "objective_values": {},
+        }
+    return {}
+
+
 def _fixed_plan_window_count(scenario: Scenario) -> int | None:
     raw = scenario.metadata.get("hotspot_fixed_plan_window_count")
     if raw in {None, ""}:
@@ -1193,12 +1288,23 @@ def _profile_subset_summary(
     return _load_summary_from_profile(rows)
 
 
-def _build_structural_gate_scenario(scenario: Scenario, horizon_length: int) -> Scenario:
-    gate_time_limit = scenario.stage2.milp_time_limit_seconds
+def _build_structural_gate_scenario(
+    scenario: Scenario,
+    horizon_length: int,
+    *,
+    time_limit_seconds: float | None = None,
+) -> Scenario:
+    gate_time_limit = time_limit_seconds
     if gate_time_limit in {None, 0, 0.0}:
-        gate_time_limit = 30.0
-    else:
-        gate_time_limit = min(float(gate_time_limit), 30.0)
+        configured_gate_limit = _structural_repair_gate_time_limit_seconds(scenario)
+        if configured_gate_limit in {None, 0, 0.0}:
+            gate_time_limit = scenario.stage2.milp_time_limit_seconds
+            if gate_time_limit in {None, 0, 0.0}:
+                gate_time_limit = 30.0
+            else:
+                gate_time_limit = min(float(gate_time_limit), 30.0)
+        else:
+            gate_time_limit = float(configured_gate_limit)
     gate_stage2 = replace(
         scenario.stage2,
         k_paths=min(max(int(scenario.stage2.k_paths), 1), 2),
@@ -1230,6 +1336,8 @@ def _attempt_structural_repair_gate(
     classification: HotRangeClassification,
     contributors: list[HotTaskContribution],
     applied_augment_windows: list[str],
+    *,
+    time_limit_seconds: float | None = None,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "attempted": False,
@@ -1266,10 +1374,15 @@ def _attempt_structural_repair_gate(
 
     hot_window_ids_by_segment = _range_profile_summary(current_profile, hot_range)["hot_window_ids_by_segment"]
     contributor_task_id_set = {task.task_id for task in active_tasks}
+    gate_scenario = _build_structural_gate_scenario(
+        scenario,
+        len(core_horizon),
+        time_limit_seconds=time_limit_seconds,
+    )
     hot_task_segments = {
         (task_id, segment_index)
         for task_id, segment_index in _hot_task_segments_for_range(
-            _build_structural_gate_scenario(scenario, len(core_horizon)),
+            gate_scenario,
             hot_range,
             current_schedule,
             hot_window_ids_by_segment,
@@ -1283,7 +1396,6 @@ def _attempt_structural_repair_gate(
             for segment in core_horizon
         }
 
-    gate_scenario = _build_structural_gate_scenario(scenario, len(core_horizon))
     segment_index_set = {segment.index for segment in core_horizon}
     before_summary = _profile_subset_summary(current_profile, segment_index_set)
     current_cr_reg = _regular_completion_ratio_from_diagnostics(scenario, current_diagnostics)
@@ -1517,6 +1629,11 @@ def run_hotspot_relief(
     baseline_schedule: dict[tuple[str, int], Allocation],
     baseline_diagnostics: dict[str, Any],
 ) -> HotspotReliefResult:
+    started_at = time.perf_counter()
+    total_time_limit_seconds = _hotspot_total_time_limit_seconds(scenario)
+    per_range_time_limit_seconds = _hotspot_per_range_time_limit_seconds(scenario)
+    gate_time_limit_seconds = _structural_repair_gate_time_limit_seconds(scenario)
+    local_repair_time_limit_seconds = _hotspot_local_repair_time_limit_seconds(scenario)
     initial_profile = build_cross_segment_profile(scenario, plan, segments, baseline_schedule)
     initial_summary = _load_summary_from_profile(initial_profile)
     hot_ranges = detect_hot_ranges(
@@ -1550,11 +1667,21 @@ def run_hotspot_relief(
             "q_integral_before": float(initial_summary["q_integral"]),
             "q_integral_after": float(initial_summary["q_integral"]),
             "sanity_warning_count": 0,
+            "elapsed_seconds": float(_total_elapsed_seconds(started_at)),
+            "did_finish_within_bound": (
+                True if total_time_limit_seconds is None else _total_elapsed_seconds(started_at) <= total_time_limit_seconds + EPS
+            ),
+            "hotspot_total_time_limit_seconds": total_time_limit_seconds,
+            "hotspot_per_range_time_limit_seconds": per_range_time_limit_seconds,
+            "structural_repair_gate_time_limit_seconds": gate_time_limit_seconds,
+            "hotspot_local_repair_time_limit_seconds": local_repair_time_limit_seconds,
+            "bounded_time_budget_skipped_range_ids": [],
         }
         report = {
             "hot_ranges": [],
             "structural_bottleneck": [],
             "structural_candidate_pruned": [],
+            "bounded_time_budget_skipped": [],
             "blocked_no_feasible_reroute": [],
             "reroutable_candidate_pruned": [],
             "improved_after_augmentation": [],
@@ -1570,6 +1697,15 @@ def run_hotspot_relief(
             "augment_funnel_stage_meanings": dict(_AUGMENT_FUNNEL_STAGE_MEANINGS),
             "structural_hotspot_starvation": [],
             "sanity_warnings": [],
+            "elapsed_seconds": float(_total_elapsed_seconds(started_at)),
+            "did_finish_within_bound": (
+                True if total_time_limit_seconds is None else _total_elapsed_seconds(started_at) <= total_time_limit_seconds + EPS
+            ),
+            "hotspot_total_time_limit_seconds": total_time_limit_seconds,
+            "hotspot_per_range_time_limit_seconds": per_range_time_limit_seconds,
+            "structural_repair_gate_time_limit_seconds": gate_time_limit_seconds,
+            "hotspot_local_repair_time_limit_seconds": local_repair_time_limit_seconds,
+            "bounded_time_budget_skipped_range_ids": [],
             "before_after": {
                 "before": initial_summary,
                 "after": initial_summary,
@@ -1658,6 +1794,8 @@ def run_hotspot_relief(
     gate_results_by_range: dict[str, dict[str, Any]] = {}
     released_provisional_augment_windows: list[str] = []
     reallocated_augment_windows_after_release: list[str] = []
+    range_elapsed_seconds: dict[str, float] = defaultdict(float)
+    bounded_time_budget_skipped_range_ids: list[str] = []
 
     if _structural_repair_gate_enabled(scenario) and _augment_selection_policy(scenario) == "structural_coverage_first":
         provisional_plan, provisional_removed_window_ids, provisional_applied_augment_window_ids = _apply_augmentation_to_plan(
@@ -1690,6 +1828,33 @@ def run_hotspot_relief(
             ]
             if len(reserved_for_range) != 1 or len(selected_for_range) != 1 or len(applied_for_range) != 1:
                 continue
+            total_remaining_seconds = _remaining_budget_seconds(
+                total_time_limit_seconds,
+                _total_elapsed_seconds(started_at),
+            )
+            range_remaining_seconds = _remaining_budget_seconds(
+                per_range_time_limit_seconds,
+                range_elapsed_seconds[hot_range.range_id],
+            )
+            skip_result = _bounded_skip_result(
+                stage="structural_repair_gate",
+                total_remaining_seconds=total_remaining_seconds,
+                range_remaining_seconds=range_remaining_seconds,
+            )
+            if skip_result:
+                gate_results_by_range[hot_range.range_id] = skip_result
+                released_window_id_set.update(applied_for_range)
+                released_provisional_augment_windows.extend(applied_for_range)
+                if hot_range.range_id not in bounded_time_budget_skipped_range_ids:
+                    bounded_time_budget_skipped_range_ids.append(hot_range.range_id)
+                continue
+            gate_started_at = time.perf_counter()
+            gate_solver_time_limit = _effective_solver_time_limit_seconds(
+                scenario,
+                gate_time_limit_seconds,
+                total_remaining_seconds,
+                range_remaining_seconds,
+            )
             gate_result = _attempt_structural_repair_gate(
                 scenario,
                 provisional_plan,
@@ -1701,7 +1866,9 @@ def run_hotspot_relief(
                 classification,
                 contributions.get(hot_range.range_id, []),
                 applied_for_range,
+                time_limit_seconds=gate_solver_time_limit,
             )
+            range_elapsed_seconds[hot_range.range_id] += _total_elapsed_seconds(gate_started_at)
             gate_results_by_range[hot_range.range_id] = gate_result
             if not bool(gate_result.get("accepted", False)):
                 released_window_id_set.update(applied_for_range)
@@ -1785,6 +1952,32 @@ def run_hotspot_relief(
                 gate_result["accepted"] = False
                 gate_result["rejection_reason"] = "gate_revalidation_skipped_due_to_plan_change"
                 continue
+            total_remaining_seconds = _remaining_budget_seconds(
+                total_time_limit_seconds,
+                _total_elapsed_seconds(started_at),
+            )
+            range_remaining_seconds = _remaining_budget_seconds(
+                per_range_time_limit_seconds,
+                range_elapsed_seconds[hot_range.range_id],
+            )
+            skip_result = _bounded_skip_result(
+                stage="structural_repair_gate_revalidation",
+                total_remaining_seconds=total_remaining_seconds,
+                range_remaining_seconds=range_remaining_seconds,
+            )
+            if skip_result:
+                skip_result["attempted"] = bool(gate_result.get("attempted", False))
+                gate_results_by_range[hot_range.range_id] = skip_result
+                if hot_range.range_id not in bounded_time_budget_skipped_range_ids:
+                    bounded_time_budget_skipped_range_ids.append(hot_range.range_id)
+                continue
+            gate_started_at = time.perf_counter()
+            gate_solver_time_limit = _effective_solver_time_limit_seconds(
+                scenario,
+                gate_time_limit_seconds,
+                total_remaining_seconds,
+                range_remaining_seconds,
+            )
             refreshed_gate = _attempt_structural_repair_gate(
                 scenario,
                 augmented_plan,
@@ -1796,7 +1989,9 @@ def run_hotspot_relief(
                 classifications[hot_range.range_id],
                 contributions.get(hot_range.range_id, []),
                 applied_for_range,
+                time_limit_seconds=gate_solver_time_limit,
             )
+            range_elapsed_seconds[hot_range.range_id] += _total_elapsed_seconds(gate_started_at)
             gate_results_by_range[hot_range.range_id] = refreshed_gate
             if not bool(refreshed_gate.get("accepted", False)):
                 continue
@@ -1868,6 +2063,12 @@ def run_hotspot_relief(
             "released_provisional_augment_windows": released_for_range,
             "reallocated_augment_windows_after_release": list(reallocated_augment_windows_after_release),
             "detailed_runtime_failure_type": gate_result.get("detailed_runtime_failure_type"),
+            "elapsed_seconds": float(range_elapsed_seconds.get(hot_range.range_id, 0.0)),
+            "did_finish_within_range_bound": (
+                True
+                if per_range_time_limit_seconds is None
+                else float(range_elapsed_seconds.get(hot_range.range_id, 0.0)) <= float(per_range_time_limit_seconds) + EPS
+            ),
         }
         starved_by_policy, dominant_reason = _structurally_starved_by_selection_policy(
             classification=classification,
@@ -1924,8 +2125,39 @@ def run_hotspot_relief(
             range_reports.append(range_report)
             continue
 
+        total_remaining_seconds = _remaining_budget_seconds(
+            total_time_limit_seconds,
+            _total_elapsed_seconds(started_at),
+        )
+        range_remaining_seconds = _remaining_budget_seconds(
+            per_range_time_limit_seconds,
+            range_elapsed_seconds[hot_range.range_id],
+        )
+        skip_result = _bounded_skip_result(
+            stage="local_repair",
+            total_remaining_seconds=total_remaining_seconds,
+            range_remaining_seconds=range_remaining_seconds,
+        )
+        if skip_result:
+            range_report["status"] = "bounded_time_budget_skipped"
+            range_report["candidate_solver_status"] = str(skip_result.get("candidate_solver_status"))
+            range_report["rejection_reason"] = str(skip_result.get("rejection_reason"))
+            range_report["detailed_runtime_failure_type"] = skip_result.get("detailed_runtime_failure_type")
+            if hot_range.range_id not in bounded_time_budget_skipped_range_ids:
+                bounded_time_budget_skipped_range_ids.append(hot_range.range_id)
+            range_reports.append(range_report)
+            continue
+
+        local_solver_time_limit = _effective_solver_time_limit_seconds(
+            scenario,
+            local_repair_time_limit_seconds,
+            total_remaining_seconds,
+            range_remaining_seconds,
+        )
+        local_scenario = _scenario_with_milp_time_limit(scenario, local_solver_time_limit)
+        local_started_at = time.perf_counter()
         local_result = solve_regular_hotspot_local_milp(
-            scenario=scenario,
+            scenario=local_scenario,
             plan=augmented_plan,
             segments=augmented_segments,
             current_schedule=current_schedule,
@@ -1936,6 +2168,13 @@ def run_hotspot_relief(
             hot_task_segments=promoted_task_segments,
             hot_window_ids_by_segment=hot_window_ids_by_segment,
             augmented_window_ids=applied_augment_window_ids_set,
+        )
+        range_elapsed_seconds[hot_range.range_id] += _total_elapsed_seconds(local_started_at)
+        range_report["elapsed_seconds"] = float(range_elapsed_seconds.get(hot_range.range_id, 0.0))
+        range_report["did_finish_within_range_bound"] = (
+            True
+            if per_range_time_limit_seconds is None
+            else float(range_elapsed_seconds.get(hot_range.range_id, 0.0)) <= float(per_range_time_limit_seconds) + EPS
         )
         if not local_result.get("accepted", False):
             range_report["candidate_solver_status"] = str(local_result.get("solver_status", "no_candidate_solution"))
@@ -2018,6 +2257,15 @@ def run_hotspot_relief(
         "q_integral_before": float(baseline_aug_summary["q_integral"]),
         "q_integral_after": float(current_summary["q_integral"]),
         "sanity_warning_count": len(sanity_warnings),
+        "elapsed_seconds": float(_total_elapsed_seconds(started_at)),
+        "did_finish_within_bound": (
+            True if total_time_limit_seconds is None else _total_elapsed_seconds(started_at) <= total_time_limit_seconds + EPS
+        ),
+        "hotspot_total_time_limit_seconds": total_time_limit_seconds,
+        "hotspot_per_range_time_limit_seconds": per_range_time_limit_seconds,
+        "structural_repair_gate_time_limit_seconds": gate_time_limit_seconds,
+        "hotspot_local_repair_time_limit_seconds": local_repair_time_limit_seconds,
+        "bounded_time_budget_skipped_range_ids": list(bounded_time_budget_skipped_range_ids),
     }
     no_accepted_improvement = len(
         [item for item in range_reports if item["status"] in {"improved_after_augmentation", "reroute_improved"}]
@@ -2035,6 +2283,7 @@ def run_hotspot_relief(
         "hot_ranges": range_reports,
         "structural_bottleneck": [item for item in range_reports if item["status"] == "structural_bottleneck"],
         "structural_candidate_pruned": [item for item in range_reports if item["status"] == "structural_candidate_pruned"],
+        "bounded_time_budget_skipped": [item for item in range_reports if item["status"] == "bounded_time_budget_skipped"],
         "blocked_no_feasible_reroute": [item for item in range_reports if item["status"] == "blocked_no_feasible_reroute"],
         "reroutable_candidate_pruned": [item for item in range_reports if item["status"] == "reroutable_candidate_pruned"],
         "improved_after_augmentation": [item for item in range_reports if item["status"] == "improved_after_augmentation"],
@@ -2051,6 +2300,15 @@ def run_hotspot_relief(
         "structural_hotspot_starvation": structural_starvation_items,
         "stage1_peak_rescore_hook": stage1_peak_rescore_hook,
         "sanity_warnings": sanity_warnings,
+        "elapsed_seconds": float(_total_elapsed_seconds(started_at)),
+        "did_finish_within_bound": (
+            True if total_time_limit_seconds is None else _total_elapsed_seconds(started_at) <= total_time_limit_seconds + EPS
+        ),
+        "hotspot_total_time_limit_seconds": total_time_limit_seconds,
+        "hotspot_per_range_time_limit_seconds": per_range_time_limit_seconds,
+        "structural_repair_gate_time_limit_seconds": gate_time_limit_seconds,
+        "hotspot_local_repair_time_limit_seconds": local_repair_time_limit_seconds,
+        "bounded_time_budget_skipped_range_ids": list(bounded_time_budget_skipped_range_ids),
         "before_after": {
             "before": {
                 "cr_reg": float(baseline_aug_cr_reg),
