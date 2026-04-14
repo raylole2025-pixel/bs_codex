@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
 from bs3.models import CapacityConfig, CandidateWindow, GAConfig, Scenario, Stage1Config, Stage2Config, Task
+from bs3.scenario import load_scenario
 from bs3.stage1 import run_stage1
 from bs3.stage2 import run_stage2
 
@@ -77,6 +81,29 @@ class StageRefactorSmokeTests(unittest.TestCase):
         self.assertIn("baseline_summary", result.metadata)
         self.assertGreater(sum(alloc.delivered for alloc in result.allocations if alloc.task_id == "E1"), 0.0)
         self.assertGreaterEqual(result.cr_emg, 1.0)
+
+    def test_loader_rejects_removed_stage21_fields(self) -> None:
+        payload = {
+            "planning_end": 2.0,
+            "nodes": {"A": ["A1"], "B": ["B1"]},
+            "capacities": {"A": 1.0, "B": 1.0, "X": 1.0},
+            "stage1": {"rho": 0.0, "t_pre": 0.0, "d_min": 0.0},
+            "stage2": {
+                "k_paths": 2,
+                "completion_tolerance": 1e-6,
+                "hotspot_relief_enabled": True,
+            },
+            "candidate_windows": [
+                {"id": "X1", "a": "A1", "b": "B1", "start": 0.0, "end": 2.0},
+            ],
+            "tasks": [],
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "scenario.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaises(ValueError):
+                load_scenario(path)
 
 
 if __name__ == "__main__":

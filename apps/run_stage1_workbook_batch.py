@@ -395,7 +395,9 @@ def build_scenario_payload(
     }
     stage2_defaults = asdict(Stage2Config(k_paths=args.stage2_k_paths, completion_tolerance=1e-6))
     stage2_overrides = dict(payload.get("stage2", {}))
-    stage2_defaults.update(stage2_overrides)
+    for key, value in stage2_overrides.items():
+        if key in stage2_defaults:
+            stage2_defaults[key] = value
     stage2_defaults["k_paths"] = args.stage2_k_paths
     stage2_defaults["completion_tolerance"] = 1e-6
     payload["stage2"] = stage2_defaults

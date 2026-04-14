@@ -39,8 +39,10 @@ def main() -> None:
 
     if args.output:
         output_path = Path(args.output)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
         baseline_trace_path = output_path.with_name(f"{output_path.stem}_baseline_trace.json")
         if result.baseline_trace is not None:
+            baseline_trace_path.parent.mkdir(parents=True, exist_ok=True)
             baseline_trace_path.write_text(
                 json.dumps(_baseline_trace_to_dict(result.baseline_trace), indent=2, ensure_ascii=False),
                 encoding="utf-8",

@@ -5,7 +5,7 @@ BS3 is a two-stage cross-domain scheduling project:
 - Stage 1 selects cross-domain windows, fixes the activation plan `S*`, and exports the regular-task baseline state.
 - Stage 2 reads `selected_plan + baseline_trace` from Stage 1 and only performs online emergency insertion with controlled preemption when needed.
 
-Legacy Stage2-1 hotspot-relief / closed-loop regular-load logic is retained only for reference and is no longer on the default execution path.
+The former Stage2-1 hotspot-relief / closed-loop regular-load path has been removed from the active repository code.
 
 ## Quick Start
 
@@ -44,10 +44,9 @@ bs3/
 - `apps/preprocess_stk_access.py`
 - `apps/build_stage1_template_from_preprocess.py`
 - `apps/run_stage1_workbook_batch.py`
+- `apps/run_stage1_single_validation.py`
 - `apps/run_stage2_workbook_sheet.py`
 - `tools/enrich_scenario_distances.py`
-- `tools/run_stage2_milp_experiments.py`
-- `tools/run_stage2_rolling_robustness.py`
 
 ## Important Default Paths
 

@@ -188,101 +188,10 @@ class Stage1Config:
 @dataclass(frozen=True)
 class Stage2Config:
     k_paths: int = 2
-    # 当任务传输量小于这个值，就认为任务完成
     completion_tolerance: float = 1e-6
-    # legacy 兼容字段：默认阶段2主流程不再构建常态 baseline
-    regular_baseline_mode: str | None = "stage1_greedy_repair"
-    # legacy 兼容字段：默认阶段2主流程不再执行常态 repair
-    regular_repair_enabled: bool | None = None
-    # legacy 兼容字段；不再决定阶段2-1默认 baseline
-    prefer_milp: bool = False
-    # legacy 兼容字段；rolling/full MILP 仅在 regular_baseline_mode 显式指定时生效
-    milp_mode: str = "full"
-    # rolling 模式下的展望窗口长度（按事件分段数计）
-    milp_horizon_segments: int = 16
-    # rolling 模式下每轮正式提交的分段数
-    milp_commit_segments: int = 8
-    # rolling 模式下每个 task-segment 保留的候选路径数量
-    milp_rolling_path_limit: int = 1
-    # rolling 模式下高优先级 task-segment 放宽后的候选路径数量
-    milp_rolling_high_path_limit: int = 2
-    # rolling 模式下高权重任务阈值；None 表示按常态任务权重上四分位自动估计
-    milp_rolling_high_weight_threshold: float | None = None
-    # rolling 模式下判定“高竞争”的活跃任务数阈值（按分段）
-    milp_rolling_high_competition_task_threshold: int = 8
-    # rolling 模式下每个分段最多放宽到高路径数的任务数
-    milp_rolling_promoted_tasks_per_segment: int = 2
-    # CBC 求解时间上限（秒）；None 表示不设限
-    milp_time_limit_seconds: float | None = None
-    # CBC 相对 gap；None 表示使用求解器默认值
-    milp_relative_gap: float | None = None
-    # greedy baseline 后最多尝试的 repair block 数
-    repair_block_max_count: int = 3
-    # repair block 左右各扩的 segment 数
-    repair_expand_segments: int = 1
-    # 单个 repair block 的最大长度
-    repair_max_block_segments: int = 8
-    # 允许进入 repair 的最小活跃常态任务数
-    repair_min_active_tasks: int = 2
-    # repair block 选择阈值（按 q_peak + imbalance）
-    repair_util_threshold: float = 0.75
-    # repair MILP 每个 task-segment 保留的候选路径上限
-    repair_candidate_path_limit: int = 2
-    # repair MILP 求解时间上限（秒）；None 表示不设限
-    repair_time_limit_seconds: float | None = None
-    # repair 接受阈值
-    repair_accept_epsilon: float = 1e-6
-    # legacy 兼容字段：主流程不再启用 hotspot relief
-    hotspot_relief_enabled: bool = False
-    # legacy 兼容字段：主流程不再启用 closed-loop 常态减载
-    closed_loop_relief_enabled: bool = False
-    # 热点分段识别阈值（q_r）
-    hotspot_util_threshold: float = 0.95
-    # 最多考虑的热点区间数量
-    hotspot_topk_ranges: int = 5
-    # 热点区间局部 MILP 左右各扩的 segment 数
-    hotspot_expand_segments: int = 2
-    # 判定“单链路主导”的阈值
-    hotspot_single_link_fraction_threshold: float = 0.6
-    # 每个热点区间最多保留的热点贡献任务数
-    hotspot_top_tasks_per_range: int = 12
-    # 全局最多允许新增的补窗数量；闭环模式下仅作为硬上限保护
-    augment_window_budget: int = 2
-    # 每个热点区间最多保留的补窗候选数量
-    augment_top_windows_per_range: int = 3
-    # 旧版一次性选窗策略；闭环模式下仅作为兼容字段保留
-    augment_selection_policy: str = "global_score_only"
-    # 闭环模式最大轮数
-    closed_loop_max_rounds: int = 6
-    # 闭环模式最多允许正式接受的新窗口数量
-    closed_loop_max_new_windows: int = 2
-    # q_peak 的最小改善阈值
-    closed_loop_min_delta_q_peak: float = 1e-4
-    # q_integral 的最小改善阈值
-    closed_loop_min_delta_q_integral: float = 1e-6
-    # 高负载/峰值平台分段数的最小改善阈值
-    closed_loop_min_delta_high_segments: int = 1
-    # 每轮最多关注的热点区间数量
-    closed_loop_topk_ranges_per_round: int = 5
-    # 每个热点区间每轮最多保留的候选动作数量
-    closed_loop_topk_candidates_per_range: int = 3
-    # 闭环动作选择模式：优先重路由，或按全局边际收益统一比较
-    closed_loop_action_mode: str = "best_global_action"
-    # 热点 task-segment 的候选路径上限
-    hot_path_limit: int = 4
-    # 每个热点分段最多提升为热点扩张候选的任务数
-    hot_promoted_tasks_per_segment: int = 8
-    # 单次局部峰值 MILP 的最大 horizon 长度；None 表示不截断
-    local_peak_horizon_cap_segments: int | None = 48
-    # 局部峰值 MILP 接受阈值
-    local_peak_accept_epsilon: float = 1e-6
-    # 启用热点补窗时，若未实际使用 MILP，则直接报错
-    fail_if_milp_disabled: bool = True
-    # 控制每个时间段的 路径候选集大小（因为阶段2要选出每个时间段内的最优路径，所以要控制候选集大小，只保留支配解）
     label_keep_limit: int | None = None
 
     @property
-    # 用于计算 有效的非支配解保留数量
     def effective_label_keep_limit(self) -> int:
         if self.label_keep_limit not in {None, 0}:
             return max(int(self.label_keep_limit), 1)

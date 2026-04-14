@@ -23,17 +23,6 @@ from .models import (
     TemporalLink,
 )
 
-REGULAR_BASELINE_MODES = {
-    "stage1_greedy",
-    "stage1_greedy_repair",
-    "rolling_milp",
-    "full_milp",
-}
-_CLOSED_LOOP_ACTION_MODES = {
-    "reroute_then_augment",
-    "best_global_action",
-}
-
 WEIGHT_EPS = 1e-9
 LIGHT_SPEED_KM_PER_S = 299_792.458
 REMOVED_STAGE1_FIELDS = {
@@ -52,6 +41,50 @@ REMOVED_STAGE2_FIELDS = {
     "affected_task_limit",
     "best_effort_on_failure",
     "insertion_horizon_seconds",
+    "regular_baseline_mode",
+    "regular_repair_enabled",
+    "prefer_milp",
+    "milp_mode",
+    "milp_horizon_segments",
+    "milp_commit_segments",
+    "milp_rolling_path_limit",
+    "milp_rolling_high_path_limit",
+    "milp_rolling_high_weight_threshold",
+    "milp_rolling_high_competition_task_threshold",
+    "milp_rolling_promoted_tasks_per_segment",
+    "milp_time_limit_seconds",
+    "milp_relative_gap",
+    "repair_block_max_count",
+    "repair_expand_segments",
+    "repair_max_block_segments",
+    "repair_min_active_tasks",
+    "repair_util_threshold",
+    "repair_candidate_path_limit",
+    "repair_time_limit_seconds",
+    "repair_accept_epsilon",
+    "hotspot_relief_enabled",
+    "closed_loop_relief_enabled",
+    "hotspot_util_threshold",
+    "hotspot_topk_ranges",
+    "hotspot_expand_segments",
+    "hotspot_single_link_fraction_threshold",
+    "hotspot_top_tasks_per_range",
+    "augment_window_budget",
+    "augment_top_windows_per_range",
+    "augment_selection_policy",
+    "closed_loop_max_rounds",
+    "closed_loop_max_new_windows",
+    "closed_loop_min_delta_q_peak",
+    "closed_loop_min_delta_q_integral",
+    "closed_loop_min_delta_high_segments",
+    "closed_loop_topk_ranges_per_round",
+    "closed_loop_topk_candidates_per_range",
+    "closed_loop_action_mode",
+    "hot_path_limit",
+    "hot_promoted_tasks_per_segment",
+    "local_peak_horizon_cap_segments",
+    "local_peak_accept_epsilon",
+    "fail_if_milp_disabled",
 }
 
 
@@ -66,26 +99,6 @@ def _optional_float(value: object, name: str) -> float | None:
     if value in {None, ""}:
         return None
     return _float(value, name)
-
-
-def _bool(value: object, name: str) -> bool:
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, (int, float)) and value in {0, 1}:
-        return bool(value)
-    if isinstance(value, str):
-        normalized = value.strip().lower()
-        if normalized in {"1", "true", "yes", "y", "on"}:
-            return True
-        if normalized in {"0", "false", "no", "n", "off"}:
-            return False
-    raise ValueError(f"{name} must be boolean-like, got {value!r}")
-
-
-def _optional_bool(value: object, name: str) -> bool | None:
-    if value in {None, ""}:
-        return None
-    return _bool(value, name)
 
 
 def _required(data: dict, key: str):
@@ -328,136 +341,9 @@ def load_scenario(path: str | Path) -> Scenario:
     )
     stage2_k_paths = int(stage2_cfg.get("k_paths", 2))
     raw_label_keep_limit = stage2_cfg.get("label_keep_limit")
-    raw_milp_mode = str(stage2_cfg.get("milp_mode", "full")).strip().lower()
-    raw_milp_time_limit = stage2_cfg.get("milp_time_limit_seconds")
-    raw_milp_relative_gap = stage2_cfg.get("milp_relative_gap")
-    raw_milp_high_weight_threshold = stage2_cfg.get("milp_rolling_high_weight_threshold")
-    raw_regular_baseline_mode = stage2_cfg.get("regular_baseline_mode")
-    raw_regular_repair_enabled = stage2_cfg.get("regular_repair_enabled")
-    raw_repair_time_limit = stage2_cfg.get("repair_time_limit_seconds")
-    raw_local_peak_horizon_cap = stage2_cfg.get("local_peak_horizon_cap_segments")
-    raw_augment_selection_policy = stage2_cfg.get("augment_selection_policy")
-    raw_closed_loop_action_mode = stage2_cfg.get("closed_loop_action_mode")
     stage2 = Stage2Config(
         k_paths=stage2_k_paths,
         completion_tolerance=_float(stage2_cfg.get("completion_tolerance", 1e-6), "stage2.completion_tolerance"),
-        regular_baseline_mode=(
-            "stage1_greedy_repair"
-            if raw_regular_baseline_mode in {None, ""}
-            else str(raw_regular_baseline_mode).strip().lower()
-            if str(raw_regular_baseline_mode).strip().lower() in REGULAR_BASELINE_MODES
-            else "stage1_greedy_repair"
-        ),
-        regular_repair_enabled=(
-            None
-            if raw_regular_repair_enabled in {None, ""}
-            else _bool(raw_regular_repair_enabled, "stage2.regular_repair_enabled")
-        ),
-        prefer_milp=_bool(stage2_cfg.get("prefer_milp", False), "stage2.prefer_milp"),
-        milp_mode=str(raw_milp_mode) if raw_milp_mode in {"full", "rolling"} else "full",
-        milp_horizon_segments=max(int(stage2_cfg.get("milp_horizon_segments", 16)), 1),
-        milp_commit_segments=max(int(stage2_cfg.get("milp_commit_segments", 8)), 1),
-        milp_rolling_path_limit=max(int(stage2_cfg.get("milp_rolling_path_limit", 1)), 1),
-        milp_rolling_high_path_limit=max(int(stage2_cfg.get("milp_rolling_high_path_limit", 2)), 1),
-        milp_rolling_high_weight_threshold=(
-            None
-            if raw_milp_high_weight_threshold in {None, ""}
-            else _float(raw_milp_high_weight_threshold, "stage2.milp_rolling_high_weight_threshold")
-        ),
-        milp_rolling_high_competition_task_threshold=max(int(stage2_cfg.get("milp_rolling_high_competition_task_threshold", 8)), 1),
-        milp_rolling_promoted_tasks_per_segment=max(int(stage2_cfg.get("milp_rolling_promoted_tasks_per_segment", 2)), 0),
-        milp_time_limit_seconds=(
-            None
-            if raw_milp_time_limit in {None, "", 0, 0.0}
-            else _float(raw_milp_time_limit, "stage2.milp_time_limit_seconds")
-        ),
-        milp_relative_gap=(
-            None
-            if raw_milp_relative_gap in {None, ""}
-            else _float(raw_milp_relative_gap, "stage2.milp_relative_gap")
-        ),
-        repair_block_max_count=max(int(stage2_cfg.get("repair_block_max_count", 3)), 0),
-        repair_expand_segments=max(int(stage2_cfg.get("repair_expand_segments", 1)), 0),
-        repair_max_block_segments=max(int(stage2_cfg.get("repair_max_block_segments", 8)), 1),
-        repair_min_active_tasks=max(int(stage2_cfg.get("repair_min_active_tasks", 2)), 1),
-        repair_util_threshold=max(_float(stage2_cfg.get("repair_util_threshold", 0.75), "stage2.repair_util_threshold"), 0.0),
-        repair_candidate_path_limit=max(int(stage2_cfg.get("repair_candidate_path_limit", 2)), 1),
-        repair_time_limit_seconds=(
-            None
-            if raw_repair_time_limit in {None, "", 0, 0.0}
-            else _float(raw_repair_time_limit, "stage2.repair_time_limit_seconds")
-        ),
-        repair_accept_epsilon=max(_float(stage2_cfg.get("repair_accept_epsilon", 1e-6), "stage2.repair_accept_epsilon"), 0.0),
-        hotspot_relief_enabled=_bool(stage2_cfg.get("hotspot_relief_enabled", False), "stage2.hotspot_relief_enabled"),
-        closed_loop_relief_enabled=_bool(
-            stage2_cfg.get(
-                "closed_loop_relief_enabled",
-                stage2_cfg.get("hotspot_relief_enabled", False),
-            ),
-            "stage2.closed_loop_relief_enabled",
-        ),
-        hotspot_util_threshold=max(_float(stage2_cfg.get("hotspot_util_threshold", 0.95), "stage2.hotspot_util_threshold"), 0.0),
-        hotspot_topk_ranges=max(int(stage2_cfg.get("hotspot_topk_ranges", 5)), 0),
-        hotspot_expand_segments=max(int(stage2_cfg.get("hotspot_expand_segments", 2)), 0),
-        hotspot_single_link_fraction_threshold=min(
-            max(
-                _float(
-                    stage2_cfg.get("hotspot_single_link_fraction_threshold", 0.6),
-                    "stage2.hotspot_single_link_fraction_threshold",
-                ),
-                0.0,
-            ),
-            1.0,
-        ),
-        hotspot_top_tasks_per_range=max(int(stage2_cfg.get("hotspot_top_tasks_per_range", 12)), 0),
-        augment_window_budget=max(int(stage2_cfg.get("augment_window_budget", 2)), 0),
-        augment_top_windows_per_range=max(int(stage2_cfg.get("augment_top_windows_per_range", 3)), 0),
-        augment_selection_policy=(
-            str(raw_augment_selection_policy).strip().lower()
-            if str(raw_augment_selection_policy).strip().lower() in {"global_score_only", "structural_coverage_first"}
-            else "global_score_only"
-        ),
-        closed_loop_max_rounds=max(int(stage2_cfg.get("closed_loop_max_rounds", 6)), 0),
-        closed_loop_max_new_windows=max(int(stage2_cfg.get("closed_loop_max_new_windows", 2)), 0),
-        closed_loop_min_delta_q_peak=max(
-            _float(stage2_cfg.get("closed_loop_min_delta_q_peak", 1e-4), "stage2.closed_loop_min_delta_q_peak"),
-            0.0,
-        ),
-        closed_loop_min_delta_q_integral=max(
-            _float(stage2_cfg.get("closed_loop_min_delta_q_integral", 1e-6), "stage2.closed_loop_min_delta_q_integral"),
-            0.0,
-        ),
-        closed_loop_min_delta_high_segments=max(int(stage2_cfg.get("closed_loop_min_delta_high_segments", 1)), 0),
-        closed_loop_topk_ranges_per_round=max(
-            int(stage2_cfg.get("closed_loop_topk_ranges_per_round", stage2_cfg.get("hotspot_topk_ranges", 5))),
-            0,
-        ),
-        closed_loop_topk_candidates_per_range=max(
-            int(
-                stage2_cfg.get(
-                    "closed_loop_topk_candidates_per_range",
-                    stage2_cfg.get("augment_top_windows_per_range", 3),
-                )
-            ),
-            0,
-        ),
-        closed_loop_action_mode=(
-            str(raw_closed_loop_action_mode).strip().lower()
-            if str(raw_closed_loop_action_mode).strip().lower() in _CLOSED_LOOP_ACTION_MODES
-            else "best_global_action"
-        ),
-        hot_path_limit=max(int(stage2_cfg.get("hot_path_limit", 4)), 1),
-        hot_promoted_tasks_per_segment=max(int(stage2_cfg.get("hot_promoted_tasks_per_segment", 8)), 0),
-        local_peak_horizon_cap_segments=(
-            None
-            if raw_local_peak_horizon_cap in {None, ""}
-            else max(int(raw_local_peak_horizon_cap), 1)
-        ),
-        local_peak_accept_epsilon=max(
-            _float(stage2_cfg.get("local_peak_accept_epsilon", 1e-6), "stage2.local_peak_accept_epsilon"),
-            0.0,
-        ),
-        fail_if_milp_disabled=_bool(stage2_cfg.get("fail_if_milp_disabled", True), "stage2.fail_if_milp_disabled"),
         label_keep_limit=(int(raw_label_keep_limit) if raw_label_keep_limit not in {None, ""} else None),
     )
 

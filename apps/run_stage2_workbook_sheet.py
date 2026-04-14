@@ -156,7 +156,9 @@ def build_scenario_payload(
             completion_tolerance=stage2_cfg.get("completion_tolerance", 1e-6),
         )
     )
-    default_stage2.update(stage2_cfg)
+    for key, value in stage2_cfg.items():
+        if key in default_stage2:
+            default_stage2[key] = value
     default_stage2["k_paths"] = effective_k_paths
     default_stage2["completion_tolerance"] = stage2_cfg.get("completion_tolerance", 1e-6)
     payload["stage2"] = default_stage2

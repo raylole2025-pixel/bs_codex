@@ -1,12 +1,13 @@
 # BS3 Parameter Settings
 
-Updated: 2026-04-11
+Updated: 2026-04-14
 
-This document lists the Stage1/Stage2 parameters that are currently recognized by the codebase. The Stage2 section now includes the hotspot-relief path:
+This repository now uses a two-stage structure:
 
-- hotspot-guided window augmentation
-- hotspot-segment candidate expansion
-- local peak-constrained MILP
+- Stage 1: cross-domain link configuration plus regular-task baseline export
+- Stage 2: emergency-task insertion on top of the exported baseline
+
+The old Stage2-1 hotspot-relief / closed-loop / regular repair path has been removed. Its old configuration fields are no longer part of the active schema.
 
 ## Scenario JSON
 
@@ -51,100 +52,46 @@ This document lists the Stage1/Stage2 parameters that are currently recognized b
 | --- | --- |
 | `k_paths` | `2` |
 | `completion_tolerance` | `1e-6` |
-| `regular_baseline_mode` | `null` |
-| `regular_repair_enabled` | `null` |
-| `prefer_milp` | `true` |
-| `milp_mode` | `full` |
-| `milp_horizon_segments` | `16` |
-| `milp_commit_segments` | `8` |
-| `milp_rolling_path_limit` | `1` |
-| `milp_rolling_high_path_limit` | `2` |
-| `milp_rolling_high_weight_threshold` | `null` |
-| `milp_rolling_high_competition_task_threshold` | `8` |
-| `milp_rolling_promoted_tasks_per_segment` | `2` |
-| `milp_time_limit_seconds` | `null` |
-| `milp_relative_gap` | `null` |
-| `repair_block_max_count` | `3` |
-| `repair_expand_segments` | `1` |
-| `repair_max_block_segments` | `8` |
-| `repair_min_active_tasks` | `2` |
-| `repair_util_threshold` | `0.75` |
-| `repair_candidate_path_limit` | `2` |
-| `repair_time_limit_seconds` | `null` |
-| `repair_accept_epsilon` | `1e-6` |
-| `hotspot_relief_enabled` | `true` |
-| `hotspot_util_threshold` | `0.95` |
-| `hotspot_topk_ranges` | `5` |
-| `hotspot_expand_segments` | `2` |
-| `hotspot_single_link_fraction_threshold` | `0.6` |
-| `hotspot_top_tasks_per_range` | `12` |
-| `augment_window_budget` | `2` |
-| `augment_top_windows_per_range` | `3` |
-| `hot_path_limit` | `4` |
-| `hot_promoted_tasks_per_segment` | `8` |
-| `local_peak_horizon_cap_segments` | `48` |
-| `local_peak_accept_epsilon` | `1e-6` |
-| `fail_if_milp_disabled` | `true` |
 | `label_keep_limit` | `null` |
 
-### Stage2 baseline mode rules
+`label_keep_limit` controls how many nondominated labels Stage 2 keeps per bucket during emergency insertion. When omitted, the code derives the effective value from `k_paths`.
 
-- `regular_baseline_mode` should be `full_milp` for the current Stage2-1 path; `rolling_milp` is only accepted as a backward-compatible alias and is normalized to `full_milp`.
-- If `regular_baseline_mode` is omitted:
-  - `prefer_milp=true` => `full_milp`
-  - `prefer_milp=false` => `stage1_greedy_repair`
+## Active Outputs
 
-### Hotspot-relief rules
+### Stage 1
 
-- When `hotspot_relief_enabled=true` and `fail_if_milp_disabled=true`, Stage2 will raise an error if the run is not actually configured for the full MILP baseline.
-- Hotspot relief performs:
-  - hotspot profile construction over cross-segment load
-  - hot-range detection and structural-bottleneck classification
-  - optional window augmentation from `scenario.candidate_windows`
-  - local MILP re-optimization with peak and peak-integral objectives
+- `selected_plan`
+- `baseline_summary`
+- `baseline_trace`
 
-## CLI / workbook injection
+### Stage 2
 
-### `apps/run_stage1_workbook_batch.py`
+- emergency insertion result
+- regular/emergency completion metrics
+- insertion events
+- baseline/final cross-window usage comparison
 
-- Writes Stage2 config using `Stage2Config` defaults plus CLI overrides.
-- This preserves the full Stage2 field set in generated scenario JSON.
+## Removed Stage2 Fields
 
-### `apps/run_stage2_workbook_sheet.py`
+The loader now rejects old Stage2-1 fields, including:
 
-- Preserves and roundtrips all Stage2 fields from the base scenario.
-- `--k-paths` still overrides `stage2.k_paths`.
+- `regular_baseline_mode`
+- `regular_repair_enabled`
+- `prefer_milp`
+- `milp_*`
+- `repair_*`
+- `hotspot_relief_enabled`
+- `closed_loop_relief_enabled`
+- `hotspot_*`
+- `augment_*`
+- `closed_loop_*`
+- `hot_path_limit`
+- `hot_promoted_tasks_per_segment`
+- `local_peak_*`
+- `fail_if_milp_disabled`
 
-### `tools/run_stage2_hotspot_relief.py`
+The loader also continues to reject older removed fields:
 
-Direct hotspot-relief experiment entry for fixed-plan validation.
-
-Inputs:
-
-- `--scenario-path`
-- `--stage1-result-path` or `--fixed-plan-path`
-
-Outputs:
-
-- `result.json`
-- `result_summary.json`
-- `hotspot_report.json`
-- `before_after_load_summary.json`
-
-## Removed legacy fields
-
-The loader still rejects the following removed fields:
-
-- `stage1.k_paths`
-- `stage1.near_completion_ratio`
-- `stage1.omega_sr`
-- `stage1.theta`
-- `stage1.theta_c`
-- `stage1.theta_eta0`
-- `stage1.theta_sr`
-- `stage1.viol_weight_cap`
-- `stage1.viol_weight_hot`
-- `stage1.viol_weight_sr`
 - `stage2.affected_task_limit`
 - `stage2.best_effort_on_failure`
 - `stage2.insertion_horizon_seconds`

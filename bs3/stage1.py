@@ -271,10 +271,10 @@ class PathOption:
 class RegularEvaluator:
     def __init__(self, scenario: Scenario) -> None:
         self.scenario = scenario
-        self.regular_tasks = [task for task in scenario.tasks if task.task_type == "reg"]
-        self.cross_regular_tasks = [
+        self.baseline_regular_tasks = [task for task in scenario.tasks if task.task_type == "reg"]
+        self.regular_tasks = [
             task
-            for task in self.regular_tasks
+            for task in self.baseline_regular_tasks
             if scenario.node_domain[task.src] != scenario.node_domain[task.dst]
         ]
         self.total_weight = sum(task.weight for task in self.regular_tasks)
@@ -530,9 +530,9 @@ class RegularEvaluator:
                 available_intra_capacity_by_segment={},
             )
 
-        segments = build_segments(self.scenario, plan, self.regular_tasks)
-        remaining = {task.task_id: task.data for task in self.regular_tasks}
-        prev_path_keys: dict[str, tuple[str, ...] | None] = {task.task_id: None for task in self.regular_tasks}
+        segments = build_segments(self.scenario, plan, self.baseline_regular_tasks)
+        remaining = {task.task_id: task.data for task in self.baseline_regular_tasks}
+        prev_path_keys: dict[str, tuple[str, ...] | None] = {task.task_id: None for task in self.baseline_regular_tasks}
         cross_reg_capacity = max((1.0 - rho) * self.scenario.capacities.cross, EPS)
 
         demand_weighted_total = 0.0
@@ -542,8 +542,8 @@ class RegularEvaluator:
         segment_rows: list[dict] = []
         task_state_rows: list[dict] = []
         allocation_rows: list[Allocation] = []
-        remaining_before_by_segment: dict[str, dict[int, float]] = {task.task_id: {} for task in self.regular_tasks}
-        remaining_after_by_segment: dict[str, dict[int, float]] = {task.task_id: {} for task in self.regular_tasks}
+        remaining_before_by_segment: dict[str, dict[int, float]] = {task.task_id: {} for task in self.baseline_regular_tasks}
+        remaining_after_by_segment: dict[str, dict[int, float]] = {task.task_id: {} for task in self.baseline_regular_tasks}
         cross_window_usage_by_segment: dict[int, dict[str, float]] = {}
         available_cross_capacity_by_segment: dict[int, dict[str, float]] = {}
         occupied_cross_windows_by_segment: dict[int, list[str]] = {}
@@ -557,7 +557,7 @@ class RegularEvaluator:
 
             active_tasks = [
                 task
-                for task in self.regular_tasks
+                for task in self.baseline_regular_tasks
                 if task.arrival <= segment.start < task.deadline and remaining[task.task_id] > EPS
             ]
             active_cross_tasks = [
@@ -596,7 +596,7 @@ class RegularEvaluator:
                 key=lambda task: regular_priority_key(task, remaining[task.task_id], segment.start)
             )
 
-            for task in self.regular_tasks:
+            for task in self.baseline_regular_tasks:
                 remaining_before_by_segment[task.task_id][segment.index] = float(remaining[task.task_id])
 
             for task in active_tasks:
@@ -647,7 +647,7 @@ class RegularEvaluator:
                 if task.task_id not in served_this_segment:
                     prev_path_keys[task.task_id] = None
 
-            for task in self.regular_tasks:
+            for task in self.baseline_regular_tasks:
                 task_id = task.task_id
                 remaining_after_by_segment[task_id][segment.index] = float(remaining[task_id])
                 selected = selected_by_task.get(task_id)
@@ -735,14 +735,15 @@ class RegularEvaluator:
         weighted_completion = 0.0
         weighted_completed = 0.0
         task_rows: list[dict] = []
-        for task in self.regular_tasks:
+        for task in self.baseline_regular_tasks:
             remaining_end = max(0.0, remaining[task.task_id])
             phi = min(max(1.0 - remaining_end / max(task.data, EPS), 0.0), 1.0)
             completion_tolerance = self._completion_tolerance(task)
             completed = 1 if remaining_end <= completion_tolerance else 0
-            weighted_completion += task.weight * phi
-            if completed:
-                weighted_completed += task.weight
+            if task in self.regular_tasks:
+                weighted_completion += task.weight * phi
+                if completed:
+                    weighted_completed += task.weight
             task_rows.append(
                 {
                     "task_id": task.task_id,
@@ -823,6 +824,13 @@ class RegularEvaluator:
 
     def _baseline_summary_from_trace(self, trace: SimulationTrace, rho: float) -> dict[str, Any]:
         completed_count = sum(int(row["completed"]) for row in trace.task_rows)
+        metric_task_ids = {task.task_id for task in self.regular_tasks}
+        metric_task_count = len(self.regular_tasks)
+        completed_metric_task_count = sum(
+            1
+            for row in trace.task_rows
+            if row["task_id"] in metric_task_ids and int(row["completed"])
+        )
         cross_reg_capacity = max((1.0 - float(rho)) * self.scenario.capacities.cross, EPS)
         max_cross_rate_used = max(
             (sum(segment_usage.values()) for segment_usage in trace.cross_window_usage_by_segment.values()),
@@ -837,9 +845,11 @@ class RegularEvaluator:
             default=0.0,
         )
         return {
-            "regular_task_count": len(trace.task_rows),
-            "completed_regular_task_count": completed_count,
-            "incomplete_regular_task_count": len(trace.task_rows) - completed_count,
+            "baseline_regular_task_count": len(trace.task_rows),
+            "completed_baseline_regular_task_count": completed_count,
+            "incomplete_baseline_regular_task_count": len(trace.task_rows) - completed_count,
+            "stage1_metric_regular_task_count": metric_task_count,
+            "completed_stage1_metric_regular_task_count": completed_metric_task_count,
             "segment_count": len(trace.segment_rows),
             "allocation_count": len(trace.allocations),
             "window_count": len(trace.window_rows),
