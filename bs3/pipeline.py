@@ -16,10 +16,8 @@ def _stage2_sort_key(result, t_pre: float) -> tuple[float, ...]:
 
 def run_pipeline(scenario: Scenario, seed: int | None = None) -> PipelineResult:
     stage1_result = run_stage1(scenario, seed=seed)
-    candidate_plans = stage1_result.best_feasible[:]
-    if not candidate_plans and stage1_result.population_best is not None:
-        candidate_plans = [stage1_result.population_best]
-
-    stage2_results = [run_stage2(scenario, candidate.plan) for candidate in candidate_plans]
-    recommended = min(stage2_results, key=lambda item: _stage2_sort_key(item, scenario.stage1.t_pre)) if stage2_results else None
+    stage2_results = []
+    if stage1_result.selected_plan:
+        stage2_results = [run_stage2(scenario, stage1_result=stage1_result)]
+    recommended = stage2_results[0] if stage2_results else None
     return PipelineResult(stage1=stage1_result, stage2_results=stage2_results, recommended=recommended)

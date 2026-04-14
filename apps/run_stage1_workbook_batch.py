@@ -244,6 +244,14 @@ def candidate_to_dict(candidate) -> dict[str, Any]:
     return data
 
 
+def baseline_trace_to_dict(trace) -> dict[str, Any] | None:
+    if trace is None:
+        return None
+    data = asdict(trace)
+    data["allocations"] = [asdict(item) for item in trace.allocations]
+    return data
+
+
 def stage2_result_to_dict(result, t_pre: float) -> dict[str, Any]:
     """把阶段 2 结果补齐派生指标后展开为字典。"""
 
@@ -680,6 +688,10 @@ def main() -> None:
             "used_feedback": result.used_feedback,
             "timed_out": result.timed_out,
             "elapsed_seconds": result.elapsed_seconds,
+            "selected_candidate_index": result.selected_candidate_index,
+            "selected_candidate_source": result.selected_candidate_source,
+            "selected_plan": [asdict(window) for window in result.selected_plan],
+            "baseline_summary": result.baseline_summary,
             "best_feasible": [candidate_to_dict(item) for item in result.best_feasible],
             "population_best": candidate_to_dict(result.population_best) if result.population_best else None,
             "task_stats": stats,
@@ -687,6 +699,12 @@ def main() -> None:
             "artifacts": artifacts,
             "distance_enrichment": enrich_stats,
         }
+        baseline_trace_path = set_dir / f"{sheet_name}_baseline_trace.json"
+        if result.baseline_trace is not None:
+            write_json(baseline_trace_path, baseline_trace_to_dict(result.baseline_trace))
+            result_payload["baseline_trace_file"] = str(baseline_trace_path.resolve())
+        else:
+            result_payload["baseline_trace_file"] = None
 
         if args.run_stage2 and pipeline_result is not None:
             stage2_results = []

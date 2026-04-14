@@ -190,9 +190,9 @@ class Stage2Config:
     k_paths: int = 2
     # 当任务传输量小于这个值，就认为任务完成
     completion_tolerance: float = 1e-6
-    # 阶段2-1 常态基线模式；默认固定为阶段1 greedy repair，不再由 prefer_milp 自动主导
+    # legacy 兼容字段：默认阶段2主流程不再构建常态 baseline
     regular_baseline_mode: str | None = "stage1_greedy_repair"
-    # 是否启用 greedy baseline 之后的局部 repair；None 表示按 baseline mode 自动决定
+    # legacy 兼容字段：默认阶段2主流程不再执行常态 repair
     regular_repair_enabled: bool | None = None
     # legacy 兼容字段；不再决定阶段2-1默认 baseline
     prefer_milp: bool = False
@@ -232,10 +232,10 @@ class Stage2Config:
     repair_time_limit_seconds: float | None = None
     # repair 接受阈值
     repair_accept_epsilon: float = 1e-6
-    # 兼容旧开关；默认与 closed_loop_relief_enabled 保持一致
-    hotspot_relief_enabled: bool = True
-    # 阶段2-1 闭环式减载主控开关
-    closed_loop_relief_enabled: bool = True
+    # legacy 兼容字段：主流程不再启用 hotspot relief
+    hotspot_relief_enabled: bool = False
+    # legacy 兼容字段：主流程不再启用 closed-loop 常态减载
+    closed_loop_relief_enabled: bool = False
     # 热点分段识别阈值（q_r）
     hotspot_util_threshold: float = 0.95
     # 最多考虑的热点区间数量
@@ -368,6 +368,11 @@ class Stage1Result:
     best_feasible: list[Stage1Candidate]
     population_best: Stage1Candidate | None
     generations: int
+    selected_candidate_index: int | None = None
+    selected_candidate_source: str | None = None
+    selected_plan: list[ScheduledWindow] = field(default_factory=list)
+    baseline_summary: dict[str, Any] = field(default_factory=dict)
+    baseline_trace: "Stage1BaselineTrace | None" = None
     used_feedback: bool = True
     timed_out: bool = False
     elapsed_seconds: float | None = None
@@ -383,7 +388,28 @@ class Allocation:
     rate: float
     delivered: float
     task_type: TaskType
+    cross_window_id: str | None = None
     is_preempted: bool = False
+
+
+@dataclass
+class Stage1BaselineTrace:
+    rho: float
+    segments: list[dict[str, Any]] = field(default_factory=list)
+    allocations: list[Allocation] = field(default_factory=list)
+    task_states: list[dict[str, Any]] = field(default_factory=list)
+    window_states: list[dict[str, Any]] = field(default_factory=list)
+    remaining_before_by_segment: dict[str, dict[int, float]] = field(default_factory=dict)
+    remaining_after_by_segment: dict[str, dict[int, float]] = field(default_factory=dict)
+    remaining_end: dict[str, float] = field(default_factory=dict)
+    completed: dict[str, bool] = field(default_factory=dict)
+    cross_window_usage_by_segment: dict[int, dict[str, float]] = field(default_factory=dict)
+    available_cross_capacity_by_segment: dict[int, dict[str, float]] = field(default_factory=dict)
+    occupied_cross_windows_by_segment: dict[int, list[str]] = field(default_factory=dict)
+    active_cross_windows_by_segment: dict[int, list[str]] = field(default_factory=dict)
+    active_intra_edges_by_segment: dict[int, dict[str, list[str]]] = field(default_factory=dict)
+    available_intra_capacity_by_segment: dict[int, dict[str, float]] = field(default_factory=dict)
+    summary: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass

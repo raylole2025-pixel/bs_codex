@@ -10,9 +10,20 @@ from typing import Any, Iterable
 
 import networkx as nx
 
-from .models import CandidateWindow, HotspotRegion, PathCandidate, ScheduledWindow, Scenario, Stage1Candidate, Stage1Result, Task
+from .models import (
+    Allocation,
+    CandidateWindow,
+    HotspotRegion,
+    PathCandidate,
+    ScheduledWindow,
+    Scenario,
+    Stage1BaselineTrace,
+    Stage1Candidate,
+    Stage1Result,
+    Task,
+)
 from .regular_routing_common import regular_priority_key, stage1_style_path_options
-from .scenario import active_cross_links, active_intra_links, build_domain_graph, build_segments
+from .scenario import active_cross_links, active_intra_links, build_domain_graph, build_segments, generate_candidate_paths
 from .stage1_screening import screen_candidate_windows
 from .stage1_static_value import annotate_scenario_candidate_values
 
@@ -212,6 +223,17 @@ class SimulationTrace:
     task_rows: list[dict]
     window_rows: list[dict]
     window_flow: dict[str, float]
+    allocations: list[Allocation]
+    task_state_rows: list[dict]
+    window_state_rows: list[dict]
+    remaining_before_by_segment: dict[str, dict[int, float]]
+    remaining_after_by_segment: dict[str, dict[int, float]]
+    cross_window_usage_by_segment: dict[int, dict[str, float]]
+    available_cross_capacity_by_segment: dict[int, dict[str, float]]
+    occupied_cross_windows_by_segment: dict[int, list[str]]
+    active_cross_windows_by_segment: dict[int, list[str]]
+    active_intra_edges_by_segment: dict[int, dict[str, list[str]]]
+    available_intra_capacity_by_segment: dict[int, dict[str, float]]
 
 # 把"一条排列（染色体）解码后的完整状态"打包在一起
 @dataclass
@@ -234,9 +256,10 @@ class DomainPath:
 # 完整路径，还包括候选速率、候选交付量、有效持续时间、预测跨域负载、跳数
 @dataclass(frozen=True)
 class PathOption:
+    path_id: str
     path_key: tuple[str, ...]
     edge_ids: tuple[str, ...]
-    cross_window_id: str
+    cross_window_id: str | None
     delay: float
     candidate_rate: float
     candidate_delivered: float
@@ -248,10 +271,11 @@ class PathOption:
 class RegularEvaluator:
     def __init__(self, scenario: Scenario) -> None:
         self.scenario = scenario
-        self.regular_tasks = [
+        self.regular_tasks = [task for task in scenario.tasks if task.task_type == "reg"]
+        self.cross_regular_tasks = [
             task
-            for task in scenario.tasks
-            if task.task_type == "reg" and scenario.node_domain[task.src] != scenario.node_domain[task.dst]
+            for task in self.regular_tasks
+            if scenario.node_domain[task.src] != scenario.node_domain[task.dst]
         ]
         self.total_weight = sum(task.weight for task in self.regular_tasks)
         self._trace_cache: dict[tuple[tuple[tuple[str, float, float], ...], float], SimulationTrace] = {}
@@ -441,18 +465,23 @@ class RegularEvaluator:
         cross_reg_capacity: float,
     ) -> list[PathOption]:
         candidates: list[PathCandidate] = []
-        for window in active_windows:
-            for idx, (_, edge_ids, delay, hop_count) in enumerate(self._cross_path_candidates(task, window, segment.start, cap_res)):
-                candidates.append(
-                    PathCandidate(
-                        path_id=f"{task.task_id}:{segment.index}:{window.window_id}:stage1:{idx}",
-                        nodes=tuple(),
-                        edge_ids=edge_ids,
-                        hop_count=hop_count,
-                        delay=delay,
-                        cross_window_id=window.window_id,
+        src_domain = self.scenario.node_domain[task.src]
+        dst_domain = self.scenario.node_domain[task.dst]
+        if src_domain == dst_domain:
+            candidates.extend(generate_candidate_paths(self.scenario, [], task, segment, 1, active_windows=[]))
+        else:
+            for window in active_windows:
+                for idx, (_, edge_ids, delay, hop_count) in enumerate(self._cross_path_candidates(task, window, segment.start, cap_res)):
+                    candidates.append(
+                        PathCandidate(
+                            path_id=f"{task.task_id}:{segment.index}:{window.window_id}:stage1:{idx}",
+                            nodes=tuple(),
+                            edge_ids=edge_ids,
+                            hop_count=hop_count,
+                            delay=delay,
+                            cross_window_id=window.window_id,
+                        )
                     )
-                )
         ranked_options = stage1_style_path_options(
             scenario=self.scenario,
             task=task,
@@ -466,9 +495,10 @@ class RegularEvaluator:
         )
         return [
             PathOption(
+                path_id=option.candidate.path_id,
                 path_key=option.path_key,
                 edge_ids=option.candidate.edge_ids,
-                cross_window_id=option.candidate.cross_window_id or "",
+                cross_window_id=option.candidate.cross_window_id,
                 delay=option.candidate.delay,
                 candidate_rate=option.rate,
                 candidate_delivered=option.delivered,
@@ -487,6 +517,17 @@ class RegularEvaluator:
                 task_rows=[],
                 window_rows=[],
                 window_flow={},
+                allocations=[],
+                task_state_rows=[],
+                window_state_rows=[],
+                remaining_before_by_segment={},
+                remaining_after_by_segment={},
+                cross_window_usage_by_segment={},
+                available_cross_capacity_by_segment={},
+                occupied_cross_windows_by_segment={},
+                active_cross_windows_by_segment={},
+                active_intra_edges_by_segment={},
+                available_intra_capacity_by_segment={},
             )
 
         segments = build_segments(self.scenario, plan, self.regular_tasks)
@@ -499,6 +540,16 @@ class RegularEvaluator:
         eta0_numerator = 0.0
         window_flow: dict[str, float] = {window.window_id: 0.0 for window in plan}
         segment_rows: list[dict] = []
+        task_state_rows: list[dict] = []
+        allocation_rows: list[Allocation] = []
+        remaining_before_by_segment: dict[str, dict[int, float]] = {task.task_id: {} for task in self.regular_tasks}
+        remaining_after_by_segment: dict[str, dict[int, float]] = {task.task_id: {} for task in self.regular_tasks}
+        cross_window_usage_by_segment: dict[int, dict[str, float]] = {}
+        available_cross_capacity_by_segment: dict[int, dict[str, float]] = {}
+        occupied_cross_windows_by_segment: dict[int, list[str]] = {}
+        active_cross_windows_by_segment: dict[int, list[str]] = {}
+        active_intra_edges_by_segment: dict[int, dict[str, list[str]]] = {}
+        available_intra_capacity_by_segment: dict[int, dict[str, float]] = {}
 
         for segment in segments:
             if segment.duration <= EPS:
@@ -509,31 +560,44 @@ class RegularEvaluator:
                 for task in self.regular_tasks
                 if task.arrival <= segment.start < task.deadline and remaining[task.task_id] > EPS
             ]
+            active_cross_tasks = [
+                task
+                for task in active_tasks
+                if self.scenario.node_domain[task.src] != self.scenario.node_domain[task.dst]
+            ]
             cross_now = active_cross_links(plan, segment.start)
             cross_supply = len(cross_now) * max((1.0 - rho) * self.scenario.capacities.cross, 0.0)
             cross_demand_req = sum(
                 min(task.max_rate, remaining[task.task_id] / max(task.deadline - segment.start, EPS))
-                for task in active_tasks
+                for task in active_cross_tasks
             )
             demand_weighted_total += cross_demand_req * segment.duration
             eta_cap_numerator += max(cross_demand_req - cross_supply, 0.0) * segment.duration
             if cross_demand_req > EPS and not cross_now:
                 eta0_numerator += cross_demand_req * segment.duration
 
+            intra_a = active_intra_links(self.scenario, "A", segment.start)
+            intra_b = active_intra_links(self.scenario, "B", segment.start)
             cap_res: dict[str, float] = {}
-            for link in active_intra_links(self.scenario, "A", segment.start):
+            for link in intra_a:
                 cap_res[link.link_id] = self.scenario.capacities.domain_a
-            for link in active_intra_links(self.scenario, "B", segment.start):
+            for link in intra_b:
                 cap_res[link.link_id] = self.scenario.capacities.domain_b
             for window in cross_now:
                 cap_res[window.window_id] = cross_reg_capacity
             cross_used = {window.window_id: 0.0 for window in cross_now}
             served_this_segment: set[str] = set()
             segment_cross_data_used = 0.0
+            selected_by_task: dict[str, PathOption] = {}
+            delivered_by_task: dict[str, float] = {}
+            rate_by_task: dict[str, float] = {}
 
             active_tasks.sort(
                 key=lambda task: regular_priority_key(task, remaining[task.task_id], segment.start)
             )
+
+            for task in self.regular_tasks:
+                remaining_before_by_segment[task.task_id][segment.index] = float(remaining[task.task_id])
 
             for task in active_tasks:
                 remaining_task = remaining[task.task_id]
@@ -556,16 +620,86 @@ class RegularEvaluator:
                 delivered = selected.candidate_delivered
                 for edge_id in selected.edge_ids:
                     cap_res[edge_id] -= selected.candidate_rate
-                cross_used[selected.cross_window_id] += selected.candidate_rate
-                window_flow[selected.cross_window_id] += delivered
-                segment_cross_data_used += delivered
+                if selected.cross_window_id is not None:
+                    cross_used[selected.cross_window_id] += selected.candidate_rate
+                    window_flow[selected.cross_window_id] += delivered
+                    segment_cross_data_used += delivered
                 remaining[task.task_id] = max(0.0, remaining_task - delivered)
                 prev_path_keys[task.task_id] = selected.path_key
                 served_this_segment.add(task.task_id)
+                selected_by_task[task.task_id] = selected
+                delivered_by_task[task.task_id] = float(delivered)
+                rate_by_task[task.task_id] = float(selected.candidate_rate)
+                allocation_rows.append(
+                    Allocation(
+                        task_id=task.task_id,
+                        segment_index=segment.index,
+                        path_id=selected.path_id,
+                        edge_ids=selected.edge_ids,
+                        rate=float(selected.candidate_rate),
+                        delivered=float(delivered),
+                        task_type=task.task_type,
+                        cross_window_id=selected.cross_window_id,
+                    )
+                )
 
             for task in active_tasks:
                 if task.task_id not in served_this_segment:
                     prev_path_keys[task.task_id] = None
+
+            for task in self.regular_tasks:
+                task_id = task.task_id
+                remaining_after_by_segment[task_id][segment.index] = float(remaining[task_id])
+                selected = selected_by_task.get(task_id)
+                remaining_before = float(remaining_before_by_segment[task_id][segment.index])
+                remaining_after = float(remaining_after_by_segment[task_id][segment.index])
+                task_state_rows.append(
+                    {
+                        "segment_index": segment.index,
+                        "segment_start": float(segment.start),
+                        "segment_end": float(segment.end),
+                        "task_id": task_id,
+                        "active": bool(task.arrival <= segment.start < task.deadline),
+                        "served": task_id in served_this_segment,
+                        "remaining_before": remaining_before,
+                        "remaining_after": remaining_after,
+                        "delivered": float(delivered_by_task.get(task_id, 0.0)),
+                        "rate": float(rate_by_task.get(task_id, 0.0)),
+                        "path_id": (
+                            selected.path_id
+                            if selected is not None
+                            else None
+                        ),
+                        "path_key": (selected.path_key if selected is not None else None),
+                        "edge_ids": (selected.edge_ids if selected is not None else tuple()),
+                        "cross_window_id": (selected.cross_window_id if selected is not None else None),
+                        "completed_after": int(remaining_after <= self._completion_tolerance(task)),
+                    }
+                )
+
+            active_cross_windows_by_segment[segment.index] = [window.window_id for window in cross_now]
+            cross_window_usage_by_segment[segment.index] = {
+                window.window_id: float(cross_used.get(window.window_id, 0.0))
+                for window in cross_now
+            }
+            available_cross_capacity_by_segment[segment.index] = {
+                window.window_id: max(float(cross_reg_capacity) - float(cross_used.get(window.window_id, 0.0)), 0.0)
+                for window in cross_now
+            }
+            occupied_cross_windows_by_segment[segment.index] = sorted(
+                window_id
+                for window_id, value in cross_window_usage_by_segment[segment.index].items()
+                if value > EPS
+            )
+            active_intra_edges_by_segment[segment.index] = {
+                "A": [link.link_id for link in intra_a],
+                "B": [link.link_id for link in intra_b],
+            }
+            available_intra_capacity_by_segment[segment.index] = {
+                edge_id: float(cap_res[edge_id])
+                for edge_id in cap_res
+                if edge_id not in cross_used
+            }
 
             segment_rows.append(
                 {
@@ -590,6 +724,11 @@ class RegularEvaluator:
                     "zero_cross_req": 1 if cross_demand_req > EPS and not cross_now else 0,
                     "zero_cross_demand": 1 if cross_demand_req > EPS and not cross_now else 0,
                     "eta0_indicator": 1 if cross_demand_req > EPS and not cross_now else 0,
+                    "active_task_ids": [task.task_id for task in active_tasks],
+                    "active_cross_window_ids": list(active_cross_windows_by_segment[segment.index]),
+                    "occupied_cross_window_ids": list(occupied_cross_windows_by_segment[segment.index]),
+                    "available_cross_capacity": dict(available_cross_capacity_by_segment[segment.index]),
+                    "available_intra_capacity": dict(available_intra_capacity_by_segment[segment.index]),
                 }
             )
 
@@ -632,6 +771,24 @@ class RegularEvaluator:
             }
             for window in sorted(plan, key=lambda item: (item.on, item.off, item.window_id))
         ]
+        window_state_rows = [
+            {
+                "segment_index": segment.index,
+                "segment_start": float(segment.start),
+                "segment_end": float(segment.end),
+                "window_id": window.window_id,
+                "a": window.a,
+                "b": window.b,
+                "active": True,
+                "used_rate": float(cross_window_usage_by_segment.get(segment.index, {}).get(window.window_id, 0.0)),
+                "available_rate": float(available_cross_capacity_by_segment.get(segment.index, {}).get(window.window_id, 0.0)),
+                "delivered": float(cross_window_usage_by_segment.get(segment.index, {}).get(window.window_id, 0.0)) * float(segment.duration),
+                "occupied": bool(window.window_id in occupied_cross_windows_by_segment.get(segment.index, [])),
+            }
+            for segment in segments
+            for window in active_cross_links(plan, segment.start)
+            if segment.duration > EPS
+        ]
         metrics = EvaluationMetrics(
             mean_completion_ratio=(weighted_completion / self.total_weight) if self.total_weight > EPS else 1.0,
             fr=(weighted_completed / self.total_weight) if self.total_weight > EPS else 1.0,
@@ -644,15 +801,120 @@ class RegularEvaluator:
             task_rows=task_rows,
             window_rows=window_rows,
             window_flow=window_flow,
+            allocations=allocation_rows,
+            task_state_rows=task_state_rows,
+            window_state_rows=window_state_rows,
+            remaining_before_by_segment=remaining_before_by_segment,
+            remaining_after_by_segment=remaining_after_by_segment,
+            cross_window_usage_by_segment=cross_window_usage_by_segment,
+            available_cross_capacity_by_segment=available_cross_capacity_by_segment,
+            occupied_cross_windows_by_segment=occupied_cross_windows_by_segment,
+            active_cross_windows_by_segment=active_cross_windows_by_segment,
+            active_intra_edges_by_segment=active_intra_edges_by_segment,
+            available_intra_capacity_by_segment=available_intra_capacity_by_segment,
         )
 
-    def trace(self, plan: list[ScheduledWindow], rho: float | None = None, k_paths: int | None = None) -> dict:
-        del k_paths
+    def _cached_trace(self, plan: list[ScheduledWindow], rho: float | None = None) -> SimulationTrace:
         rho = self.scenario.stage1.rho if rho is None else rho
         cache_key = self._trace_key(plan, rho)
         if cache_key not in self._trace_cache:
             self._trace_cache[cache_key] = self._simulate(plan, rho=rho)
-        trace = self._trace_cache[cache_key]
+        return self._trace_cache[cache_key]
+
+    def _baseline_summary_from_trace(self, trace: SimulationTrace, rho: float) -> dict[str, Any]:
+        completed_count = sum(int(row["completed"]) for row in trace.task_rows)
+        cross_reg_capacity = max((1.0 - float(rho)) * self.scenario.capacities.cross, EPS)
+        max_cross_rate_used = max(
+            (sum(segment_usage.values()) for segment_usage in trace.cross_window_usage_by_segment.values()),
+            default=0.0,
+        )
+        max_cross_window_util = max(
+            (
+                (max(segment_usage.values()) / max(cross_reg_capacity, EPS))
+                for segment_usage in trace.cross_window_usage_by_segment.values()
+                if segment_usage
+            ),
+            default=0.0,
+        )
+        return {
+            "regular_task_count": len(trace.task_rows),
+            "completed_regular_task_count": completed_count,
+            "incomplete_regular_task_count": len(trace.task_rows) - completed_count,
+            "segment_count": len(trace.segment_rows),
+            "allocation_count": len(trace.allocations),
+            "window_count": len(trace.window_rows),
+            "mean_completion_ratio": float(trace.metrics.mean_completion_ratio),
+            "fr": float(trace.metrics.fr),
+            "eta_cap": float(trace.metrics.eta_cap),
+            "eta_0": float(trace.metrics.eta_0),
+            "max_cross_rate_used": float(max_cross_rate_used),
+            "max_cross_window_util": float(max_cross_window_util),
+        }
+
+    def baseline_trace(self, plan: list[ScheduledWindow], rho: float | None = None) -> Stage1BaselineTrace:
+        rho = self.scenario.stage1.rho if rho is None else rho
+        trace = self._cached_trace(plan, rho=rho)
+        summary = self._baseline_summary_from_trace(trace, rho=rho)
+        return Stage1BaselineTrace(
+            rho=float(rho),
+            segments=[dict(row) for row in trace.segment_rows],
+            allocations=[
+                Allocation(
+                    task_id=item.task_id,
+                    segment_index=item.segment_index,
+                    path_id=item.path_id,
+                    edge_ids=tuple(item.edge_ids),
+                    rate=float(item.rate),
+                    delivered=float(item.delivered),
+                    task_type=item.task_type,
+                    cross_window_id=item.cross_window_id,
+                    is_preempted=bool(item.is_preempted),
+                )
+                for item in trace.allocations
+            ],
+            task_states=[dict(row) for row in trace.task_state_rows],
+            window_states=[dict(row) for row in trace.window_state_rows],
+            remaining_before_by_segment={
+                task_id: {int(index): float(value) for index, value in values.items()}
+                for task_id, values in trace.remaining_before_by_segment.items()
+            },
+            remaining_after_by_segment={
+                task_id: {int(index): float(value) for index, value in values.items()}
+                for task_id, values in trace.remaining_after_by_segment.items()
+            },
+            remaining_end={row["task_id"]: float(row["remaining_end"]) for row in trace.task_rows},
+            completed={row["task_id"]: bool(row["completed"]) for row in trace.task_rows},
+            cross_window_usage_by_segment={
+                int(segment_index): {window_id: float(value) for window_id, value in usage.items()}
+                for segment_index, usage in trace.cross_window_usage_by_segment.items()
+            },
+            available_cross_capacity_by_segment={
+                int(segment_index): {window_id: float(value) for window_id, value in usage.items()}
+                for segment_index, usage in trace.available_cross_capacity_by_segment.items()
+            },
+            occupied_cross_windows_by_segment={
+                int(segment_index): list(window_ids)
+                for segment_index, window_ids in trace.occupied_cross_windows_by_segment.items()
+            },
+            active_cross_windows_by_segment={
+                int(segment_index): list(window_ids)
+                for segment_index, window_ids in trace.active_cross_windows_by_segment.items()
+            },
+            active_intra_edges_by_segment={
+                int(segment_index): {domain: list(edge_ids) for domain, edge_ids in values.items()}
+                for segment_index, values in trace.active_intra_edges_by_segment.items()
+            },
+            available_intra_capacity_by_segment={
+                int(segment_index): {edge_id: float(value) for edge_id, value in values.items()}
+                for segment_index, values in trace.available_intra_capacity_by_segment.items()
+            },
+            summary=summary,
+        )
+
+    def trace(self, plan: list[ScheduledWindow], rho: float | None = None, k_paths: int | None = None) -> dict:
+        del k_paths
+        trace = self._cached_trace(plan, rho=rho)
+        baseline_trace = self.baseline_trace(plan, rho=rho)
         return {
             "metrics": {
                 "mean_completion_ratio": trace.metrics.mean_completion_ratio,
@@ -665,23 +927,24 @@ class RegularEvaluator:
             "segments": trace.segment_rows,
             "tasks": trace.task_rows,
             "windows": trace.window_rows,
+            "allocations": [dict(task_id=item.task_id, segment_index=item.segment_index, path_id=item.path_id, edge_ids=item.edge_ids, rate=item.rate, delivered=item.delivered, cross_window_id=item.cross_window_id) for item in trace.allocations],
+            "task_states": baseline_trace.task_states,
+            "remaining_before_by_segment": baseline_trace.remaining_before_by_segment,
+            "remaining_after_by_segment": baseline_trace.remaining_after_by_segment,
+            "cross_window_usage_by_segment": baseline_trace.cross_window_usage_by_segment,
+            "available_cross_capacity_by_segment": baseline_trace.available_cross_capacity_by_segment,
+            "active_cross_windows_by_segment": baseline_trace.active_cross_windows_by_segment,
+            "occupied_cross_windows_by_segment": baseline_trace.occupied_cross_windows_by_segment,
+            "summary": baseline_trace.summary,
         }
 
     def evaluate(self, plan: list[ScheduledWindow], rho: float | None = None, k_paths: int | None = None) -> EvaluationMetrics:
         del k_paths
-        rho = self.scenario.stage1.rho if rho is None else rho
-        cache_key = self._trace_key(plan, rho)
-        if cache_key not in self._trace_cache:
-            self._trace_cache[cache_key] = self._simulate(plan, rho=rho)
-        return self._trace_cache[cache_key].metrics
+        return self._cached_trace(plan, rho=rho).metrics
 
     def window_flow(self, plan: list[ScheduledWindow], rho: float | None = None, k_paths: int | None = None) -> dict[str, float]:
         del k_paths
-        rho = self.scenario.stage1.rho if rho is None else rho
-        cache_key = self._trace_key(plan, rho)
-        if cache_key not in self._trace_cache:
-            self._trace_cache[cache_key] = self._simulate(plan, rho=rho)
-        return dict(self._trace_cache[cache_key].window_flow)
+        return dict(self._cached_trace(plan, rho=rho).window_flow)
 
 
 class PlanAnalyzer:
@@ -1787,10 +2050,31 @@ class Stage1GA:
         )
         self._log_best_candidate_detail(global_best_generation, global_best_candidate)
 
+        selected_candidate: Stage1Candidate | None = None
+        selected_candidate_index: int | None = None
+        selected_candidate_source: str | None = None
+        if final_archive:
+            selected_candidate = final_archive[0]
+            selected_candidate_index = 0
+            selected_candidate_source = "best_feasible"
+        elif population:
+            selected_candidate = population[0]
+            selected_candidate_source = "population_best"
+        baseline_trace = (
+            self.evaluator.baseline_trace(selected_candidate.plan, rho=self.scenario.stage1.rho)
+            if selected_candidate is not None
+            else None
+        )
+
         return Stage1Result(
             best_feasible=final_archive,
             population_best=population[0] if population else None,
             generations=generations,
+            selected_candidate_index=selected_candidate_index,
+            selected_candidate_source=selected_candidate_source,
+            selected_plan=(list(selected_candidate.plan) if selected_candidate is not None else []),
+            baseline_summary=(dict(baseline_trace.summary) if baseline_trace is not None else {}),
+            baseline_trace=baseline_trace,
             used_feedback=True,
             timed_out=timed_out,
             elapsed_seconds=time.perf_counter() - started_at,

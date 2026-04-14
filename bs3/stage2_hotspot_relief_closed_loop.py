@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+"""Legacy closed-loop stage2-1 logic kept out of the default pipeline."""
+
 from collections import defaultdict
 import time
 from typing import Any

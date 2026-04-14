@@ -388,11 +388,11 @@ def load_scenario(path: str | Path) -> Scenario:
             else _float(raw_repair_time_limit, "stage2.repair_time_limit_seconds")
         ),
         repair_accept_epsilon=max(_float(stage2_cfg.get("repair_accept_epsilon", 1e-6), "stage2.repair_accept_epsilon"), 0.0),
-        hotspot_relief_enabled=_bool(stage2_cfg.get("hotspot_relief_enabled", True), "stage2.hotspot_relief_enabled"),
+        hotspot_relief_enabled=_bool(stage2_cfg.get("hotspot_relief_enabled", False), "stage2.hotspot_relief_enabled"),
         closed_loop_relief_enabled=_bool(
             stage2_cfg.get(
                 "closed_loop_relief_enabled",
-                stage2_cfg.get("hotspot_relief_enabled", True),
+                stage2_cfg.get("hotspot_relief_enabled", False),
             ),
             "stage2.closed_loop_relief_enabled",
         ),

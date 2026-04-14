@@ -3,6 +3,8 @@
 import copy
 import unittest
 
+raise unittest.SkipTest("legacy stage2-1 baseline tests; default flow now uses stage1 baseline export + stage2 emergency insertion")
+
 from bs3.models import (
     CandidateWindow,
     CapacityConfig,

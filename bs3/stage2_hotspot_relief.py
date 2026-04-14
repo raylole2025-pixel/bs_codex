@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+"""Legacy stage2-1 hotspot relief logic.
+
+This module is retained only for historical reference. The default stage2 flow no
+longer calls it; stage1 now owns regular baseline generation and stage2 only
+handles emergency insertion on top of the exported baseline state.
+"""
+
 from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass, replace
 from statistics import median

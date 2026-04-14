@@ -70,6 +70,14 @@ def _stage2_to_dict(result, t_pre: float):
     return data
 
 
+def _baseline_trace_to_dict(trace):
+    if trace is None:
+        return None
+    data = asdict(trace)
+    data["allocations"] = [asdict(item) for item in trace.allocations]
+    return data
+
+
 def main() -> None:
     """解析命令行并执行单场景两阶段求解。"""
     # parser是一个对象名
@@ -89,6 +97,11 @@ def main() -> None:
         "stage1": {
             "generations": result.stage1.generations,
             "used_feedback": result.stage1.used_feedback,
+            "selected_candidate_index": result.stage1.selected_candidate_index,
+            "selected_candidate_source": result.stage1.selected_candidate_source,
+            "selected_plan": [asdict(window) for window in result.stage1.selected_plan],
+            "baseline_summary": result.stage1.baseline_summary,
+            "baseline_trace": _baseline_trace_to_dict(result.stage1.baseline_trace),
             "best_feasible": [_candidate_to_dict(item) for item in result.stage1.best_feasible],
             "population_best": _candidate_to_dict(result.stage1.population_best) if result.stage1.population_best else None,
         },

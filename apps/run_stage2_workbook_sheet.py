@@ -11,7 +11,7 @@ from typing import Any
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from bs3.models import ScheduledWindow, Stage2Config
+from bs3.models import Allocation, ScheduledWindow, Stage1BaselineTrace, Stage2Config
 from bs3.scenario import load_scenario
 from bs3.stage1 import activation_count, gateway_count
 from bs3.stage2 import run_stage2
@@ -28,18 +28,21 @@ def _float(value: Any, default: float = 0.0) -> float:
     return float(value)
 
 
-def load_plan(stage1_result_path: Path, candidate_index: int = 0) -> list[ScheduledWindow]:
+def load_stage1_artifacts(stage1_result_path: Path, candidate_index: int = 0) -> tuple[list[ScheduledWindow], Stage1BaselineTrace | None]:
     payload = json.loads(stage1_result_path.read_text(encoding="utf-8"))
-    candidates = payload.get("best_feasible") or []
-    if not candidates:
-        raise ValueError(f"No best_feasible candidates found in {stage1_result_path}")
-    if candidate_index < 0 or candidate_index >= len(candidates):
-        raise IndexError(f"candidate_index {candidate_index} out of range for {stage1_result_path}")
-    candidate = candidates[candidate_index]
-    plan_rows = candidate.get("plan") or []
+    if "stage1" in payload and isinstance(payload["stage1"], dict):
+        payload = payload["stage1"]
+    plan_rows = payload.get("selected_plan") or []
     if not plan_rows:
-        raise ValueError(f"Candidate {candidate_index} in {stage1_result_path} does not include a plan")
-    return [
+        candidates = payload.get("best_feasible") or []
+        if not candidates:
+            raise ValueError(f"No selected_plan or best_feasible candidates found in {stage1_result_path}")
+        if candidate_index < 0 or candidate_index >= len(candidates):
+            raise IndexError(f"candidate_index {candidate_index} out of range for {stage1_result_path}")
+        plan_rows = candidates[candidate_index].get("plan") or []
+    if not plan_rows:
+        raise ValueError(f"No selected_plan found in {stage1_result_path}")
+    plan = [
         ScheduledWindow(
             window_id=str(item["window_id"]),
             a=str(item["a"]),
@@ -54,6 +57,73 @@ def load_plan(stage1_result_path: Path, candidate_index: int = 0) -> list[Schedu
         )
         for item in plan_rows
     ]
+    baseline_trace = None
+    baseline_trace_file = payload.get("baseline_trace_file")
+    baseline_trace_payload = payload.get("baseline_trace")
+    if baseline_trace_file:
+        trace_path = Path(baseline_trace_file)
+        if not trace_path.is_absolute():
+            trace_path = stage1_result_path.parent / trace_path
+        trace_payload = json.loads(trace_path.read_text(encoding="utf-8"))
+    else:
+        trace_payload = baseline_trace_payload
+    if isinstance(trace_payload, dict):
+        baseline_trace = Stage1BaselineTrace(
+            rho=float(trace_payload.get("rho", 0.0)),
+            segments=list(trace_payload.get("segments") or []),
+            allocations=[
+                Allocation(
+                    task_id=str(item["task_id"]),
+                    segment_index=int(item["segment_index"]),
+                    path_id=str(item["path_id"]),
+                    edge_ids=tuple(item.get("edge_ids") or ()),
+                    rate=float(item["rate"]),
+                    delivered=float(item["delivered"]),
+                    task_type=str(item["task_type"]),
+                    cross_window_id=item.get("cross_window_id"),
+                    is_preempted=bool(item.get("is_preempted", False)),
+                )
+                for item in (trace_payload.get("allocations") or [])
+            ],
+            task_states=list(trace_payload.get("task_states") or []),
+            window_states=list(trace_payload.get("window_states") or []),
+            remaining_before_by_segment={
+                str(task_id): {int(index): float(value) for index, value in values.items()}
+                for task_id, values in (trace_payload.get("remaining_before_by_segment") or {}).items()
+            },
+            remaining_after_by_segment={
+                str(task_id): {int(index): float(value) for index, value in values.items()}
+                for task_id, values in (trace_payload.get("remaining_after_by_segment") or {}).items()
+            },
+            remaining_end={str(task_id): float(value) for task_id, value in (trace_payload.get("remaining_end") or {}).items()},
+            completed={str(task_id): bool(value) for task_id, value in (trace_payload.get("completed") or {}).items()},
+            cross_window_usage_by_segment={
+                int(segment_index): {str(window_id): float(value) for window_id, value in usage.items()}
+                for segment_index, usage in (trace_payload.get("cross_window_usage_by_segment") or {}).items()
+            },
+            available_cross_capacity_by_segment={
+                int(segment_index): {str(window_id): float(value) for window_id, value in usage.items()}
+                for segment_index, usage in (trace_payload.get("available_cross_capacity_by_segment") or {}).items()
+            },
+            occupied_cross_windows_by_segment={
+                int(segment_index): list(window_ids)
+                for segment_index, window_ids in (trace_payload.get("occupied_cross_windows_by_segment") or {}).items()
+            },
+            active_cross_windows_by_segment={
+                int(segment_index): list(window_ids)
+                for segment_index, window_ids in (trace_payload.get("active_cross_windows_by_segment") or {}).items()
+            },
+            active_intra_edges_by_segment={
+                int(segment_index): {str(domain): list(edge_ids) for domain, edge_ids in values.items()}
+                for segment_index, values in (trace_payload.get("active_intra_edges_by_segment") or {}).items()
+            },
+            available_intra_capacity_by_segment={
+                int(segment_index): {str(edge_id): float(value) for edge_id, value in values.items()}
+                for segment_index, values in (trace_payload.get("available_intra_capacity_by_segment") or {}).items()
+            },
+            summary=dict(trace_payload.get("summary") or {}),
+        )
+    return plan, baseline_trace
 
 
 def build_scenario_payload(
@@ -182,12 +252,12 @@ def write_json(path: Path, payload: Any) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run stage2 on one workbook task sheet using a precomputed stage1 plan.")
+    parser = argparse.ArgumentParser(description="Run stage2 emergency insertion using stage1 selected_plan + baseline_trace.")
     parser.add_argument("--workbook", required=True, help="Path to task workbook (.xlsx)")
     parser.add_argument("--sheet", required=True, help="Workbook sheet name to run")
     parser.add_argument("--base-scenario", required=True, help="Scenario JSON to use as the topology/delay template")
-    parser.add_argument("--stage1-result", required=True, help="Stage1 result JSON containing best_feasible plan")
-    parser.add_argument("--candidate-index", type=int, default=0, help="Which best_feasible candidate plan to reuse")
+    parser.add_argument("--stage1-result", required=True, help="Stage1 result JSON containing selected_plan and baseline_trace_file")
+    parser.add_argument("--candidate-index", type=int, default=0, help="Fallback best_feasible candidate index when selected_plan is absent")
     parser.add_argument("--output-root", default=str(DEFAULT_OUTPUT_ROOT), help="Output directory root")
     parser.add_argument("--k-paths", type=int, default=None)
     args = parser.parse_args()
@@ -206,7 +276,7 @@ def main() -> None:
     workbook_rows = task_sets[args.sheet]
     tasks = [workbook_task_to_payload(row) for row in workbook_rows]
     stats = task_stats(tasks)
-    plan = load_plan(stage1_result_path, candidate_index=args.candidate_index)
+    plan, baseline_trace = load_stage1_artifacts(stage1_result_path, candidate_index=args.candidate_index)
     base_payload = json.loads(base_scenario_path.read_text(encoding="utf-8-sig"))
 
     scenario_payload = build_scenario_payload(base_payload, workbook_path, args.sheet, tasks, args)
@@ -216,7 +286,7 @@ def main() -> None:
     scenario_run_path = set_dir / f"{args.sheet}_stage2_scenario.json"
     write_json(scenario_run_path, scenario_payload)
     scenario = load_scenario(scenario_run_path)
-    result = run_stage2(scenario, plan)
+    result = run_stage2(scenario, plan=plan, baseline_trace=baseline_trace)
     metrics = summarize_result(scenario, result)
     payload = {
         "sheet": args.sheet,

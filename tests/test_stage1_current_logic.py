@@ -191,6 +191,11 @@ class Stage1CurrentLogicTests(unittest.TestCase):
         self.assertAlmostEqual(best.fr, 1.0)
         self.assertAlmostEqual(best.hotspot_coverage, 1.0)
         self.assertEqual(len(best.fitness), 4)
+        self.assertEqual(result.selected_candidate_index, 0)
+        self.assertEqual(result.selected_candidate_source, "best_feasible")
+        self.assertTrue(result.selected_plan)
+        self.assertIsNotNone(result.baseline_trace)
+        self.assertGreaterEqual(result.baseline_summary.get("allocation_count", 0), 1)
         self.assertFalse(hasattr(best, "f_reg"))
 
     def test_stage1_hotspot_coverage_remains_formal_feasibility_constraint(self) -> None:

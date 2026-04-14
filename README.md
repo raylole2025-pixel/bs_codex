@@ -2,15 +2,10 @@
 
 BS3 is a two-stage cross-domain scheduling project:
 
-- Stage 1 selects cross-domain windows and builds an activation plan.
-- Stage 2 now uses a two-step flow on top of the fixed Stage 1 plan:
-  1. offline regular-task baseline planning
-  2. online event-driven emergency insertion with local repair/preemption
+- Stage 1 selects cross-domain windows, fixes the activation plan `S*`, and exports the regular-task baseline state.
+- Stage 2 reads `selected_plan + baseline_trace` from Stage 1 and only performs online emergency insertion with controlled preemption when needed.
 
-Current Stage2-1 keeps both MILP variants:
-
-- `rolling` MILP
-- `full` MILP
+Legacy Stage2-1 hotspot-relief / closed-loop regular-load logic is retained only for reference and is no longer on the default execution path.
 
 ## Quick Start
 

@@ -4,7 +4,7 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass
 
-from .models import Allocation, PathCandidate, ScheduledWindow, Scenario, Segment, Stage2Result, Task
+from .models import Allocation, PathCandidate, ScheduledWindow, Scenario, Segment, Stage1BaselineTrace, Stage2Result, Task
 from .regular_routing_common import (
     build_regular_schedule_diagnostics,
     empty_repair_metadata,
@@ -86,7 +86,56 @@ class TwoPhaseEventDrivenScheduler:
         emergencies.sort(key=lambda task: (task.arrival, -task.weight, task.deadline, task.task_id))
         return emergencies
 
-    def run(self, plan: list[ScheduledWindow]) -> Stage2Result:
+    def _resolve_baseline_trace(
+        self,
+        plan: list[ScheduledWindow],
+        baseline_trace: Stage1BaselineTrace | None,
+    ) -> tuple[Stage1BaselineTrace, str]:
+        if baseline_trace is not None:
+            return baseline_trace, "stage1_result"
+
+        from .stage1 import RegularEvaluator
+
+        return RegularEvaluator(self.scenario).baseline_trace(plan, rho=self.scenario.stage1.rho), "reconstructed_from_stage1"
+
+    def _segments_from_baseline_trace(self, baseline_trace: Stage1BaselineTrace, plan: list[ScheduledWindow]) -> list[Segment]:
+        rows = sorted(
+            (dict(row) for row in baseline_trace.segments),
+            key=lambda row: (float(row["start"]), float(row["end"]), int(row["segment_index"])),
+        )
+        if rows:
+            return [
+                Segment(
+                    index=int(row["segment_index"]),
+                    start=float(row["start"]),
+                    end=float(row["end"]),
+                )
+                for row in rows
+            ]
+        regular_tasks = [task for task in self.scenario.tasks if task.task_type == "reg"]
+        return build_segments(self.scenario, plan, regular_tasks)
+
+    def _schedule_from_baseline_trace(
+        self,
+        baseline_trace: Stage1BaselineTrace,
+    ) -> dict[tuple[str, int], Allocation]:
+        schedule: dict[tuple[str, int], Allocation] = {}
+        for item in baseline_trace.allocations:
+            alloc = Allocation(
+                task_id=item.task_id,
+                segment_index=int(item.segment_index),
+                path_id=item.path_id,
+                edge_ids=tuple(item.edge_ids),
+                rate=float(item.rate),
+                delivered=float(item.delivered),
+                task_type=item.task_type,
+                cross_window_id=item.cross_window_id,
+                is_preempted=bool(item.is_preempted),
+            )
+            schedule[(alloc.task_id, alloc.segment_index)] = alloc
+        return schedule
+
+    def run(self, plan: list[ScheduledWindow], baseline_trace: Stage1BaselineTrace | None = None) -> Stage2Result:
         started_at = time.perf_counter()
         self._hotspot_relief_active = False
         self._hotspot_relief_metadata = {}
@@ -94,67 +143,15 @@ class TwoPhaseEventDrivenScheduler:
         regular_tasks = [task for task in self.scenario.tasks if task.task_type == "reg"]
         self.scenario.metadata["stage2_rolling_window_profiles"] = []
         self.scenario.metadata.pop("stage2_segment_compression_result", None)
-        segments = build_segments(self.scenario, plan, regular_tasks)
+        baseline_trace, baseline_source = self._resolve_baseline_trace(plan, baseline_trace)
+        segments = self._segments_from_baseline_trace(baseline_trace, plan)
         raw_event_segment_count = len(segments)
-        hotspot_requested = bool(self.scenario.stage2.hotspot_relief_enabled) and bool(
-            getattr(self.scenario.stage2, "closed_loop_relief_enabled", True)
-        )
-        if self._segment_compression_enabled() and not hotspot_requested:
-            segments, compression_result = compress_segments(self.scenario, plan, segments, regular_tasks)
-            self.scenario.metadata["stage2_segment_compression_result"] = compression_result
-        elif self._segment_compression_enabled() and hotspot_requested:
-            self.scenario.metadata["stage2_segment_compression_result"] = {
-                "event_segment_compression_disabled_for_hotspot_relief": True,
-                "event_segment_count_raw": raw_event_segment_count,
-                "event_segment_count_compressed": raw_event_segment_count,
-                "event_segment_compression_ratio": 1.0,
-            }
         effective_event_segment_count = len(segments)
-        baseline_mode = resolve_regular_baseline_mode(self.scenario.stage2)
-        if hotspot_requested:
-            self._validate_hotspot_relief_mode(baseline_mode)
-        baseline_schedule, baseline_completed, baseline_context = self._build_regular_baseline(plan, segments, baseline_mode)
+        baseline_schedule = self._schedule_from_baseline_trace(baseline_trace)
+        baseline_completed = dict(baseline_trace.completed)
+        self._last_regular_baseline_mode = "stage1_baseline"
+        self._last_regular_baseline_source = "stage1_baseline"
         repair_metadata = empty_repair_metadata(baseline_completed)
-        repair_metadata["regular_repair_enabled"] = is_regular_repair_enabled(self.scenario.stage2, baseline_mode)
-        if baseline_mode == "stage1_greedy_repair" and repair_metadata["regular_repair_enabled"]:
-            baseline_schedule, repair_metadata = repair_regular_baseline_blocks(
-                scenario=self.scenario,
-                plan=plan,
-                segments=segments,
-                baseline_schedule=baseline_schedule,
-                baseline_diag=baseline_context["diagnostics"],
-            )
-            baseline_completed = dict(repair_metadata.get("diagnostics_after", baseline_context["diagnostics"]).get("completed", baseline_completed))
-            baseline_context["diagnostics"] = repair_metadata.get("diagnostics_after", baseline_context["diagnostics"])
-        baseline_diag = baseline_context.get("diagnostics")
-        if not isinstance(baseline_diag, dict):
-            baseline_diag = build_regular_schedule_diagnostics(self.scenario, plan, segments, baseline_schedule)
-            baseline_context["diagnostics"] = baseline_diag
-        if hotspot_requested:
-            hotspot_result = run_hotspot_relief(
-                scenario=self.scenario,
-                plan=plan,
-                segments=segments,
-                baseline_schedule=baseline_schedule,
-                baseline_diagnostics=baseline_diag,
-            )
-            plan = hotspot_result.plan
-            segments = hotspot_result.segments
-            effective_event_segment_count = len(segments)
-            baseline_schedule = hotspot_result.schedule
-            baseline_diag = hotspot_result.diagnostics
-            baseline_context["diagnostics"] = baseline_diag
-            baseline_completed = dict(baseline_diag.get("completed", baseline_completed))
-            self._hotspot_relief_metadata = dict(hotspot_result.metadata)
-            self._hotspot_relief_report = dict(hotspot_result.report)
-            self._hotspot_relief_active = bool(self._hotspot_relief_metadata.get("hot_ranges_considered", 0))
-        self._last_regular_baseline_mode = baseline_mode
-        if baseline_mode in {"rolling_milp", "full_milp"}:
-            self._last_regular_baseline_source = baseline_mode
-        elif repair_metadata["regular_repair_enabled"] and baseline_mode == "stage1_greedy_repair":
-            self._last_regular_baseline_source = "stage1_greedy_repair"
-        else:
-            self._last_regular_baseline_source = "stage1_greedy"
         committed: dict[tuple[str, int], Allocation] = dict(baseline_schedule)
         actual_remaining = {task.task_id: float(task.data) for task in self.scenario.tasks}
         prev_cross_link = {task.task_id: None for task in self.scenario.tasks}
@@ -162,6 +159,7 @@ class TwoPhaseEventDrivenScheduler:
         allocations: list[Allocation] = []
         edge_usage = defaultdict(float)
         n_preemptions = 0
+        insertion_events: list[dict[str, object]] = []
 
         cross_denominator = 0.0
         all_denominator = 0.0
@@ -190,6 +188,7 @@ class TwoPhaseEventDrivenScheduler:
                         committed,
                     )
                 segment = segments[seg_idx]
+                preemptions_before = n_preemptions
                 n_preemptions += self._insert_emergency_task(
                     emergency=emergency,
                     plan=plan,
@@ -198,6 +197,17 @@ class TwoPhaseEventDrivenScheduler:
                     committed=committed,
                     actual_remaining=actual_remaining,
                     prev_cross_link=prev_cross_link,
+                )
+                insertion_events.append(
+                    {
+                        "task_id": emergency.task_id,
+                        "arrival": float(emergency.arrival),
+                        "deadline": float(emergency.deadline),
+                        "data": float(emergency.data),
+                        "weight": float(emergency.weight),
+                        "segment_index": int(segment.index),
+                        "preemptions_added": int(n_preemptions - preemptions_before),
+                    }
                 )
 
             segment = segments[seg_idx]
@@ -251,6 +261,7 @@ class TwoPhaseEventDrivenScheduler:
                     rate=rate,
                     delivered=delivered,
                     task_type=alloc.task_type,
+                    cross_window_id=alloc.cross_window_id,
                     is_preempted=alloc.is_preempted,
                 )
                 allocations.append(executed)
@@ -270,6 +281,21 @@ class TwoPhaseEventDrivenScheduler:
         cr_emg = self._weighted_true_completion("emg", actual_remaining)
         u_cross = sum(usage for edge_id, usage in edge_usage.items() if edge_id in cross_edge_ids) / cross_denominator if cross_denominator > self.numeric_tolerance else 0.0
         u_all = sum(edge_usage.values()) / all_denominator if all_denominator > self.numeric_tolerance else 0.0
+        baseline_completed_count = sum(1 for done in baseline_completed.values() if done)
+        final_regular_remaining = {
+            task.task_id: float(actual_remaining.get(task.task_id, 0.0))
+            for task in regular_tasks
+        }
+        final_regular_completed = {
+            task.task_id: bool(self._is_task_complete(task, final_regular_remaining[task.task_id]))
+            for task in regular_tasks
+        }
+        final_completed_count = sum(1 for done in final_regular_completed.values() if done)
+        degraded_regular_tasks = sorted(
+            task_id
+            for task_id, done in baseline_completed.items()
+            if done and not final_regular_completed.get(task_id, False)
+        )
         metadata = self._build_result_metadata(
             event_segment_count=effective_event_segment_count,
             event_segment_count_raw=raw_event_segment_count,
@@ -277,6 +303,19 @@ class TwoPhaseEventDrivenScheduler:
             elapsed_seconds=time.perf_counter() - started_at,
             repair_metadata=repair_metadata,
             plan_window_count=len(plan),
+        )
+        metadata.update(
+            {
+                "baseline_source": baseline_source,
+                "baseline_summary": dict(baseline_trace.summary),
+                "baseline_completed_count": int(baseline_completed_count),
+                "final_regular_completed_count": int(final_completed_count),
+                "regular_tasks_degraded_by_emergency": degraded_regular_tasks,
+                "regular_remaining_end": final_regular_remaining,
+                "emergency_insertions": insertion_events,
+                "legacy_hotspot_relief_skipped": True,
+                "legacy_regular_repair_skipped": True,
+            }
         )
 
         return Stage2Result(
@@ -345,6 +384,7 @@ class TwoPhaseEventDrivenScheduler:
                     rate=alloc.rate,
                     delivered=alloc.delivered,
                     task_type=alloc.task_type,
+                    cross_window_id=alloc.cross_window_id,
                     is_preempted=alloc.is_preempted,
                 )
                 continue
@@ -377,6 +417,7 @@ class TwoPhaseEventDrivenScheduler:
                     rate=alloc.rate,
                     delivered=first_delivered,
                     task_type=alloc.task_type,
+                    cross_window_id=alloc.cross_window_id,
                     is_preempted=alloc.is_preempted,
                 )
             )
@@ -390,6 +431,7 @@ class TwoPhaseEventDrivenScheduler:
                     rate=alloc.rate,
                     delivered=second_delivered,
                     task_type=alloc.task_type,
+                    cross_window_id=alloc.cross_window_id,
                     is_preempted=alloc.is_preempted,
                 )
             )
@@ -418,17 +460,7 @@ class TwoPhaseEventDrivenScheduler:
         return schedule, completed, {}
 
     def _solver_mode_label(self) -> str:
-        if self._last_regular_baseline_source == "rolling_milp":
-            label = "two_phase_event_insert+joint_milp_rolling"
-        elif self._last_regular_baseline_source == "full_milp":
-            label = "two_phase_event_insert+joint_milp_full"
-        elif self._last_regular_baseline_source == "stage1_greedy_repair":
-            label = "two_phase_event_insert+stage1_greedy_repair"
-        else:
-            label = "two_phase_event_insert+stage1_greedy"
-        if self._hotspot_relief_active:
-            return f"{label}+hotspot_relief_local_peak_milp"
-        return label
+        return "stage2_emergency_insert"
 
     def _validate_hotspot_relief_mode(self, baseline_mode: str) -> None:
         if not bool(self.scenario.stage2.hotspot_relief_enabled):
@@ -450,27 +482,22 @@ class TwoPhaseEventDrivenScheduler:
         plan_window_count: int,
     ) -> dict[str, float | int | bool | None | str]:
         metadata: dict[str, float | int | bool | None | str | list | dict] = {
-            "regular_baseline_mode": self._last_regular_baseline_mode,
-            "regular_baseline_source": self._last_regular_baseline_source,
+            "stage2_role": "emergency_event_insert_only",
+            "regular_baseline_mode": "stage1_baseline",
+            "regular_baseline_source": "stage1_baseline",
             "solver_mode": self._solver_mode_label(),
-            "prefer_milp": bool(self.scenario.stage2.prefer_milp),
-            "milp_mode": (
-                "rolling"
-                if self._last_regular_baseline_source == "rolling_milp"
-                else "full"
-                if self._last_regular_baseline_source == "full_milp"
-                else str(self.scenario.stage2.milp_mode)
-            ),
-            "milp_horizon_segments": int(self.scenario.stage2.milp_horizon_segments),
-            "milp_commit_segments": int(self.scenario.stage2.milp_commit_segments),
-            "milp_rolling_path_limit": int(self.scenario.stage2.milp_rolling_path_limit),
-            "milp_rolling_high_path_limit": int(self.scenario.stage2.milp_rolling_high_path_limit),
-            "milp_rolling_promoted_tasks_per_segment": int(self.scenario.stage2.milp_rolling_promoted_tasks_per_segment),
-            "milp_time_limit_seconds": self.scenario.stage2.milp_time_limit_seconds,
-            "milp_relative_gap": self.scenario.stage2.milp_relative_gap,
-            "hotspot_relief_enabled": bool(self.scenario.stage2.hotspot_relief_enabled),
-            "closed_loop_relief_enabled": bool(getattr(self.scenario.stage2, "closed_loop_relief_enabled", True)),
-            "regular_repair_enabled": bool(repair_metadata.get("regular_repair_enabled", False)),
+            "prefer_milp": False,
+            "milp_mode": None,
+            "milp_horizon_segments": None,
+            "milp_commit_segments": None,
+            "milp_rolling_path_limit": None,
+            "milp_rolling_high_path_limit": None,
+            "milp_rolling_promoted_tasks_per_segment": None,
+            "milp_time_limit_seconds": None,
+            "milp_relative_gap": None,
+            "hotspot_relief_enabled": False,
+            "closed_loop_relief_enabled": False,
+            "regular_repair_enabled": False,
             "repair_block_count_considered": int(repair_metadata.get("repair_block_count_considered", 0)),
             "repair_block_count_accepted": int(repair_metadata.get("repair_block_count_accepted", 0)),
             "repair_total_improvement_peak": float(repair_metadata.get("repair_total_improvement_peak", 0.0)),
@@ -483,10 +510,6 @@ class TwoPhaseEventDrivenScheduler:
             "plan_window_count": int(plan_window_count),
             "elapsed_seconds": float(elapsed_seconds),
         }
-        if self._hotspot_relief_metadata:
-            metadata.update(dict(self._hotspot_relief_metadata))
-        if self._hotspot_relief_report:
-            metadata["hotspot_report"] = dict(self._hotspot_relief_report)
         compression_result = self.scenario.metadata.get("stage2_segment_compression_result")
         if isinstance(compression_result, dict):
             metadata.update(dict(compression_result))
@@ -531,6 +554,7 @@ class TwoPhaseEventDrivenScheduler:
                     rate=action.rate,
                     delivered=action.delivered,
                     task_type=task.task_type,
+                    cross_window_id=action.path.cross_window_id,
                 )
                 schedule[(task.task_id, action.segment_index)] = alloc
                 self._apply_action_to_capacity(capacity_states, action, task.task_type)
@@ -984,6 +1008,7 @@ class TwoPhaseEventDrivenScheduler:
                     rate=action.rate,
                     delivered=action.delivered,
                     task_type=task.task_type,
+                    cross_window_id=action.path.cross_window_id,
                 )
 
     def _candidate_corridor(
@@ -1099,6 +1124,10 @@ class TwoPhaseEventDrivenScheduler:
         return None
 
 
-def run_stage2_two_phase_event_insert(scenario: Scenario, plan: list[ScheduledWindow]) -> Stage2Result:
-    return TwoPhaseEventDrivenScheduler(scenario).run(plan)
+def run_stage2_two_phase_event_insert(
+    scenario: Scenario,
+    plan: list[ScheduledWindow],
+    baseline_trace: Stage1BaselineTrace | None = None,
+) -> Stage2Result:
+    return TwoPhaseEventDrivenScheduler(scenario).run(plan, baseline_trace=baseline_trace)
 
