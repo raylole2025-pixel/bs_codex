@@ -1,0 +1,103 @@
+{
+  "experiment_name": "r5_w2",
+  "scenario_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_scenario_weighted.json",
+  "stage1_result_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_stage1_result.json",
+  "baseline_source": "stage1_greedy_repair",
+  "solver_mode": "two_phase_event_insert+stage1_greedy_repair+hotspot_relief_local_peak_milp",
+  "closed_loop_enabled": true,
+  "closed_loop_rounds_completed": 2,
+  "closed_loop_actions_accepted": 1,
+  "closed_loop_new_windows_added": 1,
+  "closed_loop_stop_reason": "no_acceptable_action",
+  "closed_loop_new_window_hard_cap": 2,
+  "closed_loop_new_window_hard_cap_limiter": "both",
+  "closed_loop_new_window_hard_cap_components": {
+    "closed_loop_max_new_windows": 2,
+    "augment_window_budget": 2,
+    "effective_hard_cap": 2,
+    "effective_hard_cap_limiter": "both"
+  },
+  "accepted_action_sequence": [
+    {
+      "round_index": 1,
+      "action_type": "augment",
+      "range_id": "hot_range_16",
+      "window_id": "X002479"
+    }
+  ],
+  "q_peak_before": 1.0000000000000002,
+  "q_peak_after": 1.0000000000000002,
+  "q_integral_before": 32159.026793375,
+  "q_integral_after": 31350.984064456876,
+  "high_segment_count_before": 290,
+  "high_segment_count_after": 261,
+  "cr_reg_before": 1.0,
+  "cr_reg_after": 1.0,
+  "elapsed_seconds": 182.09265990008134,
+  "round_summaries": [
+    {
+      "round_index": 1,
+      "hot_range_ids": [
+        "hot_range_22",
+        "hot_range_7",
+        "hot_range_24",
+        "hot_range_16",
+        "hot_range_20"
+      ],
+      "chosen_action": {
+        "action_type": "augment",
+        "range_id": "hot_range_16",
+        "window_id": "X002479"
+      },
+      "q_peak_before": 1.0000000000000002,
+      "q_peak_after": 1.0000000000000002,
+      "q_peak_delta": 0.0,
+      "q_integral_before": 32159.026793375,
+      "q_integral_after": 31350.984064456876,
+      "q_integral_delta": 808.0427289181243,
+      "high_segment_count_before": 290,
+      "high_segment_count_after": 261,
+      "high_segment_count_delta": 29
+    },
+    {
+      "round_index": 2,
+      "hot_range_ids": [
+        "hot_range_21",
+        "hot_range_7",
+        "hot_range_23",
+        "hot_range_19",
+        "hot_range_15"
+      ],
+      "chosen_action": {
+        "action_type": null,
+        "range_id": null,
+        "window_id": null
+      },
+      "q_peak_before": 1.0000000000000002,
+      "q_peak_after": 1.0000000000000002,
+      "q_peak_delta": 0.0,
+      "q_integral_before": 31350.984064456876,
+      "q_integral_after": 31350.984064456876,
+      "q_integral_delta": 0.0,
+      "high_segment_count_before": 261,
+      "high_segment_count_after": 261,
+      "high_segment_count_delta": 0
+    }
+  ],
+  "validation_checks": {
+    "single_action_per_round": true,
+    "round_recompute_chain_is_consistent": true,
+    "range_head_changes": [
+      {
+        "from_round": 1,
+        "to_round": 2,
+        "previous_top_range_id": "hot_range_22",
+        "current_top_range_id": "hot_range_21",
+        "changed": true
+      }
+    ]
+  },
+  "configured_closed_loop_max_rounds": 5,
+  "configured_closed_loop_max_new_windows": 2,
+  "configured_augment_window_budget": 2
+}
