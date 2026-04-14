@@ -13,6 +13,7 @@ from .stage2_hotspot_relief import (
     _base_range_report,
     _build_hot_range_alternative_diagnostics,
     _closed_loop_action_mode,
+    _closed_loop_hard_window_cap_details,
     _closed_loop_hard_window_cap,
     _closed_loop_metrics,
     _closed_loop_topk_ranges_per_round,
@@ -75,6 +76,7 @@ def run_hotspot_relief_closed_loop(
     stop_reason = "not_started"
     max_rounds = max(int(getattr(scenario.stage2, "closed_loop_max_rounds", 0)), 0)
     hard_new_window_cap = _closed_loop_hard_window_cap(scenario)
+    hard_window_cap_details = _closed_loop_hard_window_cap_details(scenario)
     new_windows_added = 0
 
     while True:
@@ -461,6 +463,9 @@ def run_hotspot_relief_closed_loop(
         "closed_loop_actions_accepted": len(closed_loop_actions),
         "closed_loop_actions_considered": sum(len(item["evaluated_actions"]) for item in round_reports),
         "closed_loop_new_windows_added": int(new_windows_added),
+        "closed_loop_new_window_hard_cap": int(hard_window_cap_details["effective_hard_cap"]),
+        "closed_loop_new_window_hard_cap_limiter": str(hard_window_cap_details["effective_hard_cap_limiter"]),
+        "closed_loop_new_window_hard_cap_components": dict(hard_window_cap_details),
         "closed_loop_stop_reason": stop_reason,
         "structural_hot_range_count": int(initial_structural_hot_range_count),
         "reroutable_hot_range_count": int(initial_reroutable_hot_range_count),
@@ -514,6 +519,9 @@ def run_hotspot_relief_closed_loop(
         "structural_repair_gate_enabled": _structural_repair_gate_enabled(scenario),
         "released_provisional_augment_windows": [],
         "reallocated_augment_windows_after_release": [],
+        "closed_loop_new_window_hard_cap": int(hard_window_cap_details["effective_hard_cap"]),
+        "closed_loop_new_window_hard_cap_limiter": str(hard_window_cap_details["effective_hard_cap_limiter"]),
+        "closed_loop_new_window_hard_cap_components": dict(hard_window_cap_details),
         "augment_funnel_stage_meanings": dict(_AUGMENT_FUNNEL_STAGE_MEANINGS),
         "structural_hotspot_starvation": [],
         "stage1_peak_rescore_hook": stage1_peak_rescore_hook,
