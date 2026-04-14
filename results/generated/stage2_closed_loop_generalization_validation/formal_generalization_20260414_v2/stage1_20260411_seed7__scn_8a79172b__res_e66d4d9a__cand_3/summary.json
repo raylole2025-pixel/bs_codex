@@ -1,0 +1,225 @@
+{
+  "case_name": "stage1_20260411_seed7__scn_8a79172b__res_e66d4d9a__cand_3",
+  "scenario_hash": "8a79172b",
+  "stage1_hash": "e66d4d9a",
+  "stage1_run_token": "stage1_20260411_seed7",
+  "scenario_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_scenario_weighted.json",
+  "stage1_result_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_stage1_result.json",
+  "candidate_index": 3,
+  "scenario_compat": {
+    "source_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_scenario_weighted.json",
+    "sanitized_copy_path": null,
+    "removed_stage1_fields": [],
+    "removed_stage2_fields": []
+  },
+  "baseline_control": {
+    "experiment_name": "baseline_control",
+    "scenario_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_scenario_weighted.json",
+    "stage1_result_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_stage1_result.json",
+    "baseline_source": "stage1_greedy_repair",
+    "solver_mode": "two_phase_event_insert+stage1_greedy_repair",
+    "closed_loop_enabled": false,
+    "closed_loop_rounds_completed": 0,
+    "closed_loop_actions_accepted": 0,
+    "closed_loop_new_windows_added": 0,
+    "closed_loop_stop_reason": "closed_loop_disabled",
+    "closed_loop_new_window_hard_cap": 2,
+    "closed_loop_new_window_hard_cap_limiter": "both",
+    "closed_loop_new_window_hard_cap_components": {
+      "closed_loop_max_new_windows": 2,
+      "augment_window_budget": 2,
+      "effective_hard_cap": 2,
+      "effective_hard_cap_limiter": "both"
+    },
+    "accepted_action_sequence": [],
+    "q_peak_before": 1.0000000000000002,
+    "q_peak_after": 1.0000000000000002,
+    "q_integral_before": 32147.060694375,
+    "q_integral_after": 32147.060694375,
+    "high_segment_count_before": 291,
+    "high_segment_count_after": 291,
+    "cr_reg_before": 1.0,
+    "cr_reg_after": 1.0,
+    "elapsed_seconds": 12.950646900106221,
+    "round_summaries": [],
+    "validation_checks": {
+      "single_action_per_round": true,
+      "round_recompute_chain_is_consistent": true,
+      "range_head_changes": [],
+      "baseline_hot_range_ids": [
+        "hot_range_21",
+        "hot_range_11",
+        "hot_range_7",
+        "hot_range_23",
+        "hot_range_15"
+      ]
+    },
+    "config": {
+      "hotspot_topk_ranges": 5,
+      "closed_loop_topk_ranges_per_round": 5,
+      "closed_loop_topk_candidates_per_range": 3
+    }
+  },
+  "closed_loop": {
+    "experiment_name": "closed_loop",
+    "scenario_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_scenario_weighted.json",
+    "stage1_result_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\stage1_20260411_seed7\\normal72x_v2_regular_tasks_adjusted_stage1_result.json",
+    "baseline_source": "stage1_greedy_repair",
+    "solver_mode": "two_phase_event_insert+stage1_greedy_repair+hotspot_relief_local_peak_milp",
+    "closed_loop_enabled": true,
+    "closed_loop_rounds_completed": 2,
+    "closed_loop_actions_accepted": 1,
+    "closed_loop_new_windows_added": 1,
+    "closed_loop_stop_reason": "no_acceptable_action",
+    "closed_loop_new_window_hard_cap": 2,
+    "closed_loop_new_window_hard_cap_limiter": "both",
+    "closed_loop_new_window_hard_cap_components": {
+      "closed_loop_max_new_windows": 2,
+      "augment_window_budget": 2,
+      "effective_hard_cap": 2,
+      "effective_hard_cap_limiter": "both"
+    },
+    "accepted_action_sequence": [
+      {
+        "round_index": 1,
+        "action_type": "augment",
+        "range_id": "hot_range_15",
+        "window_id": "X002479"
+      }
+    ],
+    "q_peak_before": 1.0000000000000002,
+    "q_peak_after": 1.0000000000000002,
+    "q_integral_before": 32147.060694375,
+    "q_integral_after": 31339.017965456875,
+    "high_segment_count_before": 291,
+    "high_segment_count_after": 262,
+    "cr_reg_before": 1.0,
+    "cr_reg_after": 1.0,
+    "elapsed_seconds": 181.88938429998234,
+    "round_summaries": [
+      {
+        "round_index": 1,
+        "hot_range_ids": [
+          "hot_range_21",
+          "hot_range_11",
+          "hot_range_7",
+          "hot_range_23",
+          "hot_range_15"
+        ],
+        "chosen_action": {
+          "action_type": "augment",
+          "range_id": "hot_range_15",
+          "window_id": "X002479"
+        },
+        "q_peak_before": 1.0000000000000002,
+        "q_peak_after": 1.0000000000000002,
+        "q_peak_delta": 0.0,
+        "q_integral_before": 32147.060694375,
+        "q_integral_after": 31339.017965456875,
+        "q_integral_delta": 808.0427289181243,
+        "high_segment_count_before": 291,
+        "high_segment_count_after": 262,
+        "high_segment_count_delta": 29
+      },
+      {
+        "round_index": 2,
+        "hot_range_ids": [
+          "hot_range_20",
+          "hot_range_11",
+          "hot_range_7",
+          "hot_range_22",
+          "hot_range_18"
+        ],
+        "chosen_action": {
+          "action_type": null,
+          "range_id": null,
+          "window_id": null
+        },
+        "q_peak_before": 1.0000000000000002,
+        "q_peak_after": 1.0000000000000002,
+        "q_peak_delta": 0.0,
+        "q_integral_before": 31339.017965456875,
+        "q_integral_after": 31339.017965456875,
+        "q_integral_delta": 0.0,
+        "high_segment_count_before": 262,
+        "high_segment_count_after": 262,
+        "high_segment_count_delta": 0
+      }
+    ],
+    "validation_checks": {
+      "single_action_per_round": true,
+      "round_recompute_chain_is_consistent": true,
+      "range_head_changes": [
+        {
+          "from_round": 1,
+          "to_round": 2,
+          "previous_top_range_id": "hot_range_21",
+          "current_top_range_id": "hot_range_20",
+          "changed": true
+        }
+      ]
+    },
+    "config": {
+      "hotspot_topk_ranges": 5,
+      "closed_loop_topk_ranges_per_round": 5,
+      "closed_loop_topk_candidates_per_range": 3
+    }
+  },
+  "improvement_vs_baseline": {
+    "q_peak_delta_vs_baseline": 0.0,
+    "q_integral_delta_vs_baseline": 808.0427289181243,
+    "high_segment_count_delta_vs_baseline": 29,
+    "improves_any_load_metric_vs_baseline": true
+  },
+  "coverage_diagnostics": {
+    "baseline_hot_range_count_full": 23,
+    "configured_hotspot_topk_ranges": 5,
+    "configured_closed_loop_topk_candidates_per_range": 3,
+    "range_topk_truncation_possible": true,
+    "structural_candidate_limit_hit": true,
+    "structural_candidate_limit_hit_rounds": [
+      1,
+      2
+    ],
+    "structural_candidate_limit_hits": [
+      {
+        "round_index": 1,
+        "range_id": "hot_range_11",
+        "relief_path_ready_count": 211,
+        "candidate_limit": 3
+      },
+      {
+        "round_index": 1,
+        "range_id": "hot_range_7",
+        "relief_path_ready_count": 130,
+        "candidate_limit": 3
+      },
+      {
+        "round_index": 1,
+        "range_id": "hot_range_15",
+        "relief_path_ready_count": 526,
+        "candidate_limit": 3
+      },
+      {
+        "round_index": 2,
+        "range_id": "hot_range_11",
+        "relief_path_ready_count": 211,
+        "candidate_limit": 3
+      },
+      {
+        "round_index": 2,
+        "range_id": "hot_range_7",
+        "relief_path_ready_count": 130,
+        "candidate_limit": 3
+      },
+      {
+        "round_index": 2,
+        "range_id": "hot_range_18",
+        "relief_path_ready_count": 460,
+        "candidate_limit": 3
+      }
+    ],
+    "head_reordered_after_first_acceptance": true
+  },
+  "first_round_single_action_saturation": true
+}

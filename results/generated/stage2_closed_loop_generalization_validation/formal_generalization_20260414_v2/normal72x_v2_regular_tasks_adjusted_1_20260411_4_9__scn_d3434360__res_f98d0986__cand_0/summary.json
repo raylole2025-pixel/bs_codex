@@ -1,0 +1,211 @@
+{
+  "case_name": "normal72x_v2_regular_tasks_adjusted_1_20260411_4_9__scn_d3434360__res_f98d0986__cand_0",
+  "scenario_hash": "d3434360",
+  "stage1_hash": "f98d0986",
+  "stage1_run_token": "normal72x_v2_regular_tasks_adjusted_1_20260411_4_9",
+  "scenario_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\normal72x_v2_regular_tasks_adjusted_阶段1结果_20260411_按4.9整理\\normal72x_v2_regular_tasks_adjusted_scenario_weighted.json",
+  "stage1_result_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\normal72x_v2_regular_tasks_adjusted_阶段1结果_20260411_按4.9整理\\normal72x_v2_regular_tasks_adjusted_stage1_result.json",
+  "candidate_index": 0,
+  "scenario_compat": {
+    "source_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\normal72x_v2_regular_tasks_adjusted_阶段1结果_20260411_按4.9整理\\normal72x_v2_regular_tasks_adjusted_scenario_weighted.json",
+    "sanitized_copy_path": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_closed_loop_generalization_validation\\formal_generalization_20260414_v2\\normal72x_v2_regular_tasks_adjusted_1_20260411_4_9__scn_d3434360__res_f98d0986__cand_0\\source_scenario_sanitized.json",
+    "removed_stage1_fields": [
+      "omega_sr",
+      "theta_c",
+      "theta_sr"
+    ],
+    "removed_stage2_fields": []
+  },
+  "baseline_control": {
+    "experiment_name": "baseline_control",
+    "scenario_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\normal72x_v2_regular_tasks_adjusted_阶段1结果_20260411_按4.9整理\\normal72x_v2_regular_tasks_adjusted_scenario_weighted.json",
+    "stage1_result_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\normal72x_v2_regular_tasks_adjusted_阶段1结果_20260411_按4.9整理\\normal72x_v2_regular_tasks_adjusted_stage1_result.json",
+    "baseline_source": "stage1_greedy_repair",
+    "solver_mode": "two_phase_event_insert+stage1_greedy_repair",
+    "closed_loop_enabled": false,
+    "closed_loop_rounds_completed": 0,
+    "closed_loop_actions_accepted": 0,
+    "closed_loop_new_windows_added": 0,
+    "closed_loop_stop_reason": "closed_loop_disabled",
+    "closed_loop_new_window_hard_cap": 2,
+    "closed_loop_new_window_hard_cap_limiter": "both",
+    "closed_loop_new_window_hard_cap_components": {
+      "closed_loop_max_new_windows": 2,
+      "augment_window_budget": 2,
+      "effective_hard_cap": 2,
+      "effective_hard_cap_limiter": "both"
+    },
+    "accepted_action_sequence": [],
+    "q_peak_before": 1.0000000000000002,
+    "q_peak_after": 1.0000000000000002,
+    "q_integral_before": 29317.318595500004,
+    "q_integral_after": 29317.318595500004,
+    "high_segment_count_before": 243,
+    "high_segment_count_after": 243,
+    "cr_reg_before": 0.9466666666666667,
+    "cr_reg_after": 0.9466666666666667,
+    "elapsed_seconds": 10.536971700028516,
+    "round_summaries": [],
+    "validation_checks": {
+      "single_action_per_round": true,
+      "round_recompute_chain_is_consistent": true,
+      "range_head_changes": [],
+      "baseline_hot_range_ids": [
+        "hot_range_2",
+        "hot_range_13",
+        "hot_range_6",
+        "hot_range_10",
+        "hot_range_1"
+      ]
+    },
+    "config": {
+      "hotspot_topk_ranges": 5,
+      "closed_loop_topk_ranges_per_round": 5,
+      "closed_loop_topk_candidates_per_range": 3
+    }
+  },
+  "closed_loop": {
+    "experiment_name": "closed_loop",
+    "scenario_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\normal72x_v2_regular_tasks_adjusted_阶段1结果_20260411_按4.9整理\\normal72x_v2_regular_tasks_adjusted_scenario_weighted.json",
+    "stage1_result_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\normal72x_v2_regular_tasks_adjusted_阶段1结果_20260411_按4.9整理\\normal72x_v2_regular_tasks_adjusted_stage1_result.json",
+    "baseline_source": "stage1_greedy_repair",
+    "solver_mode": "two_phase_event_insert+stage1_greedy_repair+hotspot_relief_local_peak_milp",
+    "closed_loop_enabled": true,
+    "closed_loop_rounds_completed": 2,
+    "closed_loop_actions_accepted": 1,
+    "closed_loop_new_windows_added": 1,
+    "closed_loop_stop_reason": "no_acceptable_action",
+    "closed_loop_new_window_hard_cap": 2,
+    "closed_loop_new_window_hard_cap_limiter": "both",
+    "closed_loop_new_window_hard_cap_components": {
+      "closed_loop_max_new_windows": 2,
+      "augment_window_budget": 2,
+      "effective_hard_cap": 2,
+      "effective_hard_cap_limiter": "both"
+    },
+    "accepted_action_sequence": [
+      {
+        "round_index": 1,
+        "action_type": "augment",
+        "range_id": "hot_range_10",
+        "window_id": "X011840"
+      }
+    ],
+    "q_peak_before": 1.0000000000000002,
+    "q_peak_after": 1.0000000000000002,
+    "q_integral_before": 29317.318595500004,
+    "q_integral_after": 27567.696668325003,
+    "high_segment_count_before": 243,
+    "high_segment_count_after": 187,
+    "cr_reg_before": 0.9466666666666667,
+    "cr_reg_after": 0.96,
+    "elapsed_seconds": 180.98588560009375,
+    "round_summaries": [
+      {
+        "round_index": 1,
+        "hot_range_ids": [
+          "hot_range_2",
+          "hot_range_13",
+          "hot_range_6",
+          "hot_range_10",
+          "hot_range_1"
+        ],
+        "chosen_action": {
+          "action_type": "augment",
+          "range_id": "hot_range_10",
+          "window_id": "X011840"
+        },
+        "q_peak_before": 1.0000000000000002,
+        "q_peak_after": 1.0000000000000002,
+        "q_peak_delta": 0.0,
+        "q_integral_before": 29317.318595500004,
+        "q_integral_after": 27567.696668325003,
+        "q_integral_delta": 1749.6219271750015,
+        "high_segment_count_before": 243,
+        "high_segment_count_after": 187,
+        "high_segment_count_delta": 56
+      },
+      {
+        "round_index": 2,
+        "hot_range_ids": [
+          "hot_range_2",
+          "hot_range_13",
+          "hot_range_6",
+          "hot_range_1",
+          "hot_range_15"
+        ],
+        "chosen_action": {
+          "action_type": null,
+          "range_id": null,
+          "window_id": null
+        },
+        "q_peak_before": 1.0000000000000002,
+        "q_peak_after": 1.0000000000000002,
+        "q_peak_delta": 0.0,
+        "q_integral_before": 27567.696668325003,
+        "q_integral_after": 27567.696668325003,
+        "q_integral_delta": 0.0,
+        "high_segment_count_before": 187,
+        "high_segment_count_after": 187,
+        "high_segment_count_delta": 0
+      }
+    ],
+    "validation_checks": {
+      "single_action_per_round": true,
+      "round_recompute_chain_is_consistent": true,
+      "range_head_changes": [
+        {
+          "from_round": 1,
+          "to_round": 2,
+          "previous_top_range_id": "hot_range_2",
+          "current_top_range_id": "hot_range_2",
+          "changed": false
+        }
+      ]
+    },
+    "config": {
+      "hotspot_topk_ranges": 5,
+      "closed_loop_topk_ranges_per_round": 5,
+      "closed_loop_topk_candidates_per_range": 3
+    }
+  },
+  "improvement_vs_baseline": {
+    "q_peak_delta_vs_baseline": 0.0,
+    "q_integral_delta_vs_baseline": 1749.6219271750015,
+    "high_segment_count_delta_vs_baseline": 56,
+    "improves_any_load_metric_vs_baseline": true
+  },
+  "coverage_diagnostics": {
+    "baseline_hot_range_count_full": 16,
+    "configured_hotspot_topk_ranges": 5,
+    "configured_closed_loop_topk_candidates_per_range": 3,
+    "range_topk_truncation_possible": true,
+    "structural_candidate_limit_hit": true,
+    "structural_candidate_limit_hit_rounds": [
+      1,
+      2
+    ],
+    "structural_candidate_limit_hits": [
+      {
+        "round_index": 1,
+        "range_id": "hot_range_10",
+        "relief_path_ready_count": 1186,
+        "candidate_limit": 3
+      },
+      {
+        "round_index": 1,
+        "range_id": "hot_range_1",
+        "relief_path_ready_count": 609,
+        "candidate_limit": 3
+      },
+      {
+        "round_index": 2,
+        "range_id": "hot_range_1",
+        "relief_path_ready_count": 609,
+        "candidate_limit": 3
+      }
+    ],
+    "head_reordered_after_first_acceptance": false
+  },
+  "first_round_single_action_saturation": true
+}

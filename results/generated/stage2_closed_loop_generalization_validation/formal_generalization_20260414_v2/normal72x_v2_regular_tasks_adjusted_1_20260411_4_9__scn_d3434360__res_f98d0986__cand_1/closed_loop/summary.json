@@ -1,0 +1,111 @@
+{
+  "experiment_name": "closed_loop",
+  "scenario_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\normal72x_v2_regular_tasks_adjusted_阶段1结果_20260411_按4.9整理\\normal72x_v2_regular_tasks_adjusted_scenario_weighted.json",
+  "stage1_result_path": "D:\\Codex_Project\\bs3 - 副本\\results\\normal72x_v2_regular_tasks_adjusted\\normal72x_v2_regular_tasks_adjusted_阶段1结果_20260411_按4.9整理\\normal72x_v2_regular_tasks_adjusted_stage1_result.json",
+  "baseline_source": "stage1_greedy_repair",
+  "solver_mode": "two_phase_event_insert+stage1_greedy_repair+hotspot_relief_local_peak_milp",
+  "closed_loop_enabled": true,
+  "closed_loop_rounds_completed": 2,
+  "closed_loop_actions_accepted": 2,
+  "closed_loop_new_windows_added": 1,
+  "closed_loop_stop_reason": "total_time_budget_exhausted",
+  "closed_loop_new_window_hard_cap": 2,
+  "closed_loop_new_window_hard_cap_limiter": "both",
+  "closed_loop_new_window_hard_cap_components": {
+    "closed_loop_max_new_windows": 2,
+    "augment_window_budget": 2,
+    "effective_hard_cap": 2,
+    "effective_hard_cap_limiter": "both"
+  },
+  "accepted_action_sequence": [
+    {
+      "round_index": 1,
+      "action_type": "augment",
+      "range_id": "hot_range_1",
+      "window_id": "X018349"
+    },
+    {
+      "round_index": 2,
+      "action_type": "reroute",
+      "range_id": "hot_range_1",
+      "window_id": null
+    }
+  ],
+  "q_peak_before": 1.0000000000000002,
+  "q_peak_after": 1.0000000000000002,
+  "q_integral_before": 27953.102758,
+  "q_integral_after": 26975.999669590088,
+  "high_segment_count_before": 203,
+  "high_segment_count_after": 154,
+  "cr_reg_before": 0.98,
+  "cr_reg_after": 0.98,
+  "elapsed_seconds": 180.3652808999177,
+  "round_summaries": [
+    {
+      "round_index": 1,
+      "hot_range_ids": [
+        "hot_range_11",
+        "hot_range_2",
+        "hot_range_12",
+        "hot_range_1",
+        "hot_range_6"
+      ],
+      "chosen_action": {
+        "action_type": "augment",
+        "range_id": "hot_range_1",
+        "window_id": "X018349"
+      },
+      "q_peak_before": 1.0000000000000002,
+      "q_peak_after": 1.0000000000000002,
+      "q_peak_delta": 0.0,
+      "q_integral_before": 27953.102758,
+      "q_integral_after": 27491.82354011509,
+      "q_integral_delta": 461.2792178849122,
+      "high_segment_count_before": 203,
+      "high_segment_count_after": 169,
+      "high_segment_count_delta": 34
+    },
+    {
+      "round_index": 2,
+      "hot_range_ids": [
+        "hot_range_10",
+        "hot_range_1",
+        "hot_range_11",
+        "hot_range_5",
+        "hot_range_4"
+      ],
+      "chosen_action": {
+        "action_type": "reroute",
+        "range_id": "hot_range_1",
+        "window_id": null
+      },
+      "q_peak_before": 1.0000000000000002,
+      "q_peak_after": 1.0000000000000002,
+      "q_peak_delta": 0.0,
+      "q_integral_before": 27491.82354011509,
+      "q_integral_after": 26975.999669590088,
+      "q_integral_delta": 515.8238705250005,
+      "high_segment_count_before": 169,
+      "high_segment_count_after": 154,
+      "high_segment_count_delta": 15
+    }
+  ],
+  "validation_checks": {
+    "single_action_per_round": true,
+    "round_recompute_chain_is_consistent": true,
+    "range_head_changes": [
+      {
+        "from_round": 1,
+        "to_round": 2,
+        "previous_top_range_id": "hot_range_11",
+        "current_top_range_id": "hot_range_10",
+        "changed": true
+      }
+    ]
+  },
+  "config": {
+    "hotspot_topk_ranges": 5,
+    "closed_loop_topk_ranges_per_round": 5,
+    "closed_loop_topk_candidates_per_range": 3
+  }
+}
