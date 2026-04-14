@@ -344,6 +344,7 @@ def main() -> None:
                 planning_end=None,
                 stage2_updates={
                     "prefer_milp": True,
+                    "regular_baseline_mode": "rolling_milp",
                     "milp_mode": "rolling",
                     "milp_horizon_segments": updates["milp_horizon_segments"],
                     "milp_commit_segments": updates["milp_commit_segments"],
@@ -373,6 +374,7 @@ def main() -> None:
                 planning_end=None,
                 stage2_updates={
                     "prefer_milp": True,
+                    "regular_baseline_mode": "full_milp",
                     "milp_mode": "full",
                     "milp_time_limit_seconds": None,
                 },
@@ -404,6 +406,7 @@ def main() -> None:
                 planning_end=cutoff,
                 stage2_updates={
                     "prefer_milp": True,
+                    "regular_baseline_mode": "full_milp",
                     "milp_mode": "full",
                     "milp_time_limit_seconds": None,
                 },

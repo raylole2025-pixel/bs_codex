@@ -22,6 +22,7 @@ _AUGMENT_STAGE_ORDER = {
     "applied": 6,
 }
 _AUGMENT_SELECTION_POLICIES = {"global_score_only", "structural_coverage_first"}
+_CLOSED_LOOP_ACTION_MODES = {"reroute_then_augment", "best_global_action"}
 _AUGMENT_FUNNEL_STAGE_MEANINGS = {
     "raw_overlap_candidate_count": "Physically overlaps the hot range before any insertion checks.",
     "schedulable_after_t_pre_d_min_count": "Still satisfies the t_pre / d_min timing gate before terminal-conflict rejection.",
@@ -171,6 +172,31 @@ def _promote_augment_stage(record: dict[str, Any], stage: str) -> None:
 def _augment_selection_policy(scenario: Scenario) -> str:
     raw = str(getattr(scenario.stage2, "augment_selection_policy", "global_score_only") or "global_score_only").strip().lower()
     return raw if raw in _AUGMENT_SELECTION_POLICIES else "global_score_only"
+
+
+def _closed_loop_action_mode(scenario: Scenario) -> str:
+    raw = str(getattr(scenario.stage2, "closed_loop_action_mode", "best_global_action") or "best_global_action").strip().lower()
+    return raw if raw in _CLOSED_LOOP_ACTION_MODES else "best_global_action"
+
+
+def _closed_loop_topk_ranges_per_round(scenario: Scenario) -> int:
+    configured = getattr(scenario.stage2, "closed_loop_topk_ranges_per_round", scenario.stage2.hotspot_topk_ranges)
+    return max(int(configured), 0)
+
+
+def _closed_loop_topk_candidates_per_range(scenario: Scenario) -> int:
+    configured = getattr(
+        scenario.stage2,
+        "closed_loop_topk_candidates_per_range",
+        scenario.stage2.augment_top_windows_per_range,
+    )
+    return max(int(configured), 0)
+
+
+def _closed_loop_hard_window_cap(scenario: Scenario) -> int:
+    configured_cap = max(int(getattr(scenario.stage2, "closed_loop_max_new_windows", 0)), 0)
+    budget_cap = max(int(getattr(scenario.stage2, "augment_window_budget", 0)), 0)
+    return min(configured_cap, budget_cap)
 
 
 def _augment_candidate_sort_key(candidate: AugmentCandidate) -> tuple[float | int | str, ...]:
@@ -563,6 +589,84 @@ def _load_summary_from_profile(profile: list[CrossSegmentProfileRow]) -> dict[st
     }
 
 
+def _high_segment_count(profile: list[CrossSegmentProfileRow], threshold: float) -> int:
+    effective_threshold = max(float(threshold), 0.0)
+    return sum(1 for row in profile if float(row.q_r) + EPS >= effective_threshold)
+
+
+def _interval_profile_summary(
+    profile: list[CrossSegmentProfileRow],
+    *,
+    start: float,
+    end: float,
+) -> dict[str, float | int]:
+    q_peak = 0.0
+    q_integral = 0.0
+    covered = 0
+    for row in profile:
+        overlap = _window_overlap_duration(row.start, row.end, start, end)
+        if overlap <= EPS:
+            continue
+        q_peak = max(q_peak, float(row.q_r))
+        q_integral += float(row.q_r) * float(overlap)
+        covered += 1
+    return {
+        "q_peak": float(q_peak),
+        "q_integral": float(q_integral),
+        "segment_count": int(covered),
+    }
+
+
+def _closed_loop_metrics(
+    scenario: Scenario,
+    profile: list[CrossSegmentProfileRow],
+) -> dict[str, float | int]:
+    summary = dict(_load_summary_from_profile(profile))
+    summary["high_segment_count"] = _high_segment_count(
+        profile,
+        threshold=float(scenario.stage2.hotspot_util_threshold),
+    )
+    return summary
+
+
+def _closed_loop_delta(before: dict[str, float | int], after: dict[str, float | int]) -> dict[str, float | int]:
+    return {
+        "delta_q_peak": float(before.get("q_peak", 0.0)) - float(after.get("q_peak", 0.0)),
+        "delta_q_integral": float(before.get("q_integral", 0.0)) - float(after.get("q_integral", 0.0)),
+        "delta_peak_segment_count": int(before.get("peak_segment_count", 0)) - int(after.get("peak_segment_count", 0)),
+        "delta_high_segment_count": int(before.get("high_segment_count", 0)) - int(after.get("high_segment_count", 0)),
+    }
+
+
+def _closed_loop_accepts(
+    scenario: Scenario,
+    *,
+    cr_reg_base: float,
+    cr_reg_new: float,
+    before_metrics: dict[str, float | int],
+    after_metrics: dict[str, float | int],
+    before_focus: dict[str, float | int],
+    after_focus: dict[str, float | int],
+) -> tuple[bool, dict[str, float | int], str | None]:
+    delta = _closed_loop_delta(before_metrics, after_metrics)
+    delta["delta_focus_q_peak"] = float(before_focus.get("q_peak", 0.0)) - float(after_focus.get("q_peak", 0.0))
+    delta["delta_focus_q_integral"] = float(before_focus.get("q_integral", 0.0)) - float(after_focus.get("q_integral", 0.0))
+    if float(cr_reg_new) + EPS < float(cr_reg_base):
+        return False, delta, "regular_completion_dropped"
+    improves_q_peak = float(delta["delta_q_peak"]) + EPS >= float(getattr(scenario.stage2, "closed_loop_min_delta_q_peak", 0.0))
+    improves_q_integral = float(delta["delta_q_integral"]) + EPS >= float(
+        getattr(scenario.stage2, "closed_loop_min_delta_q_integral", 0.0)
+    )
+    improves_high_segments = (
+        int(delta["delta_high_segment_count"]) >= int(getattr(scenario.stage2, "closed_loop_min_delta_high_segments", 0))
+        or int(delta["delta_peak_segment_count"]) >= int(getattr(scenario.stage2, "closed_loop_min_delta_high_segments", 0))
+    )
+    improves_focus = float(delta["delta_focus_q_peak"]) > EPS or float(delta["delta_focus_q_integral"]) > EPS
+    if improves_q_peak or improves_q_integral or improves_high_segments or improves_focus:
+        return True, delta, None
+    return False, delta, "no_material_load_improvement"
+
+
 def _relief_accepts(
     *,
     cr_reg_base: float,
@@ -907,7 +1011,7 @@ def _collect_augment_candidates(
         per_range.sort(
             key=_augment_candidate_sort_key
         )
-        shortlist = per_range[: max(int(scenario.stage2.augment_top_windows_per_range), 0)]
+        shortlist = per_range[: _closed_loop_topk_candidates_per_range(scenario)]
         funnel_counts["shortlisted_count"] = len(shortlist)
         shortlisted_ids = {item.window_id for item in shortlist}
         for candidate in shortlist:
@@ -1622,6 +1726,350 @@ def _range_profile_summary(profile: list[CrossSegmentProfileRow], hot_range: Hot
     }
 
 
+def _active_tasks_for_horizon(
+    scenario: Scenario,
+    horizon: list[Segment],
+    diagnostics: dict[str, Any],
+):
+    if not horizon:
+        return []
+    remaining_trace = diagnostics.get("remaining_before_trace", {})
+    active_tasks = []
+    for task in _regular_tasks(scenario):
+        if not any(task.arrival <= segment.start < task.deadline for segment in horizon):
+            continue
+        task_remaining_before = float(
+            (remaining_trace.get(task.task_id, {}) or {}).get(horizon[0].index, task.data)
+        )
+        if task_remaining_before > completion_tolerance(scenario, task):
+            active_tasks.append(task)
+    return active_tasks
+
+
+def _candidate_action_sort_key(action: dict[str, Any], scenario: Scenario) -> tuple[float | int | str, ...]:
+    improvement = dict(action.get("improvement") or {})
+    priority_bucket = 0
+    if _closed_loop_action_mode(scenario) == "reroute_then_augment":
+        priority_bucket = 0 if str(action.get("action_type")) == "reroute" else 1
+    return (
+        int(priority_bucket),
+        -float(improvement.get("delta_q_peak", 0.0) or 0.0),
+        -int(improvement.get("delta_high_segment_count", 0) or 0),
+        -int(improvement.get("delta_peak_segment_count", 0) or 0),
+        -float(improvement.get("delta_q_integral", 0.0) or 0.0),
+        -float(improvement.get("delta_focus_q_peak", 0.0) or 0.0),
+        -float(improvement.get("delta_focus_q_integral", 0.0) or 0.0),
+        str(action.get("range_id") or ""),
+        str(action.get("window_id") or ""),
+    )
+
+
+def _base_range_report(
+    hot_range: HotRange,
+    classification: HotRangeClassification,
+    *,
+    contributions: list[HotTaskContribution],
+    alternative_diagnostics: dict[str, Any],
+    augment_debug: dict[str, Any],
+    sanity_warnings: list[str],
+) -> dict[str, Any]:
+    return {
+        "range_id": hot_range.range_id,
+        "start": float(hot_range.start),
+        "end": float(hot_range.end),
+        "max_q_r": float(hot_range.max_q_r),
+        "q_integral": float(hot_range.q_integral),
+        "classification": asdict(classification),
+        "alternative_diagnostics": dict(alternative_diagnostics),
+        "augment_funnel_counts": dict(augment_debug.get("funnel_counts") or {}),
+        "augment_rejection_breakdown": dict(augment_debug.get("rejection_breakdown") or {}),
+        "augment_debug_top_candidates": list(augment_debug.get("augment_debug_top_candidates") or []),
+        "fallback_local_swap": dict(augment_debug.get("fallback_local_swap") or {}),
+        "contributing_tasks": [asdict(item) for item in contributions],
+        "sanity_warnings": list(sanity_warnings),
+        "status": "pending",
+        "accepted": False,
+        "candidate_action_type": None,
+        "candidate_solver_status": "not_attempted",
+        "candidate_solver_error": None,
+        "rejection_reason": None,
+        "detailed_runtime_failure_type": None,
+        "selected_augment_windows": [],
+        "applied_augment_windows": [],
+        "used_augment_windows": [],
+        "objective_values": {},
+    }
+
+
+def _evaluate_reroute_action(
+    scenario: Scenario,
+    *,
+    plan: list[ScheduledWindow],
+    segments: list[Segment],
+    schedule: dict[tuple[str, int], Allocation],
+    diagnostics: dict[str, Any],
+    profile: list[CrossSegmentProfileRow],
+    current_metrics: dict[str, float | int],
+    current_cr_reg: float,
+    hot_range: HotRange,
+    classification: HotRangeClassification,
+    total_time_limit_seconds: float | None,
+    local_repair_time_limit_seconds: float | None,
+    started_at: float,
+) -> dict[str, Any]:
+    result: dict[str, Any] = {
+        "action_type": "reroute",
+        "range_id": hot_range.range_id,
+        "window_id": None,
+        "accepted": False,
+        "rejection_reason": None,
+        "candidate_solver_status": "not_attempted",
+        "candidate_solver_error": None,
+        "detailed_runtime_failure_type": None,
+        "objective_values": {},
+        "used_augment_windows": [],
+        "plan": list(plan),
+        "segments": list(segments),
+    }
+    if bool(classification.structural):
+        result["rejection_reason"] = "structural_hotspot_prefers_augment"
+        result["candidate_solver_status"] = "SkippedStructuralHotspot"
+        return result
+    if not bool(classification.reroutable):
+        result["rejection_reason"] = str(classification.reason)
+        result["candidate_solver_status"] = "SkippedNotReroutable"
+        return result
+    horizon = _horizon_segments_for_hot_range(scenario, segments, hot_range, profile=profile)
+    if not horizon:
+        result["rejection_reason"] = "hot_range has no local optimization horizon"
+        result["candidate_solver_status"] = "SkippedNoHorizon"
+        return result
+    active_tasks = _active_tasks_for_horizon(scenario, horizon, diagnostics)
+    if not active_tasks:
+        result["rejection_reason"] = "no active regular tasks in local horizon"
+        result["candidate_solver_status"] = "SkippedNoActiveTasks"
+        return result
+    total_remaining_seconds = _remaining_budget_seconds(
+        total_time_limit_seconds,
+        _total_elapsed_seconds(started_at),
+    )
+    skip_result = _bounded_skip_result(
+        stage="closed_loop_reroute",
+        total_remaining_seconds=total_remaining_seconds,
+        range_remaining_seconds=_hotspot_per_range_time_limit_seconds(scenario),
+    )
+    if skip_result:
+        result["rejection_reason"] = str(skip_result.get("rejection_reason"))
+        result["candidate_solver_status"] = str(skip_result.get("candidate_solver_status"))
+        result["detailed_runtime_failure_type"] = skip_result.get("detailed_runtime_failure_type")
+        return result
+    hot_window_ids_by_segment = _range_profile_summary(profile, hot_range)["hot_window_ids_by_segment"]
+    promoted_task_segments = _hot_task_segments_for_range(
+        scenario,
+        hot_range,
+        schedule,
+        hot_window_ids_by_segment,
+    )
+    local_solver_time_limit = _effective_solver_time_limit_seconds(
+        scenario,
+        local_repair_time_limit_seconds,
+        total_remaining_seconds,
+        _hotspot_per_range_time_limit_seconds(scenario),
+    )
+    local_scenario = _scenario_with_milp_time_limit(scenario, local_solver_time_limit)
+    local_result = solve_regular_hotspot_local_milp(
+        scenario=local_scenario,
+        plan=plan,
+        segments=segments,
+        current_schedule=schedule,
+        diagnostics=diagnostics,
+        horizon_segments=horizon,
+        active_tasks=active_tasks,
+        hot_segment_indices=set(_hot_range_segment_indices(segments, hot_range)),
+        hot_task_segments=promoted_task_segments,
+        hot_window_ids_by_segment=hot_window_ids_by_segment,
+        augmented_window_ids=set(),
+    )
+    result["candidate_solver_status"] = str(local_result.get("solver_status", "no_candidate_solution"))
+    result["candidate_solver_error"] = local_result.get("solver_error")
+    result["detailed_runtime_failure_type"] = local_result.get("detailed_runtime_failure_type")
+    result["objective_values"] = dict(local_result.get("objective_values", {}))
+    if not bool(local_result.get("accepted", False)):
+        result["rejection_reason"] = str(
+            local_result.get("detailed_runtime_failure_type")
+            or local_result.get("solver_status")
+            or "no_candidate_solution"
+        )
+        return result
+    candidate_schedule = dict(local_result["schedule"])
+    candidate_diagnostics = build_regular_schedule_diagnostics(scenario, plan, segments, candidate_schedule)
+    candidate_profile = build_cross_segment_profile(scenario, plan, segments, candidate_schedule)
+    candidate_metrics = _closed_loop_metrics(scenario, candidate_profile)
+    candidate_cr_reg = _regular_completion_ratio_from_diagnostics(scenario, candidate_diagnostics)
+    before_focus = _interval_profile_summary(profile, start=hot_range.start, end=hot_range.end)
+    after_focus = _interval_profile_summary(candidate_profile, start=hot_range.start, end=hot_range.end)
+    accepted, improvement, rejection_reason = _closed_loop_accepts(
+        scenario,
+        cr_reg_base=current_cr_reg,
+        cr_reg_new=candidate_cr_reg,
+        before_metrics=current_metrics,
+        after_metrics=candidate_metrics,
+        before_focus=before_focus,
+        after_focus=after_focus,
+    )
+    result.update(
+        {
+            "accepted": bool(accepted),
+            "rejection_reason": rejection_reason,
+            "schedule": candidate_schedule,
+            "diagnostics": candidate_diagnostics,
+            "profile": candidate_profile,
+            "metrics": candidate_metrics,
+            "cr_reg": float(candidate_cr_reg),
+            "improvement": improvement,
+            "before_focus": before_focus,
+            "after_focus": after_focus,
+            "used_augment_windows": sorted(local_result.get("used_augment_windows", [])),
+        }
+    )
+    return result
+
+
+def _evaluate_augment_action(
+    scenario: Scenario,
+    *,
+    plan: list[ScheduledWindow],
+    segments: list[Segment],
+    schedule: dict[tuple[str, int], Allocation],
+    diagnostics: dict[str, Any],
+    profile: list[CrossSegmentProfileRow],
+    current_metrics: dict[str, float | int],
+    current_cr_reg: float,
+    hot_range: HotRange,
+    classification: HotRangeClassification,
+    augment_candidate: AugmentCandidate,
+    contributors: list[HotTaskContribution],
+    total_time_limit_seconds: float | None,
+    gate_time_limit_seconds: float | None,
+    started_at: float,
+) -> dict[str, Any]:
+    result: dict[str, Any] = {
+        "action_type": "augment",
+        "range_id": hot_range.range_id,
+        "window_id": augment_candidate.window_id,
+        "accepted": False,
+        "rejection_reason": None,
+        "candidate_solver_status": "not_attempted",
+        "candidate_solver_error": None,
+        "detailed_runtime_failure_type": None,
+        "objective_values": {},
+        "used_augment_windows": [],
+    }
+    if not bool(classification.structural):
+        result["rejection_reason"] = "augment_action_reserved_for_structural_hotspots"
+        result["candidate_solver_status"] = "SkippedNonStructuralHotspot"
+        return result
+    candidate_lookup = {window.window_id: window for window in scenario.candidate_windows}
+    base_window = candidate_lookup.get(augment_candidate.window_id)
+    if base_window is None:
+        result["rejection_reason"] = "candidate_window_missing"
+        result["candidate_solver_status"] = "SkippedMissingWindow"
+        return result
+    scheduled_window = _schedule_candidate_against_plan(
+        plan,
+        base_window,
+        t_pre=float(scenario.stage1.t_pre),
+        d_min=float(scenario.stage1.d_min),
+    )
+    if scheduled_window is None:
+        result["rejection_reason"] = "candidate_window_failed_insertion"
+        result["candidate_solver_status"] = "SkippedInsertionFailed"
+        return result
+    augmented_plan = list(plan) + [scheduled_window]
+    augmented_segments = build_segments(scenario, augmented_plan, _regular_tasks(scenario))
+    augmented_schedule = _remap_schedule_to_segments(segments, augmented_segments, schedule)
+    augmented_diagnostics = build_regular_schedule_diagnostics(scenario, augmented_plan, augmented_segments, augmented_schedule)
+    augmented_profile = build_cross_segment_profile(scenario, augmented_plan, augmented_segments, augmented_schedule)
+    total_remaining_seconds = _remaining_budget_seconds(
+        total_time_limit_seconds,
+        _total_elapsed_seconds(started_at),
+    )
+    skip_result = _bounded_skip_result(
+        stage="closed_loop_structural_gate",
+        total_remaining_seconds=total_remaining_seconds,
+        range_remaining_seconds=_hotspot_per_range_time_limit_seconds(scenario),
+    )
+    if skip_result:
+        result["rejection_reason"] = str(skip_result.get("rejection_reason"))
+        result["candidate_solver_status"] = str(skip_result.get("candidate_solver_status"))
+        result["detailed_runtime_failure_type"] = skip_result.get("detailed_runtime_failure_type")
+        return result
+    gate_solver_time_limit = _effective_solver_time_limit_seconds(
+        scenario,
+        gate_time_limit_seconds,
+        total_remaining_seconds,
+        _hotspot_per_range_time_limit_seconds(scenario),
+    )
+    gate_result = _attempt_structural_repair_gate(
+        scenario,
+        augmented_plan,
+        augmented_segments,
+        augmented_schedule,
+        augmented_diagnostics,
+        augmented_profile,
+        hot_range,
+        classification,
+        contributors,
+        [augment_candidate.window_id],
+        time_limit_seconds=gate_solver_time_limit,
+    )
+    result["candidate_solver_status"] = str(gate_result.get("candidate_solver_status", "not_attempted"))
+    result["candidate_solver_error"] = gate_result.get("solver_error")
+    result["detailed_runtime_failure_type"] = gate_result.get("detailed_runtime_failure_type")
+    result["objective_values"] = dict(gate_result.get("objective_values", {}))
+    result["used_augment_windows"] = sorted(gate_result.get("used_augment_windows", []))
+    if not bool(gate_result.get("accepted", False)):
+        result["rejection_reason"] = str(
+            gate_result.get("rejection_reason")
+            or gate_result.get("detailed_runtime_failure_type")
+            or "structural_gate_rejected"
+        )
+        return result
+    candidate_schedule = dict(gate_result["schedule"])
+    candidate_diagnostics = build_regular_schedule_diagnostics(scenario, augmented_plan, augmented_segments, candidate_schedule)
+    candidate_profile = build_cross_segment_profile(scenario, augmented_plan, augmented_segments, candidate_schedule)
+    candidate_metrics = _closed_loop_metrics(scenario, candidate_profile)
+    candidate_cr_reg = _regular_completion_ratio_from_diagnostics(scenario, candidate_diagnostics)
+    before_focus = _interval_profile_summary(profile, start=hot_range.start, end=hot_range.end)
+    after_focus = _interval_profile_summary(candidate_profile, start=hot_range.start, end=hot_range.end)
+    accepted, improvement, rejection_reason = _closed_loop_accepts(
+        scenario,
+        cr_reg_base=current_cr_reg,
+        cr_reg_new=candidate_cr_reg,
+        before_metrics=current_metrics,
+        after_metrics=candidate_metrics,
+        before_focus=before_focus,
+        after_focus=after_focus,
+    )
+    result.update(
+        {
+            "accepted": bool(accepted),
+            "rejection_reason": rejection_reason,
+            "plan": augmented_plan,
+            "segments": augmented_segments,
+            "schedule": candidate_schedule,
+            "diagnostics": candidate_diagnostics,
+            "profile": candidate_profile,
+            "metrics": candidate_metrics,
+            "cr_reg": float(candidate_cr_reg),
+            "improvement": improvement,
+            "before_focus": before_focus,
+            "after_focus": after_focus,
+        }
+    )
+    return result
+
+
 def run_hotspot_relief(
     scenario: Scenario,
     plan: list[ScheduledWindow],
@@ -1629,6 +2077,16 @@ def run_hotspot_relief(
     baseline_schedule: dict[tuple[str, int], Allocation],
     baseline_diagnostics: dict[str, Any],
 ) -> HotspotReliefResult:
+    from .stage2_hotspot_relief_closed_loop import run_hotspot_relief_closed_loop
+
+    return run_hotspot_relief_closed_loop(
+        scenario=scenario,
+        plan=plan,
+        segments=segments,
+        baseline_schedule=baseline_schedule,
+        baseline_diagnostics=baseline_diagnostics,
+    )
+
     started_at = time.perf_counter()
     total_time_limit_seconds = _hotspot_total_time_limit_seconds(scenario)
     per_range_time_limit_seconds = _hotspot_per_range_time_limit_seconds(scenario)

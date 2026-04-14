@@ -190,13 +190,13 @@ class Stage2Config:
     k_paths: int = 2
     # 当任务传输量小于这个值，就认为任务完成
     completion_tolerance: float = 1e-6
-    # 阶段2-1 常态基线模式；None 表示按 legacy prefer_milp/milp_mode 兼容解析
-    regular_baseline_mode: str | None = None
+    # 阶段2-1 常态基线模式；默认固定为阶段1 greedy repair，不再由 prefer_milp 自动主导
+    regular_baseline_mode: str | None = "stage1_greedy_repair"
     # 是否启用 greedy baseline 之后的局部 repair；None 表示按 baseline mode 自动决定
     regular_repair_enabled: bool | None = None
-    # 阶段2-1是否优先使用联合 MILP 进行常态任务基线规划
-    prefer_milp: bool = True
-    # 阶段2-1 常态基线统一使用 full MILP；该字段保留用于兼容旧配置
+    # legacy 兼容字段；不再决定阶段2-1默认 baseline
+    prefer_milp: bool = False
+    # legacy 兼容字段；rolling/full MILP 仅在 regular_baseline_mode 显式指定时生效
     milp_mode: str = "full"
     # rolling 模式下的展望窗口长度（按事件分段数计）
     milp_horizon_segments: int = 16
@@ -232,8 +232,10 @@ class Stage2Config:
     repair_time_limit_seconds: float | None = None
     # repair 接受阈值
     repair_accept_epsilon: float = 1e-6
-    # 是否启用热点补窗 + 热点段候选扩张 + 局部峰值约束 MILP
+    # 兼容旧开关；默认与 closed_loop_relief_enabled 保持一致
     hotspot_relief_enabled: bool = True
+    # 阶段2-1 闭环式减载主控开关
+    closed_loop_relief_enabled: bool = True
     # 热点分段识别阈值（q_r）
     hotspot_util_threshold: float = 0.95
     # 最多考虑的热点区间数量
@@ -244,12 +246,28 @@ class Stage2Config:
     hotspot_single_link_fraction_threshold: float = 0.6
     # 每个热点区间最多保留的热点贡献任务数
     hotspot_top_tasks_per_range: int = 12
-    # 全局最多允许新增的补窗数量
+    # 全局最多允许新增的补窗数量；闭环模式下仅作为硬上限保护
     augment_window_budget: int = 2
     # 每个热点区间最多保留的补窗候选数量
     augment_top_windows_per_range: int = 3
-    # 补窗选择策略：纯全局打分，或先给 structural hotspot 预留 1 个槽位
+    # 旧版一次性选窗策略；闭环模式下仅作为兼容字段保留
     augment_selection_policy: str = "global_score_only"
+    # 闭环模式最大轮数
+    closed_loop_max_rounds: int = 6
+    # 闭环模式最多允许正式接受的新窗口数量
+    closed_loop_max_new_windows: int = 2
+    # q_peak 的最小改善阈值
+    closed_loop_min_delta_q_peak: float = 1e-4
+    # q_integral 的最小改善阈值
+    closed_loop_min_delta_q_integral: float = 1e-6
+    # 高负载/峰值平台分段数的最小改善阈值
+    closed_loop_min_delta_high_segments: int = 1
+    # 每轮最多关注的热点区间数量
+    closed_loop_topk_ranges_per_round: int = 5
+    # 每个热点区间每轮最多保留的候选动作数量
+    closed_loop_topk_candidates_per_range: int = 3
+    # 闭环动作选择模式：优先重路由，或按全局边际收益统一比较
+    closed_loop_action_mode: str = "best_global_action"
     # 热点 task-segment 的候选路径上限
     hot_path_limit: int = 4
     # 每个热点分段最多提升为热点扩张候选的任务数

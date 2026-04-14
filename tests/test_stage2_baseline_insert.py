@@ -39,7 +39,7 @@ BASE_PAYLOAD = {
     "stage2": {
         "k_paths": 2,
         "completion_tolerance": 1e-6,
-        "prefer_milp": True,
+        "prefer_milp": False,
     },
     "intra_domain_links": [
         {"id": "A12", "u": "A1", "v": "A2", "domain": "A", "start": 0.0, "end": 6.0, "delay": 0.1},
@@ -120,8 +120,8 @@ def _load_payload(payload: dict) -> Scenario:
             completion_tolerance=float(payload["stage2"]["completion_tolerance"]),
             regular_baseline_mode=payload["stage2"].get("regular_baseline_mode"),
             regular_repair_enabled=payload["stage2"].get("regular_repair_enabled"),
-            prefer_milp=bool(payload["stage2"].get("prefer_milp", True)),
-            milp_mode=str(payload["stage2"].get("milp_mode", "rolling")),
+            prefer_milp=bool(payload["stage2"].get("prefer_milp", False)),
+            milp_mode=str(payload["stage2"].get("milp_mode", "full")),
             milp_horizon_segments=int(payload["stage2"].get("milp_horizon_segments", 16)),
             milp_commit_segments=int(payload["stage2"].get("milp_commit_segments", 8)),
             milp_rolling_path_limit=int(payload["stage2"].get("milp_rolling_path_limit", 1)),
@@ -142,6 +142,12 @@ def _load_payload(payload: dict) -> Scenario:
             repair_time_limit_seconds=payload["stage2"].get("repair_time_limit_seconds"),
             repair_accept_epsilon=float(payload["stage2"].get("repair_accept_epsilon", 1e-6)),
             hotspot_relief_enabled=bool(payload["stage2"].get("hotspot_relief_enabled", True)),
+            closed_loop_relief_enabled=bool(
+                payload["stage2"].get(
+                    "closed_loop_relief_enabled",
+                    payload["stage2"].get("hotspot_relief_enabled", True),
+                )
+            ),
             hotspot_util_threshold=float(payload["stage2"].get("hotspot_util_threshold", 0.95)),
             hotspot_topk_ranges=int(payload["stage2"].get("hotspot_topk_ranges", 5)),
             hotspot_expand_segments=int(payload["stage2"].get("hotspot_expand_segments", 2)),
@@ -149,6 +155,15 @@ def _load_payload(payload: dict) -> Scenario:
             hotspot_top_tasks_per_range=int(payload["stage2"].get("hotspot_top_tasks_per_range", 12)),
             augment_window_budget=int(payload["stage2"].get("augment_window_budget", 2)),
             augment_top_windows_per_range=int(payload["stage2"].get("augment_top_windows_per_range", 3)),
+            augment_selection_policy=str(payload["stage2"].get("augment_selection_policy", "global_score_only")),
+            closed_loop_max_rounds=int(payload["stage2"].get("closed_loop_max_rounds", 6)),
+            closed_loop_max_new_windows=int(payload["stage2"].get("closed_loop_max_new_windows", 2)),
+            closed_loop_min_delta_q_peak=float(payload["stage2"].get("closed_loop_min_delta_q_peak", 1e-4)),
+            closed_loop_min_delta_q_integral=float(payload["stage2"].get("closed_loop_min_delta_q_integral", 1e-6)),
+            closed_loop_min_delta_high_segments=int(payload["stage2"].get("closed_loop_min_delta_high_segments", 1)),
+            closed_loop_topk_ranges_per_round=int(payload["stage2"].get("closed_loop_topk_ranges_per_round", payload["stage2"].get("hotspot_topk_ranges", 5))),
+            closed_loop_topk_candidates_per_range=int(payload["stage2"].get("closed_loop_topk_candidates_per_range", payload["stage2"].get("augment_top_windows_per_range", 3))),
+            closed_loop_action_mode=str(payload["stage2"].get("closed_loop_action_mode", "best_global_action")),
             hot_path_limit=int(payload["stage2"].get("hot_path_limit", 4)),
             hot_promoted_tasks_per_segment=int(payload["stage2"].get("hot_promoted_tasks_per_segment", 8)),
             local_peak_horizon_cap_segments=payload["stage2"].get("local_peak_horizon_cap_segments", 48),
@@ -208,7 +223,7 @@ class Stage2BaselineInsertTests(unittest.TestCase):
         )
         self.assertGreaterEqual(len(greedy_schedule), len(sequential_schedule))
 
-    def test_stage2_reports_joint_milp_metadata(self) -> None:
+    def test_stage2_defaults_to_stage1_greedy_repair_baseline(self) -> None:
         payload = copy.deepcopy(BASE_PAYLOAD)
         payload["tasks"] = [
             {
@@ -225,10 +240,34 @@ class Stage2BaselineInsertTests(unittest.TestCase):
         ]
         scenario = _load_payload(payload)
         result = run_stage2(scenario, PLAN)
-        self.assertEqual(result.solver_mode, "two_phase_event_insert+joint_milp_full")
-        self.assertTrue(result.metadata["prefer_milp"])
+        self.assertEqual(result.solver_mode, "two_phase_event_insert+stage1_greedy_repair")
+        self.assertFalse(result.metadata["prefer_milp"])
+        self.assertEqual(result.metadata["regular_baseline_mode"], "stage1_greedy_repair")
+        self.assertEqual(result.metadata["regular_baseline_source"], "stage1_greedy_repair")
         self.assertEqual(result.metadata["milp_mode"], "full")
         self.assertEqual(result.metadata["regular_task_count"], 1)
+
+    def test_prefer_milp_no_longer_overrides_default_regular_baseline(self) -> None:
+        payload = copy.deepcopy(BASE_PAYLOAD)
+        payload["stage2"].update({"prefer_milp": True})
+        payload["tasks"] = [
+            {
+                "id": "R1",
+                "src": "A1",
+                "dst": "B1",
+                "arrival": 0.0,
+                "deadline": 4.0,
+                "data": 4.0,
+                "weight": 1.0,
+                "max_rate": 2.0,
+                "type": "reg",
+            }
+        ]
+        scenario = _load_payload(payload)
+        result = run_stage2(scenario, PLAN)
+
+        self.assertEqual(result.metadata["regular_baseline_mode"], "stage1_greedy_repair")
+        self.assertEqual(result.metadata["regular_baseline_source"], "stage1_greedy_repair")
 
     def test_regular_baseline_uses_only_reserved_cross_slice(self) -> None:
         payload = copy.deepcopy(BASE_PAYLOAD)
@@ -406,6 +445,7 @@ class Stage2BaselineInsertTests(unittest.TestCase):
         payload["planning_end"] = 1.0
         payload["capacities"] = {"A": 10.0, "B": 10.0, "X": 10.0}
         payload["stage1"]["rho"] = 0.0
+        payload["stage2"].update({"regular_baseline_mode": "full_milp", "prefer_milp": True, "hotspot_relief_enabled": False})
         payload["candidate_windows"] = [
             {"id": "X1", "a": "A1", "b": "B1", "start": 0.0, "end": 1.0, "delay": 0.0}
         ]

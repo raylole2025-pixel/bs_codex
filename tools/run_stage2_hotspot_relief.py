@@ -54,9 +54,9 @@ def main() -> None:
     parser.add_argument("--output-dir", default=None, help="Output directory")
     parser.add_argument(
         "--baseline-mode",
-        choices=["stage1_greedy", "full_milp", "rolling_milp"],
-        default="stage1_greedy",
-        help="Stage2 regular-task baseline mode; default keeps the hotspot-relief mainline on stage1_greedy",
+        choices=["stage1_greedy", "stage1_greedy_repair", "full_milp", "rolling_milp"],
+        default="stage1_greedy_repair",
+        help="Stage2 regular-task baseline mode; default keeps the hotspot-relief mainline on stage1_greedy_repair",
     )
     parser.add_argument("--augment-mode", choices=["augment_only", "swap_if_budgeted"], default="augment_only")
     parser.add_argument("--fixed-window-count", type=int, default=None, help="Used only with --augment-mode=swap_if_budgeted")
@@ -71,6 +71,16 @@ def main() -> None:
     parser.add_argument("--hot-path-limit", type=int, default=None, help="Override hot_path_limit")
     parser.add_argument("--augment-top-windows-per-range", type=int, default=None, help="Override augment_top_windows_per_range")
     parser.add_argument("--augment-window-budget", type=int, default=None, help="Override augment_window_budget")
+    parser.add_argument("--closed-loop-max-rounds", type=int, default=None, help="Override closed_loop_max_rounds")
+    parser.add_argument("--closed-loop-max-new-windows", type=int, default=None, help="Override closed_loop_max_new_windows")
+    parser.add_argument("--closed-loop-topk-ranges-per-round", type=int, default=None, help="Override closed_loop_topk_ranges_per_round")
+    parser.add_argument("--closed-loop-topk-candidates-per-range", type=int, default=None, help="Override closed_loop_topk_candidates_per_range")
+    parser.add_argument(
+        "--closed-loop-action-mode",
+        choices=["reroute_then_augment", "best_global_action"],
+        default=None,
+        help="Override closed_loop_action_mode",
+    )
     parser.add_argument(
         "--augment-selection-policy",
         choices=["global_score_only", "structural_coverage_first"],
@@ -102,9 +112,9 @@ def main() -> None:
         raise ValueError("Either --fixed-plan-path or --stage1-result-path is required")
 
     scenario = load_scenario(scenario_path)
-    effective_milp_mode = "full"
+    effective_milp_mode = "rolling" if args.baseline_mode == "rolling_milp" else "full"
     effective_regular_mode = args.baseline_mode
-    prefer_milp = effective_regular_mode != "stage1_greedy"
+    prefer_milp = effective_regular_mode in {"full_milp", "rolling_milp"}
     scenario = replace(
         scenario,
         stage2=replace(
@@ -113,6 +123,7 @@ def main() -> None:
             milp_mode=effective_milp_mode,
             regular_baseline_mode=effective_regular_mode,
             hotspot_relief_enabled=True,
+            closed_loop_relief_enabled=True,
             fail_if_milp_disabled=False,
             milp_time_limit_seconds=(
                 float(args.milp_time_limit_seconds)
@@ -148,6 +159,31 @@ def main() -> None:
                 int(args.augment_window_budget)
                 if args.augment_window_budget is not None
                 else scenario.stage2.augment_window_budget
+            ),
+            closed_loop_max_rounds=(
+                int(args.closed_loop_max_rounds)
+                if args.closed_loop_max_rounds is not None
+                else scenario.stage2.closed_loop_max_rounds
+            ),
+            closed_loop_max_new_windows=(
+                int(args.closed_loop_max_new_windows)
+                if args.closed_loop_max_new_windows is not None
+                else scenario.stage2.closed_loop_max_new_windows
+            ),
+            closed_loop_topk_ranges_per_round=(
+                int(args.closed_loop_topk_ranges_per_round)
+                if args.closed_loop_topk_ranges_per_round is not None
+                else scenario.stage2.closed_loop_topk_ranges_per_round
+            ),
+            closed_loop_topk_candidates_per_range=(
+                int(args.closed_loop_topk_candidates_per_range)
+                if args.closed_loop_topk_candidates_per_range is not None
+                else scenario.stage2.closed_loop_topk_candidates_per_range
+            ),
+            closed_loop_action_mode=(
+                str(args.closed_loop_action_mode)
+                if args.closed_loop_action_mode is not None
+                else scenario.stage2.closed_loop_action_mode
             ),
             augment_selection_policy=(
                 str(args.augment_selection_policy)
@@ -225,6 +261,10 @@ def main() -> None:
         "solver_mode": result.solver_mode,
         "baseline_mode": effective_regular_mode,
         "prefer_milp": result.metadata.get("prefer_milp"),
+        "closed_loop_action_mode": result.metadata.get("closed_loop_action_mode"),
+        "closed_loop_rounds_completed": result.metadata.get("closed_loop_rounds_completed"),
+        "closed_loop_stop_reason": result.metadata.get("closed_loop_stop_reason"),
+        "closed_loop_new_windows_added": result.metadata.get("closed_loop_new_windows_added"),
         "augment_selection_policy": scenario.stage2.augment_selection_policy,
         "structural_repair_gate_enabled": bool(args.enable_structural_repair_gate),
         "elapsed_seconds": result.metadata.get("elapsed_seconds"),

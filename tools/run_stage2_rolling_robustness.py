@@ -489,7 +489,7 @@ def main() -> None:
                 base_scenario,
                 tasks=regular_tasks,
                 planning_end=None,
-                stage2_updates={"prefer_milp": True, "milp_mode": "rolling", **updates},
+                stage2_updates={"prefer_milp": True, "regular_baseline_mode": "rolling_milp", "milp_mode": "rolling", **updates},
                 experiment_name=label,
                 metadata_updates=metadata_updates,
             )
@@ -520,7 +520,7 @@ def main() -> None:
             base_scenario,
             tasks=regular_tasks,
             planning_end=None,
-            stage2_updates={"prefer_milp": True, "milp_mode": "rolling", **updates},
+            stage2_updates={"prefer_milp": True, "regular_baseline_mode": "rolling_milp", "milp_mode": "rolling", **updates},
             experiment_name=label,
             metadata_updates=metadata_updates,
         )
@@ -543,14 +543,14 @@ def main() -> None:
                 base_scenario,
                 tasks=subset,
                 planning_end=None,
-                stage2_updates={"prefer_milp": True, "milp_mode": "full", "milp_time_limit_seconds": None},
+                stage2_updates={"prefer_milp": True, "regular_baseline_mode": "full_milp", "milp_mode": "full", "milp_time_limit_seconds": None},
                 experiment_name=f"B_full_front{limit}",
             )
             half_scenario = _materialize_scenario(
                 base_scenario,
                 tasks=half_tasks,
                 planning_end=cutoff,
-                stage2_updates={"prefer_milp": True, "milp_mode": "full", "milp_time_limit_seconds": None},
+                stage2_updates={"prefer_milp": True, "regular_baseline_mode": "full_milp", "milp_mode": "full", "milp_time_limit_seconds": None},
                 experiment_name=f"B_full_front{limit}_half_range",
             )
             b_chain_rows.append(
@@ -579,7 +579,7 @@ def main() -> None:
             base_scenario,
             tasks=half_tasks,
             planning_end=cutoff,
-            stage2_updates={"prefer_milp": True, "milp_mode": "full", "milp_time_limit_seconds": None},
+            stage2_updates={"prefer_milp": True, "regular_baseline_mode": "full_milp", "milp_mode": "full", "milp_time_limit_seconds": None},
             experiment_name="C_full_front24_half_range_compressed",
         )
         raw_segments = build_segments(compression_base, plan, half_tasks)
@@ -591,7 +591,7 @@ def main() -> None:
             base_scenario,
             tasks=half_tasks,
             planning_end=cutoff,
-            stage2_updates={"prefer_milp": True, "milp_mode": "full", "milp_time_limit_seconds": None},
+            stage2_updates={"prefer_milp": True, "regular_baseline_mode": "full_milp", "milp_mode": "full", "milp_time_limit_seconds": None},
             experiment_name="C_full_front24_half_range_compressed",
             metadata_updates=metadata_updates,
         )

@@ -42,10 +42,11 @@ def _base_payload() -> dict:
         "stage2": {
             "k_paths": 2,
             "completion_tolerance": 1e-6,
-            "prefer_milp": True,
-            "regular_baseline_mode": "full_milp",
+            "prefer_milp": False,
+            "regular_baseline_mode": "stage1_greedy_repair",
             "milp_mode": "full",
             "hotspot_relief_enabled": True,
+            "closed_loop_relief_enabled": True,
             "hotspot_util_threshold": 0.95,
             "hotspot_topk_ranges": 3,
             "hotspot_expand_segments": 0,
@@ -53,6 +54,15 @@ def _base_payload() -> dict:
             "hotspot_top_tasks_per_range": 8,
             "augment_window_budget": 1,
             "augment_top_windows_per_range": 1,
+            "augment_selection_policy": "global_score_only",
+            "closed_loop_max_rounds": 6,
+            "closed_loop_max_new_windows": 1,
+            "closed_loop_min_delta_q_peak": 1e-4,
+            "closed_loop_min_delta_q_integral": 1e-6,
+            "closed_loop_min_delta_high_segments": 1,
+            "closed_loop_topk_ranges_per_round": 3,
+            "closed_loop_topk_candidates_per_range": 1,
+            "closed_loop_action_mode": "best_global_action",
             "hot_path_limit": 4,
             "hot_promoted_tasks_per_segment": 4,
             "local_peak_horizon_cap_segments": 8,
@@ -97,7 +107,7 @@ class Stage2HotspotReliefTests(unittest.TestCase):
             loaded = load_scenario(roundtrip_path)
 
         for field_name, expected in (
-            ("regular_baseline_mode", "full_milp"),
+            ("regular_baseline_mode", "stage1_greedy_repair"),
             ("regular_repair_enabled", False),
             ("repair_block_max_count", 4),
             ("repair_expand_segments", 2),
@@ -108,6 +118,7 @@ class Stage2HotspotReliefTests(unittest.TestCase):
             ("repair_time_limit_seconds", 11.0),
             ("repair_accept_epsilon", 1e-5),
             ("hotspot_relief_enabled", True),
+            ("closed_loop_relief_enabled", True),
             ("hotspot_util_threshold", 0.95),
             ("hotspot_topk_ranges", 3),
             ("hotspot_expand_segments", 0),
@@ -116,6 +127,14 @@ class Stage2HotspotReliefTests(unittest.TestCase):
             ("augment_window_budget", 1),
             ("augment_top_windows_per_range", 1),
             ("augment_selection_policy", "global_score_only"),
+            ("closed_loop_max_rounds", 6),
+            ("closed_loop_max_new_windows", 1),
+            ("closed_loop_min_delta_q_peak", 1e-4),
+            ("closed_loop_min_delta_q_integral", 1e-6),
+            ("closed_loop_min_delta_high_segments", 1),
+            ("closed_loop_topk_ranges_per_round", 3),
+            ("closed_loop_topk_candidates_per_range", 1),
+            ("closed_loop_action_mode", "best_global_action"),
             ("hot_path_limit", 4),
             ("hot_promoted_tasks_per_segment", 4),
             ("local_peak_horizon_cap_segments", 8),
@@ -456,10 +475,12 @@ class Stage2HotspotReliefTests(unittest.TestCase):
         self.assertIn("X2", {window.window_id for window in result.plan})
         self.assertGreaterEqual(result.metadata["hot_ranges_considered"], 1)
         self.assertGreaterEqual(result.metadata["augment_windows_added"], 1)
+        self.assertGreaterEqual(result.metadata["closed_loop_rounds_completed"], 1)
         self.assertLess(result.metadata["q_peak_after"], result.metadata["q_peak_before"])
         self.assertIn("selected_augment_windows", result.metadata["hotspot_report"])
         self.assertIn("applied_augment_windows", result.metadata["hotspot_report"])
         self.assertEqual(result.metadata["hotspot_report"]["augment_selection_policy"], "global_score_only")
+        self.assertEqual(result.metadata["hotspot_report"]["rounds"][0]["chosen_action"]["action_type"], "augment")
         for item in result.metadata["hotspot_report"]["hot_ranges"]:
             counts = item["augment_funnel_counts"]
             sequence = [
@@ -472,6 +493,97 @@ class Stage2HotspotReliefTests(unittest.TestCase):
                 int(counts.get("applied_count", 0)),
             ]
             self.assertEqual(sequence, sorted(sequence, reverse=True))
+
+    def test_closed_loop_relief_adds_one_window_per_round(self) -> None:
+        payload = _base_payload()
+        payload["planning_end"] = 600.0
+        payload["nodes"] = {
+            "A": ["A1", "A2", "A3"],
+            "B": ["B1", "B2", "B3"],
+        }
+        payload["capacities"]["X"] = 1.0
+        payload["stage1"]["d_min"] = 300.0
+        payload["stage2"].update(
+            {
+                "augment_window_budget": 2,
+                "closed_loop_max_new_windows": 2,
+                "closed_loop_max_rounds": 4,
+                "closed_loop_topk_candidates_per_range": 2,
+            }
+        )
+        payload["intra_domain_links"] = [
+            {"id": "A12", "u": "A1", "v": "A2", "domain": "A", "start": 0.0, "end": 600.0, "delay": 0.0},
+            {"id": "A23", "u": "A2", "v": "A3", "domain": "A", "start": 0.0, "end": 600.0, "delay": 0.0},
+            {"id": "B12", "u": "B1", "v": "B2", "domain": "B", "start": 0.0, "end": 600.0, "delay": 0.0},
+            {"id": "B23", "u": "B2", "v": "B3", "domain": "B", "start": 0.0, "end": 600.0, "delay": 0.0},
+        ]
+        payload["candidate_windows"] = [
+            {"id": "X1", "a": "A1", "b": "B1", "start": 0.0, "end": 600.0, "delay": 0.0},
+            {"id": "X2", "a": "A2", "b": "B2", "start": 0.0, "end": 300.0, "delay": 0.0},
+            {"id": "X3", "a": "A3", "b": "B3", "start": 300.0, "end": 600.0, "delay": 0.0},
+        ]
+        payload["tasks"] = [
+            {
+                "id": "R1",
+                "src": "A1",
+                "dst": "B1",
+                "arrival": 0.0,
+                "deadline": 300.0,
+                "data": 150.0,
+                "weight": 1.0,
+                "max_rate": 0.6,
+                "type": "reg",
+            },
+            {
+                "id": "R2",
+                "src": "A2",
+                "dst": "B2",
+                "arrival": 0.0,
+                "deadline": 300.0,
+                "data": 150.0,
+                "weight": 1.0,
+                "max_rate": 0.6,
+                "type": "reg",
+            },
+            {
+                "id": "R3",
+                "src": "A1",
+                "dst": "B1",
+                "arrival": 300.0,
+                "deadline": 600.0,
+                "data": 150.0,
+                "weight": 1.0,
+                "max_rate": 0.6,
+                "type": "reg",
+            },
+            {
+                "id": "R4",
+                "src": "A3",
+                "dst": "B3",
+                "arrival": 300.0,
+                "deadline": 600.0,
+                "data": 150.0,
+                "weight": 1.0,
+                "max_rate": 0.6,
+                "type": "reg",
+            },
+        ]
+        scenario = _load_payload(payload)
+        fixed_plan = [
+            ScheduledWindow(window_id="X1", a="A1", b="B1", start=0.0, end=600.0, on=0.0, off=600.0, delay=0.0)
+        ]
+
+        result = run_stage2(scenario, fixed_plan)
+        hotspot_report = result.metadata["hotspot_report"]
+        chosen_actions = [item["chosen_action"] for item in hotspot_report["rounds"] if item.get("chosen_action")]
+
+        self.assertEqual(result.metadata["closed_loop_new_windows_added"], 2)
+        self.assertEqual(result.metadata["closed_loop_actions_accepted"], 2)
+        self.assertEqual([item["action_type"] for item in chosen_actions], ["augment", "augment"])
+        self.assertEqual([item["window_id"] for item in chosen_actions], ["X2", "X3"])
+        self.assertEqual(hotspot_report["selected_augment_windows"], ["X2", "X3"])
+        self.assertEqual(hotspot_report["applied_augment_windows"], ["X2", "X3"])
+        self.assertLess(result.metadata["q_peak_after"], result.metadata["q_peak_before"])
 
 
 if __name__ == "__main__":

@@ -29,6 +29,10 @@ REGULAR_BASELINE_MODES = {
     "rolling_milp",
     "full_milp",
 }
+_CLOSED_LOOP_ACTION_MODES = {
+    "reroute_then_augment",
+    "best_global_action",
+}
 
 WEIGHT_EPS = 1e-9
 LIGHT_SPEED_KM_PER_S = 299_792.458
@@ -333,29 +337,24 @@ def load_scenario(path: str | Path) -> Scenario:
     raw_repair_time_limit = stage2_cfg.get("repair_time_limit_seconds")
     raw_local_peak_horizon_cap = stage2_cfg.get("local_peak_horizon_cap_segments")
     raw_augment_selection_policy = stage2_cfg.get("augment_selection_policy")
+    raw_closed_loop_action_mode = stage2_cfg.get("closed_loop_action_mode")
     stage2 = Stage2Config(
         k_paths=stage2_k_paths,
         completion_tolerance=_float(stage2_cfg.get("completion_tolerance", 1e-6), "stage2.completion_tolerance"),
         regular_baseline_mode=(
-            None
+            "stage1_greedy_repair"
             if raw_regular_baseline_mode in {None, ""}
-            else (
-                (
-                    "full_milp"
-                    if str(raw_regular_baseline_mode).strip().lower() == "rolling_milp"
-                    else str(raw_regular_baseline_mode).strip().lower()
-                )
-                if str(raw_regular_baseline_mode).strip().lower() in REGULAR_BASELINE_MODES
-                else None
-            )
+            else str(raw_regular_baseline_mode).strip().lower()
+            if str(raw_regular_baseline_mode).strip().lower() in REGULAR_BASELINE_MODES
+            else "stage1_greedy_repair"
         ),
         regular_repair_enabled=(
             None
             if raw_regular_repair_enabled in {None, ""}
             else _bool(raw_regular_repair_enabled, "stage2.regular_repair_enabled")
         ),
-        prefer_milp=_bool(stage2_cfg.get("prefer_milp", True), "stage2.prefer_milp"),
-        milp_mode="full" if raw_milp_mode in {"full", "rolling"} else "full",
+        prefer_milp=_bool(stage2_cfg.get("prefer_milp", False), "stage2.prefer_milp"),
+        milp_mode=str(raw_milp_mode) if raw_milp_mode in {"full", "rolling"} else "full",
         milp_horizon_segments=max(int(stage2_cfg.get("milp_horizon_segments", 16)), 1),
         milp_commit_segments=max(int(stage2_cfg.get("milp_commit_segments", 8)), 1),
         milp_rolling_path_limit=max(int(stage2_cfg.get("milp_rolling_path_limit", 1)), 1),
@@ -390,6 +389,13 @@ def load_scenario(path: str | Path) -> Scenario:
         ),
         repair_accept_epsilon=max(_float(stage2_cfg.get("repair_accept_epsilon", 1e-6), "stage2.repair_accept_epsilon"), 0.0),
         hotspot_relief_enabled=_bool(stage2_cfg.get("hotspot_relief_enabled", True), "stage2.hotspot_relief_enabled"),
+        closed_loop_relief_enabled=_bool(
+            stage2_cfg.get(
+                "closed_loop_relief_enabled",
+                stage2_cfg.get("hotspot_relief_enabled", True),
+            ),
+            "stage2.closed_loop_relief_enabled",
+        ),
         hotspot_util_threshold=max(_float(stage2_cfg.get("hotspot_util_threshold", 0.95), "stage2.hotspot_util_threshold"), 0.0),
         hotspot_topk_ranges=max(int(stage2_cfg.get("hotspot_topk_ranges", 5)), 0),
         hotspot_expand_segments=max(int(stage2_cfg.get("hotspot_expand_segments", 2)), 0),
@@ -410,6 +416,35 @@ def load_scenario(path: str | Path) -> Scenario:
             str(raw_augment_selection_policy).strip().lower()
             if str(raw_augment_selection_policy).strip().lower() in {"global_score_only", "structural_coverage_first"}
             else "global_score_only"
+        ),
+        closed_loop_max_rounds=max(int(stage2_cfg.get("closed_loop_max_rounds", 6)), 0),
+        closed_loop_max_new_windows=max(int(stage2_cfg.get("closed_loop_max_new_windows", 2)), 0),
+        closed_loop_min_delta_q_peak=max(
+            _float(stage2_cfg.get("closed_loop_min_delta_q_peak", 1e-4), "stage2.closed_loop_min_delta_q_peak"),
+            0.0,
+        ),
+        closed_loop_min_delta_q_integral=max(
+            _float(stage2_cfg.get("closed_loop_min_delta_q_integral", 1e-6), "stage2.closed_loop_min_delta_q_integral"),
+            0.0,
+        ),
+        closed_loop_min_delta_high_segments=max(int(stage2_cfg.get("closed_loop_min_delta_high_segments", 1)), 0),
+        closed_loop_topk_ranges_per_round=max(
+            int(stage2_cfg.get("closed_loop_topk_ranges_per_round", stage2_cfg.get("hotspot_topk_ranges", 5))),
+            0,
+        ),
+        closed_loop_topk_candidates_per_range=max(
+            int(
+                stage2_cfg.get(
+                    "closed_loop_topk_candidates_per_range",
+                    stage2_cfg.get("augment_top_windows_per_range", 3),
+                )
+            ),
+            0,
+        ),
+        closed_loop_action_mode=(
+            str(raw_closed_loop_action_mode).strip().lower()
+            if str(raw_closed_loop_action_mode).strip().lower() in _CLOSED_LOOP_ACTION_MODES
+            else "best_global_action"
         ),
         hot_path_limit=max(int(stage2_cfg.get("hot_path_limit", 4)), 1),
         hot_promoted_tasks_per_segment=max(int(stage2_cfg.get("hot_promoted_tasks_per_segment", 8)), 0),

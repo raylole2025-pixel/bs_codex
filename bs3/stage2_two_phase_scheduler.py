@@ -18,6 +18,7 @@ from .stage2_regular_greedy_baseline import build_regular_baseline_stage1_greedy
 from .stage2_regular_joint_milp import (
     build_regular_baseline_full_milp,
     build_regular_baseline_joint_milp,
+    build_regular_baseline_rolling_milp,
 )
 
 EPS = 1e-9
@@ -95,7 +96,9 @@ class TwoPhaseEventDrivenScheduler:
         self.scenario.metadata.pop("stage2_segment_compression_result", None)
         segments = build_segments(self.scenario, plan, regular_tasks)
         raw_event_segment_count = len(segments)
-        hotspot_requested = bool(self.scenario.stage2.hotspot_relief_enabled)
+        hotspot_requested = bool(self.scenario.stage2.hotspot_relief_enabled) and bool(
+            getattr(self.scenario.stage2, "closed_loop_relief_enabled", True)
+        )
         if self._segment_compression_enabled() and not hotspot_requested:
             segments, compression_result = compress_segments(self.scenario, plan, segments, regular_tasks)
             self.scenario.metadata["stage2_segment_compression_result"] = compression_result
@@ -409,13 +412,15 @@ class TwoPhaseEventDrivenScheduler:
             schedule, completed = build_regular_baseline_full_milp(self.scenario, plan, segments)
             return schedule, completed, {}
         if mode == "rolling_milp":
-            schedule, completed = build_regular_baseline_full_milp(self.scenario, plan, segments)
+            schedule, completed = build_regular_baseline_rolling_milp(self.scenario, plan, segments)
             return schedule, completed, {}
         schedule, completed = build_regular_baseline_joint_milp(self.scenario, plan, segments)
         return schedule, completed, {}
 
     def _solver_mode_label(self) -> str:
-        if self._last_regular_baseline_source in {"rolling_milp", "full_milp"}:
+        if self._last_regular_baseline_source == "rolling_milp":
+            label = "two_phase_event_insert+joint_milp_rolling"
+        elif self._last_regular_baseline_source == "full_milp":
             label = "two_phase_event_insert+joint_milp_full"
         elif self._last_regular_baseline_source == "stage1_greedy_repair":
             label = "two_phase_event_insert+stage1_greedy_repair"
@@ -449,7 +454,13 @@ class TwoPhaseEventDrivenScheduler:
             "regular_baseline_source": self._last_regular_baseline_source,
             "solver_mode": self._solver_mode_label(),
             "prefer_milp": bool(self.scenario.stage2.prefer_milp),
-            "milp_mode": ("full" if self._last_regular_baseline_source in {"rolling_milp", "full_milp"} else str(self.scenario.stage2.milp_mode)),
+            "milp_mode": (
+                "rolling"
+                if self._last_regular_baseline_source == "rolling_milp"
+                else "full"
+                if self._last_regular_baseline_source == "full_milp"
+                else str(self.scenario.stage2.milp_mode)
+            ),
             "milp_horizon_segments": int(self.scenario.stage2.milp_horizon_segments),
             "milp_commit_segments": int(self.scenario.stage2.milp_commit_segments),
             "milp_rolling_path_limit": int(self.scenario.stage2.milp_rolling_path_limit),
@@ -458,6 +469,7 @@ class TwoPhaseEventDrivenScheduler:
             "milp_time_limit_seconds": self.scenario.stage2.milp_time_limit_seconds,
             "milp_relative_gap": self.scenario.stage2.milp_relative_gap,
             "hotspot_relief_enabled": bool(self.scenario.stage2.hotspot_relief_enabled),
+            "closed_loop_relief_enabled": bool(getattr(self.scenario.stage2, "closed_loop_relief_enabled", True)),
             "regular_repair_enabled": bool(repair_metadata.get("regular_repair_enabled", False)),
             "repair_block_count_considered": int(repair_metadata.get("repair_block_count_considered", 0)),
             "repair_block_count_accepted": int(repair_metadata.get("repair_block_count_accepted", 0)),
