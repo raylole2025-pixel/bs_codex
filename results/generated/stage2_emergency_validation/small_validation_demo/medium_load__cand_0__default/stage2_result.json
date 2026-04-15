@@ -1,0 +1,1405 @@
+{
+  "plan": [
+    {
+      "window_id": "X1",
+      "a": "A2",
+      "b": "B2",
+      "start": 1.0,
+      "end": 5.0,
+      "on": 1.0,
+      "off": 5.0,
+      "value": 10.396296296296295,
+      "delay": 0.0,
+      "distance_km": null
+    },
+    {
+      "window_id": "X2",
+      "a": "A1",
+      "b": "B1",
+      "start": 3.0,
+      "end": 8.0,
+      "on": 3.0,
+      "off": 8.0,
+      "value": 9.61111111111111,
+      "delay": 0.0,
+      "distance_km": null
+    },
+    {
+      "window_id": "X3",
+      "a": "A3",
+      "b": "B3",
+      "start": 6.0,
+      "end": 11.0,
+      "on": 6.0,
+      "off": 11.0,
+      "value": 5.611111111111112,
+      "delay": 0.0,
+      "distance_km": null
+    }
+  ],
+  "cr_reg": 0.8333333333333334,
+  "cr_emg": 0.19137814837991923,
+  "n_preemptions": 1,
+  "u_cross": 0.8816274050267542,
+  "u_all": 0.2868048921070857,
+  "allocations": [
+    {
+      "task_id": "R1",
+      "segment_index": 1,
+      "path_id": "R1:1:X1:stage1:0",
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "rate": 2.0,
+      "delivered": 2.0,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 1,
+      "path_id": "R2:1:X1:stage1:0",
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.09999999999999964,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R1",
+      "segment_index": 2,
+      "path_id": "R1:2:X1:stage1:0",
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "rate": 2.0,
+      "delivered": 2.0,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 2,
+      "path_id": "R2:2:X1:stage1:0",
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.09999999999999964,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R1",
+      "segment_index": 3,
+      "path_id": "R1:3:X1:stage1:0:split0",
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "rate": 2.0,
+      "delivered": 2.6036644197251526,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 3,
+      "path_id": "R2:3:X2:stage1:0:split0",
+      "edge_ids": [
+        "A23",
+        "A12",
+        "X2"
+      ],
+      "rate": 2.0,
+      "delivered": 2.6036644197251526,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R3",
+      "segment_index": 3,
+      "path_id": "R3:3:X1:stage1:0:split0",
+      "edge_ids": [
+        "X1"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.13018322098625718,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_01",
+      "segment_index": 4,
+      "path_id": "medium_load_emg_01:4:X1:0:0:split0",
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B23"
+      ],
+      "rate": 0.9000000000000004,
+      "delivered": 0.2958710253175852,
+      "task_type": "emg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R1",
+      "segment_index": 4,
+      "path_id": "R1:3:X1:stage1:0:split1:split0",
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "rate": 2.0,
+      "delivered": 0.6574911673724113,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 4,
+      "path_id": "R2:3:X2:stage1:0:split1:split0",
+      "edge_ids": [
+        "A23",
+        "A12",
+        "X2"
+      ],
+      "rate": 2.0,
+      "delivered": 0.6574911673724113,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R3",
+      "segment_index": 4,
+      "path_id": "R3:3:X1:stage1:0:split1:split0",
+      "edge_ids": [
+        "X1"
+      ],
+      "rate": 0.09999999999999966,
+      "delivered": 0.03287455836862045,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_01",
+      "segment_index": 5,
+      "path_id": "medium_load_emg_01:4:X1:0:0:split1",
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B23"
+      ],
+      "rate": 0.9000000000000002,
+      "delivered": 0.33247998580609633,
+      "task_type": "emg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_02",
+      "segment_index": 5,
+      "path_id": "medium_load_emg_02:5:X1:0:0",
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "rate": 0.09999999999999963,
+      "delivered": 0.03694222064512167,
+      "task_type": "emg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R1",
+      "segment_index": 5,
+      "path_id": "R1:3:X1:stage1:0:split1:split1",
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "rate": 2.0,
+      "delivered": 0.7388444129024361,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 5,
+      "path_id": "R2:3:X2:stage1:0:split1:split1",
+      "edge_ids": [
+        "A23",
+        "A12",
+        "X2"
+      ],
+      "rate": 2.0,
+      "delivered": 0.7388444129024361,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_01",
+      "segment_index": 6,
+      "path_id": "medium_load_emg_01:5:X2:0:0:split0",
+      "edge_ids": [
+        "A13",
+        "X2",
+        "B12",
+        "B23"
+      ],
+      "rate": 0.9000000000000002,
+      "delivered": 0.186454636422805,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_02",
+      "segment_index": 6,
+      "path_id": "medium_load_emg_02:6:X2:0:0:split0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.02071718182475603,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 6,
+      "path_id": "R2:4:X2:stage1:0:split0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 2.0,
+      "delivered": 0.41434363649512207,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_01",
+      "segment_index": 7,
+      "path_id": "medium_load_emg_01:5:X2:0:0:split1:split0",
+      "edge_ids": [
+        "A13",
+        "X2",
+        "B12",
+        "B23"
+      ],
+      "rate": 0.9000000000000004,
+      "delivered": 0.10601649848419466,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_02",
+      "segment_index": 7,
+      "path_id": "medium_load_emg_02:6:X2:0:0:split1:split0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.011779610942688248,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 7,
+      "path_id": "R2:4:X2:stage1:0:split1:split0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 2.0,
+      "delivered": 0.2355922188537658,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_01",
+      "segment_index": 8,
+      "path_id": "medium_load_emg_01:5:X2:0:0:split1:split1:split0",
+      "edge_ids": [
+        "A13",
+        "X2",
+        "B12",
+        "B23"
+      ],
+      "rate": 0.9000000000000004,
+      "delivered": 0.23321583169309434,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_02",
+      "segment_index": 8,
+      "path_id": "medium_load_emg_02:6:X2:0:0:split1:split1:split0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.02591287018812149,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 8,
+      "path_id": "R2:4:X2:stage1:0:split1:split1:split0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 2.0,
+      "delivered": 0.5182574037624317,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_01",
+      "segment_index": 9,
+      "path_id": "medium_load_emg_01:5:X2:0:0:split1:split1:split1:split0",
+      "edge_ids": [
+        "A13",
+        "X2",
+        "B12",
+        "B23"
+      ],
+      "rate": 0.9000000000000005,
+      "delivered": 0.07035527286544635,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_02",
+      "segment_index": 9,
+      "path_id": "medium_load_emg_02:6:X2:0:0:split1:split1:split1:split0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.007817252540605118,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 9,
+      "path_id": "R2:4:X2:stage1:0:split1:split1:split1:split0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 2.0,
+      "delivered": 0.15634505081210293,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_01",
+      "segment_index": 10,
+      "path_id": "medium_load_emg_01:5:X2:0:0:split1:split1:split1:split1",
+      "edge_ids": [
+        "A13",
+        "X2",
+        "B12",
+        "B23"
+      ],
+      "rate": 0.9000000000000001,
+      "delivered": 0.30395776053445994,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_02",
+      "segment_index": 10,
+      "path_id": "medium_load_emg_02:6:X2:0:0:split1:split1:split1:split1",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.03377308450382876,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 10,
+      "path_id": "R2:4:X2:stage1:0:split1:split1:split1:split1",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 2.0,
+      "delivered": 0.6754616900765775,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_01",
+      "segment_index": 11,
+      "path_id": "medium_load_emg_01:6:X3:0:0:split0",
+      "edge_ids": [
+        "X3"
+      ],
+      "rate": 1.5,
+      "delivered": 0.17575754906786178,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_02",
+      "segment_index": 11,
+      "path_id": "medium_load_emg_02:7:X3:0:0:split0",
+      "edge_ids": [
+        "X3",
+        "B13"
+      ],
+      "rate": 1.5,
+      "delivered": 0.17575754906786178,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_03",
+      "segment_index": 11,
+      "path_id": "medium_load_emg_03:8:X2:0:0:split0",
+      "edge_ids": [
+        "X2"
+      ],
+      "rate": 1.0999999999999996,
+      "delivered": 0.12888886931643193,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 11,
+      "path_id": "R2:5:X2:stage1:0:split0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 1.9000000000000004,
+      "delivered": 0.22262622881929164,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_01",
+      "segment_index": 12,
+      "path_id": "medium_load_emg_01:6:X3:0:0:split1:split0",
+      "edge_ids": [
+        "X3"
+      ],
+      "rate": 1.5,
+      "delivered": 0.16592447012519118,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_02",
+      "segment_index": 12,
+      "path_id": "medium_load_emg_02:7:X3:0:0:split1:split0",
+      "edge_ids": [
+        "X3",
+        "B13"
+      ],
+      "rate": 1.5,
+      "delivered": 0.16592447012519118,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_03",
+      "segment_index": 12,
+      "path_id": "medium_load_emg_03:8:X2:0:0:split1:split0",
+      "edge_ids": [
+        "X2"
+      ],
+      "rate": 1.0999999999999996,
+      "delivered": 0.12167794475847349,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 12,
+      "path_id": "R2:5:X2:stage1:0:split1:split0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 1.9000000000000004,
+      "delivered": 0.21017099549190887,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_01",
+      "segment_index": 13,
+      "path_id": "medium_load_emg_01:6:X3:0:0:split1:split1:split0",
+      "edge_ids": [
+        "X3"
+      ],
+      "rate": 1.5,
+      "delivered": 0.3566203119180389,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_02",
+      "segment_index": 13,
+      "path_id": "medium_load_emg_02:7:X3:0:0:split1:split1:split0",
+      "edge_ids": [
+        "X3",
+        "B13"
+      ],
+      "rate": 1.5,
+      "delivered": 0.3566203119180389,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_03",
+      "segment_index": 13,
+      "path_id": "medium_load_emg_03:8:X2:0:0:split1:split1:split0",
+      "edge_ids": [
+        "X2"
+      ],
+      "rate": 1.0999999999999994,
+      "delivered": 0.2615215620732284,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 13,
+      "path_id": "R2:5:X2:stage1:0:split1:split1:split0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 1.9000000000000006,
+      "delivered": 0.45171906176284937,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_01",
+      "segment_index": 14,
+      "path_id": "medium_load_emg_01:6:X3:0:0:split1:split1:split1:split0",
+      "edge_ids": [
+        "X3"
+      ],
+      "rate": 1.5,
+      "delivered": 0.4613970898406703,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_02",
+      "segment_index": 14,
+      "path_id": "medium_load_emg_02:7:X3:0:0:split1:split1:split1:split0",
+      "edge_ids": [
+        "X3",
+        "B13"
+      ],
+      "rate": 1.5,
+      "delivered": 0.4613970898406703,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_03",
+      "segment_index": 14,
+      "path_id": "medium_load_emg_03:8:X2:0:0:split1:split1:split1:split0",
+      "edge_ids": [
+        "X2"
+      ],
+      "rate": 1.0999999999999996,
+      "delivered": 0.3383578658831581,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 14,
+      "path_id": "R2:5:X2:stage1:0:split1:split1:split1:split0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 1.9000000000000004,
+      "delivered": 0.5844363137981825,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_01",
+      "segment_index": 15,
+      "path_id": "medium_load_emg_01:6:X3:0:0:split1:split1:split1:split1",
+      "edge_ids": [
+        "X3"
+      ],
+      "rate": 1.5,
+      "delivered": 1.8403005790482379,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_02",
+      "segment_index": 15,
+      "path_id": "medium_load_emg_02:7:X3:0:0:split1:split1:split1:split1",
+      "edge_ids": [
+        "X3",
+        "B13"
+      ],
+      "rate": 1.5,
+      "delivered": 1.8403005790482379,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_03",
+      "segment_index": 15,
+      "path_id": "medium_load_emg_03:8:X2:0:0:split1:split1:split1:split1",
+      "edge_ids": [
+        "X2"
+      ],
+      "rate": 1.0999999999999996,
+      "delivered": 1.3495537579687074,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 15,
+      "path_id": "R2:5:X2:stage1:0:split1:split1:split1:split1",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 1.9000000000000001,
+      "delivered": 2.331047400127768,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_01",
+      "segment_index": 16,
+      "path_id": "medium_load_emg_01:7:X3:0:0",
+      "edge_ids": [
+        "X3"
+      ],
+      "rate": 1.2975945229102708,
+      "delivered": 2.1394213453994677,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_02",
+      "segment_index": 16,
+      "path_id": "medium_load_emg_02:8:X3:0:0",
+      "edge_ids": [
+        "X3",
+        "B13"
+      ],
+      "rate": 1.7024054770897292,
+      "delivered": 2.8068572669696668,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_02",
+      "segment_index": 17,
+      "path_id": "medium_load_emg_02:9:X3:0:0",
+      "edge_ids": [
+        "X3",
+        "B13"
+      ],
+      "rate": 2.426829468261616,
+      "delivered": 0.8524007049467018,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_03",
+      "segment_index": 17,
+      "path_id": "medium_load_emg_03:10:X3:0:0",
+      "edge_ids": [
+        "A13",
+        "X3",
+        "B13"
+      ],
+      "rate": 0.5731705317383842,
+      "delivered": 0.20132068268416375,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_02",
+      "segment_index": 18,
+      "path_id": "medium_load_emg_02:10:X3:0:0",
+      "edge_ids": [
+        "X3",
+        "B13"
+      ],
+      "rate": 2.3946376693194735,
+      "delivered": 2.3946376693194735,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "medium_load_emg_03",
+      "segment_index": 18,
+      "path_id": "medium_load_emg_03:11:X3:0:0",
+      "edge_ids": [
+        "A13",
+        "X3",
+        "B13"
+      ],
+      "rate": 0.6053623306805265,
+      "delivered": 0.6053623306805265,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    }
+  ],
+  "solver_mode": "stage2_emergency_insert",
+  "metadata": {
+    "stage2_role": "emergency_event_insert_only",
+    "solver_mode": "stage2_emergency_insert",
+    "event_segment_count": 9,
+    "event_segment_count_raw": 9,
+    "regular_task_count": 3,
+    "plan_window_count": 3,
+    "elapsed_seconds": 0.013984800083562732,
+    "baseline_source": "stage1_result",
+    "baseline_summary": {
+      "baseline_regular_task_count": 3,
+      "completed_baseline_regular_task_count": 3,
+      "incomplete_baseline_regular_task_count": 0,
+      "stage1_metric_regular_task_count": 3,
+      "completed_stage1_metric_regular_task_count": 3,
+      "segment_count": 9,
+      "allocation_count": 13,
+      "window_count": 3,
+      "mean_completion_ratio": 1.0,
+      "fr": 1.0,
+      "eta_cap": 0.14425457441015863,
+      "eta_0": 0.058049435311224695,
+      "max_cross_rate_used": 4.1,
+      "max_cross_window_util": 1.0
+    },
+    "baseline_completed_count": 3,
+    "final_regular_completed_count": 2,
+    "regular_tasks_degraded_by_emergency": [
+      "R3"
+    ],
+    "regular_remaining_end": {
+      "R1": 0.0,
+      "R2": 0.0,
+      "R3": 6.836942220645122
+    },
+    "baseline_remaining_end": {
+      "R1": 0.0,
+      "R2": 0.0,
+      "R3": 0.0
+    },
+    "baseline_regular_allocation_count": 13,
+    "executed_regular_allocation_count": 22,
+    "executed_emergency_allocation_count": 34,
+    "emergency_insertions": [
+      {
+        "task_id": "medium_load_emg_01",
+        "arrival": 4.301832209862576,
+        "deadline": 9.648759537456378,
+        "data": 6.66777235652315,
+        "weight": 2.1885644737624235,
+        "segment_index": 4,
+        "preemptions_added": 0,
+        "strategy": "direct_insert",
+        "completed": true,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "planned_delivery": 6.66777235652315,
+        "direct_plan_delivery": 6.66777235652315
+      },
+      {
+        "task_id": "medium_load_emg_02",
+        "arrival": 4.630577793548782,
+        "deadline": 12.0,
+        "data": 9.190837861880963,
+        "weight": 2.589471004365234,
+        "segment_index": 5,
+        "preemptions_added": 1,
+        "strategy": "controlled_preemption",
+        "completed": true,
+        "used_preemption": true,
+        "preemptions": 1,
+        "preempted_task_id": "R3",
+        "released_segments": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "horizon_segment_indices": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "planned_delivery": 9.190837861880963,
+        "direct_plan_delivery": 5.3605786546005305
+      },
+      {
+        "task_id": "medium_load_emg_03",
+        "arrival": 5.207171818247561,
+        "deadline": 12.0,
+        "data": 8.479464810587183,
+        "weight": 2.5933041844279408,
+        "segment_index": 7,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "planned_delivery": 3.0066830133646896,
+        "direct_plan_delivery": 3.0066830133646896
+      },
+      {
+        "task_id": "medium_load_emg_04",
+        "arrival": 5.324967927674444,
+        "deadline": 11.948907709840343,
+        "data": 6.693918928081503,
+        "weight": 2.6174656094087174,
+        "segment_index": 8,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "medium_load_emg_05",
+        "arrival": 5.58409662955566,
+        "deadline": 12.0,
+        "data": 8.088870859296188,
+        "weight": 2.714657039334074,
+        "segment_index": 9,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "medium_load_emg_06",
+        "arrival": 5.662269154961711,
+        "deadline": 12.0,
+        "data": 9.867875588623434,
+        "weight": 2.6617805971402237,
+        "segment_index": 10,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "medium_load_emg_07",
+        "arrival": 6.1171716993785745,
+        "deadline": 12.0,
+        "data": 6.957940184020539,
+        "weight": 2.397758866440701,
+        "segment_index": 12,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          12,
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "medium_load_emg_08",
+        "arrival": 6.227788012795369,
+        "deadline": 12.0,
+        "data": 6.670183961669258,
+        "weight": 2.4002881290667375,
+        "segment_index": 13,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "medium_load_emg_09",
+        "arrival": 6.465534887407395,
+        "deadline": 12.0,
+        "data": 8.899558337222402,
+        "weight": 2.3883353567250394,
+        "segment_index": 14,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "medium_load_emg_10",
+        "arrival": 6.773132947301175,
+        "deadline": 12.0,
+        "data": 7.676905593571744,
+        "weight": 2.4148378312510754,
+        "segment_index": 15,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      }
+    ],
+    "emergency_task_count": 10,
+    "emergency_insertions_count": 10,
+    "emergency_insertions_used_preemption_count": 1,
+    "emergency_insertions_direct_count": 1,
+    "empty_emergency_insert": false,
+    "baseline_cross_window_usage_by_segment": {
+      "0": {},
+      "1": {
+        "X1": 2.0999999999999996
+      },
+      "2": {
+        "X1": 2.0999999999999996
+      },
+      "3": {
+        "X1": 2.0999999999999996,
+        "X2": 2.0
+      },
+      "4": {
+        "X2": 2.0999999999999996
+      },
+      "5": {
+        "X2": 1.9000000000000004,
+        "X3": 1.5
+      },
+      "6": {
+        "X3": 1.5
+      },
+      "7": {
+        "X3": 0.7000000000000011
+      },
+      "8": {}
+    },
+    "final_cross_window_usage_by_segment": {
+      "1": {
+        "X1": 2.0999999999999996
+      },
+      "2": {
+        "X1": 2.0999999999999996
+      },
+      "3": {
+        "X1": 2.0999999999999996,
+        "X2": 2.0
+      },
+      "4": {
+        "X1": 3.0,
+        "X2": 2.0
+      },
+      "5": {
+        "X1": 3.0,
+        "X2": 2.0
+      },
+      "6": {
+        "X2": 3.0
+      },
+      "7": {
+        "X2": 3.0
+      },
+      "8": {
+        "X2": 3.0
+      },
+      "9": {
+        "X2": 3.0
+      },
+      "10": {
+        "X2": 3.0
+      },
+      "11": {
+        "X3": 3.0,
+        "X2": 3.0
+      },
+      "12": {
+        "X3": 3.0,
+        "X2": 3.0
+      },
+      "13": {
+        "X3": 3.0,
+        "X2": 3.0
+      },
+      "14": {
+        "X3": 3.0,
+        "X2": 3.0
+      },
+      "15": {
+        "X3": 3.0,
+        "X2": 3.0
+      },
+      "16": {
+        "X3": 3.0
+      },
+      "17": {
+        "X3": 3.0
+      },
+      "18": {
+        "X3": 3.0
+      }
+    },
+    "regular_cross_window_usage_by_segment": {
+      "1": {
+        "X1": 2.0999999999999996
+      },
+      "2": {
+        "X1": 2.0999999999999996
+      },
+      "3": {
+        "X1": 2.0999999999999996,
+        "X2": 2.0
+      },
+      "4": {
+        "X1": 2.0999999999999996,
+        "X2": 2.0
+      },
+      "5": {
+        "X1": 2.0,
+        "X2": 2.0
+      },
+      "6": {
+        "X2": 2.0
+      },
+      "7": {
+        "X2": 2.0
+      },
+      "8": {
+        "X2": 2.0
+      },
+      "9": {
+        "X2": 2.0
+      },
+      "10": {
+        "X2": 2.0
+      },
+      "11": {
+        "X2": 1.9000000000000004
+      },
+      "12": {
+        "X2": 1.9000000000000004
+      },
+      "13": {
+        "X2": 1.9000000000000006
+      },
+      "14": {
+        "X2": 1.9000000000000004
+      },
+      "15": {
+        "X2": 1.9000000000000001
+      }
+    },
+    "emergency_cross_window_usage_by_segment": {
+      "4": {
+        "X1": 0.9000000000000004
+      },
+      "5": {
+        "X1": 0.9999999999999999
+      },
+      "6": {
+        "X2": 0.9999999999999999
+      },
+      "7": {
+        "X2": 1.0
+      },
+      "8": {
+        "X2": 1.0
+      },
+      "9": {
+        "X2": 1.0
+      },
+      "10": {
+        "X2": 0.9999999999999998
+      },
+      "11": {
+        "X3": 3.0,
+        "X2": 1.0999999999999996
+      },
+      "12": {
+        "X3": 3.0,
+        "X2": 1.0999999999999996
+      },
+      "13": {
+        "X3": 3.0,
+        "X2": 1.0999999999999994
+      },
+      "14": {
+        "X3": 3.0,
+        "X2": 1.0999999999999996
+      },
+      "15": {
+        "X3": 3.0,
+        "X2": 1.0999999999999996
+      },
+      "16": {
+        "X3": 3.0
+      },
+      "17": {
+        "X3": 3.0
+      },
+      "18": {
+        "X3": 3.0
+      }
+    },
+    "cross_window_usage_delta_by_segment": {
+      "4": {
+        "X1": 3.0,
+        "X2": -0.09999999999999964
+      },
+      "5": {
+        "X1": 3.0,
+        "X2": 0.09999999999999964,
+        "X3": -1.5
+      },
+      "6": {
+        "X2": 3.0,
+        "X3": -1.5
+      },
+      "7": {
+        "X2": 3.0,
+        "X3": -0.7000000000000011
+      },
+      "8": {
+        "X2": 3.0
+      },
+      "9": {
+        "X2": 3.0
+      },
+      "10": {
+        "X2": 3.0
+      },
+      "11": {
+        "X2": 3.0,
+        "X3": 3.0
+      },
+      "12": {
+        "X2": 3.0,
+        "X3": 3.0
+      },
+      "13": {
+        "X2": 3.0,
+        "X3": 3.0
+      },
+      "14": {
+        "X2": 3.0,
+        "X3": 3.0
+      },
+      "15": {
+        "X2": 3.0,
+        "X3": 3.0
+      },
+      "16": {
+        "X3": 3.0
+      },
+      "17": {
+        "X3": 3.0
+      },
+      "18": {
+        "X3": 3.0
+      }
+    }
+  },
+  "gateway_count": 6,
+  "activation_count": 6
+}

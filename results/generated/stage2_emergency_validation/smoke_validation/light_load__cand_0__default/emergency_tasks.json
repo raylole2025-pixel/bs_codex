@@ -1,0 +1,67 @@
+{
+  "case_name": "light_load",
+  "case_type": "light",
+  "seed": 18,
+  "task_id_mapping": {
+    "light_load_emg_01": "light_load_emg_01",
+    "light_load_emg_02": "light_load_emg_02",
+    "light_load_emg_03": "light_load_emg_03"
+  },
+  "tasks": [
+    {
+      "id": "light_load_emg_01",
+      "src": "A3",
+      "dst": "B1",
+      "arrival": 1.891422971249874,
+      "deadline": 8.007637415254216,
+      "data": 5.018415678324189,
+      "weight": 1.8280818986582814,
+      "max_rate": 2.4615302770704943,
+      "type": "emg",
+      "preemption_priority": 1.8280818986582814,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "light_load_emg_01"
+    },
+    {
+      "id": "light_load_emg_02",
+      "src": "A2",
+      "dst": "B2",
+      "arrival": 4.68160936705715,
+      "deadline": 10.572782166661483,
+      "data": 4.058359998745853,
+      "weight": 1.8776606547047459,
+      "max_rate": 2.066664891760648,
+      "type": "emg",
+      "preemption_priority": 1.8776606547047459,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "light_load_emg_02"
+    },
+    {
+      "id": "light_load_emg_03",
+      "src": "A2",
+      "dst": "B3",
+      "arrival": 6.563879666063437,
+      "deadline": 12.0,
+      "data": 4.738359595697569,
+      "weight": 2.233711365245446,
+      "max_rate": 1.794399984624613,
+      "type": "emg",
+      "preemption_priority": 2.233711365245446,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "light_load_emg_03"
+    }
+  ],
+  "summary": {
+    "count": 3,
+    "count_emg": 3,
+    "total_data_Mb": 13.81513527276761,
+    "mean_data_Mb": 4.605045090922537,
+    "mean_weight": 1.9798179728694911,
+    "arrival_min": 1.891422971249874,
+    "arrival_max": 6.563879666063437,
+    "deadline_min": 8.007637415254216,
+    "deadline_max": 12.0,
+    "mean_window_s": 5.814502525848412,
+    "peak_overlap": 3
+  }
+}

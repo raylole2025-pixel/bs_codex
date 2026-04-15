@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from .models import PathCandidate, Scenario, Segment, Task
@@ -39,6 +40,26 @@ def cross_link_from_edges(edge_ids: tuple[str, ...], cross_edge_ids: set[str]) -
         if edge_id.startswith("X") or edge_id.startswith("W"):
             return edge_id
     return None
+
+
+def clamp01(value: float) -> float:
+    return min(max(float(value), 0.0), 1.0)
+
+
+def post_allocation_max_utilization(
+    edge_ids: tuple[str, ...],
+    capacities: Mapping[str, float],
+    free_before: Mapping[str, float],
+    rate: float,
+) -> float:
+    max_utilization = 0.0
+    for edge_id in edge_ids:
+        capacity = float(capacities.get(edge_id, 0.0))
+        if capacity <= EPS:
+            continue
+        used_after = max(capacity - float(free_before.get(edge_id, 0.0)) + float(rate), 0.0)
+        max_utilization = max(max_utilization, used_after / capacity)
+    return max_utilization
 
 
 def stage1_style_path_options(

@@ -1,0 +1,17 @@
+{
+  "tasks": [
+    {
+      "id": "E_demo_01",
+      "src": "A1",
+      "dst": "B1",
+      "arrival": 120.0,
+      "deadline": 240.0,
+      "data": 80.0,
+      "weight": 5.0,
+      "max_rate": 2.0,
+      "type": "emg",
+      "preemption_priority": 5.0,
+      "notes": "example emergency task"
+    }
+  ]
+}

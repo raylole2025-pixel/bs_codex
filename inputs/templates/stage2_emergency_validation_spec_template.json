@@ -1,0 +1,43 @@
+{
+  "name": "stage2_emergency_custom_suite",
+  "candidate_indices": [0, 1, 2],
+  "rho_values": ["default", 0.2, 0.3],
+  "cases": [
+    {
+      "name": "empty_control",
+      "case_type": "empty",
+      "description": "Check strict degeneration to baseline.",
+      "source": {
+        "mode": "generate",
+        "params": {
+          "num_emergencies": 0
+        }
+      }
+    },
+    {
+      "name": "light_generated",
+      "case_type": "light",
+      "description": "Generated light-load emergency case.",
+      "source": {
+        "mode": "generate",
+        "params": {
+          "num_emergencies": 4,
+          "arrival_pattern": "uniform",
+          "deadline_tightness": "loose",
+          "data_scale": "low",
+          "weight_scale": "medium",
+          "hotspot_bias": false
+        }
+      }
+    },
+    {
+      "name": "json_emergency_case",
+      "case_type": "custom",
+      "description": "Read emergency tasks from JSON.",
+      "source": {
+        "mode": "json",
+        "path": "stage2_emergency_tasks_template.json"
+      }
+    }
+  ]
+}

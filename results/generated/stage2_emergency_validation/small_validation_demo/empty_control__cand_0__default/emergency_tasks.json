@@ -1,0 +1,20 @@
+{
+  "case_name": "empty_control",
+  "case_type": "empty",
+  "seed": 7,
+  "task_id_mapping": {},
+  "tasks": [],
+  "summary": {
+    "count": 0,
+    "count_emg": 0,
+    "total_data_Mb": 0.0,
+    "mean_data_Mb": 0.0,
+    "mean_weight": 0.0,
+    "arrival_min": null,
+    "arrival_max": null,
+    "deadline_min": null,
+    "deadline_max": null,
+    "mean_window_s": 0.0,
+    "peak_overlap": 0
+  }
+}

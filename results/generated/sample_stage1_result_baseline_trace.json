@@ -1,0 +1,1585 @@
+{
+  "rho": 0.3,
+  "segments": [
+    {
+      "segment_index": 0,
+      "start": 0.0,
+      "end": 1.0,
+      "duration": 1.0,
+      "active_task_count": 1,
+      "demand_req": 1.3333333333333333,
+      "cross_demand_req": 1.3333333333333333,
+      "required_cross_link_count": 1,
+      "cross_link_count": 0,
+      "cross_capacity": 0.0,
+      "cross_supply": 0.0,
+      "cross_rate_used": 0,
+      "cross_data_used": 0.0,
+      "eta_cap_shortfall": 1.3333333333333333,
+      "zero_cross_req": 1,
+      "zero_cross_demand": 1,
+      "eta0_indicator": 1,
+      "active_task_ids": [
+        "R1"
+      ],
+      "active_cross_window_ids": [],
+      "occupied_cross_window_ids": [],
+      "available_cross_capacity": {},
+      "available_intra_capacity": {
+        "A12": 4.0,
+        "A23": 4.0,
+        "B12": 4.0,
+        "B23": 4.0
+      }
+    },
+    {
+      "segment_index": 1,
+      "start": 1.0,
+      "end": 2.0,
+      "duration": 1.0,
+      "active_task_count": 2,
+      "demand_req": 2.7111111111111112,
+      "cross_demand_req": 2.7111111111111112,
+      "required_cross_link_count": 2,
+      "cross_link_count": 1,
+      "cross_capacity": 2.0999999999999996,
+      "cross_supply": 2.0999999999999996,
+      "cross_rate_used": 2.0999999999999996,
+      "cross_data_used": 2.0999999999999996,
+      "eta_cap_shortfall": 0.6111111111111116,
+      "zero_cross_req": 0,
+      "zero_cross_demand": 0,
+      "eta0_indicator": 0,
+      "active_task_ids": [
+        "R1",
+        "R2"
+      ],
+      "active_cross_window_ids": [
+        "X1"
+      ],
+      "occupied_cross_window_ids": [
+        "X1"
+      ],
+      "available_cross_capacity": {
+        "X1": 0.0
+      },
+      "available_intra_capacity": {
+        "A12": 2.0,
+        "A23": 3.9000000000000004,
+        "B12": 3.9000000000000004,
+        "B23": 2.0
+      }
+    },
+    {
+      "segment_index": 2,
+      "start": 2.0,
+      "end": 3.0,
+      "duration": 1.0,
+      "active_task_count": 3,
+      "demand_req": 3.4375,
+      "cross_demand_req": 3.4375,
+      "required_cross_link_count": 2,
+      "cross_link_count": 1,
+      "cross_capacity": 2.0999999999999996,
+      "cross_supply": 2.0999999999999996,
+      "cross_rate_used": 2.0999999999999996,
+      "cross_data_used": 2.0999999999999996,
+      "eta_cap_shortfall": 1.3375000000000004,
+      "zero_cross_req": 0,
+      "zero_cross_demand": 0,
+      "eta0_indicator": 0,
+      "active_task_ids": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "active_cross_window_ids": [
+        "X1"
+      ],
+      "occupied_cross_window_ids": [
+        "X1"
+      ],
+      "available_cross_capacity": {
+        "X1": 0.0
+      },
+      "available_intra_capacity": {
+        "A12": 2.0,
+        "A23": 3.9000000000000004,
+        "B12": 3.9000000000000004,
+        "B23": 2.0
+      }
+    },
+    {
+      "segment_index": 3,
+      "start": 3.0,
+      "end": 5.0,
+      "duration": 2.0,
+      "active_task_count": 3,
+      "demand_req": 3.511111111111111,
+      "cross_demand_req": 3.511111111111111,
+      "required_cross_link_count": 2,
+      "cross_link_count": 2,
+      "cross_capacity": 4.199999999999999,
+      "cross_supply": 4.199999999999999,
+      "cross_rate_used": 4.1,
+      "cross_data_used": 8.2,
+      "eta_cap_shortfall": 0.0,
+      "zero_cross_req": 0,
+      "zero_cross_demand": 0,
+      "eta0_indicator": 0,
+      "active_task_ids": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "active_cross_window_ids": [
+        "X1",
+        "X2"
+      ],
+      "occupied_cross_window_ids": [
+        "X1",
+        "X2"
+      ],
+      "available_cross_capacity": {
+        "X1": 0.0,
+        "X2": 0.09999999999999964
+      },
+      "available_intra_capacity": {
+        "A12": 0.0,
+        "A23": 2.0,
+        "B12": 4.0,
+        "B23": 2.0
+      }
+    },
+    {
+      "segment_index": 4,
+      "start": 5.0,
+      "end": 6.0,
+      "duration": 1.0,
+      "active_task_count": 2,
+      "demand_req": 2.1314285714285717,
+      "cross_demand_req": 2.1314285714285717,
+      "required_cross_link_count": 2,
+      "cross_link_count": 1,
+      "cross_capacity": 2.0999999999999996,
+      "cross_supply": 2.0999999999999996,
+      "cross_rate_used": 2.0999999999999996,
+      "cross_data_used": 2.0999999999999996,
+      "eta_cap_shortfall": 0.03142857142857203,
+      "zero_cross_req": 0,
+      "zero_cross_demand": 0,
+      "eta0_indicator": 0,
+      "active_task_ids": [
+        "R2",
+        "R3"
+      ],
+      "active_cross_window_ids": [
+        "X2"
+      ],
+      "occupied_cross_window_ids": [
+        "X2"
+      ],
+      "available_cross_capacity": {
+        "X2": 0.0
+      },
+      "available_intra_capacity": {
+        "A12": 3.9000000000000004,
+        "A23": 4.0,
+        "A13": 2.0,
+        "B12": 3.9000000000000004,
+        "B23": 4.0
+      }
+    },
+    {
+      "segment_index": 5,
+      "start": 6.0,
+      "end": 8.0,
+      "duration": 2.0,
+      "active_task_count": 2,
+      "demand_req": 2.0666666666666673,
+      "cross_demand_req": 2.0666666666666673,
+      "required_cross_link_count": 1,
+      "cross_link_count": 2,
+      "cross_capacity": 4.199999999999999,
+      "cross_supply": 4.199999999999999,
+      "cross_rate_used": 3.4000000000000004,
+      "cross_data_used": 6.800000000000001,
+      "eta_cap_shortfall": 0.0,
+      "zero_cross_req": 0,
+      "zero_cross_demand": 0,
+      "eta0_indicator": 0,
+      "active_task_ids": [
+        "R2",
+        "R3"
+      ],
+      "active_cross_window_ids": [
+        "X2",
+        "X3"
+      ],
+      "occupied_cross_window_ids": [
+        "X2",
+        "X3"
+      ],
+      "available_cross_capacity": {
+        "X2": 0.1999999999999993,
+        "X3": 0.5999999999999996
+      },
+      "available_intra_capacity": {
+        "A12": 4.0,
+        "A23": 2.5,
+        "A13": 2.0999999999999996,
+        "B12": 4.0,
+        "B23": 2.5,
+        "B13": 4.0
+      }
+    },
+    {
+      "segment_index": 6,
+      "start": 8.0,
+      "end": 10.0,
+      "duration": 2.0,
+      "active_task_count": 1,
+      "demand_req": 0.9250000000000003,
+      "cross_demand_req": 0.9250000000000003,
+      "required_cross_link_count": 1,
+      "cross_link_count": 1,
+      "cross_capacity": 2.0999999999999996,
+      "cross_supply": 2.0999999999999996,
+      "cross_rate_used": 1.5,
+      "cross_data_used": 3.0,
+      "eta_cap_shortfall": 0.0,
+      "zero_cross_req": 0,
+      "zero_cross_demand": 0,
+      "eta0_indicator": 0,
+      "active_task_ids": [
+        "R3"
+      ],
+      "active_cross_window_ids": [
+        "X3"
+      ],
+      "occupied_cross_window_ids": [
+        "X3"
+      ],
+      "available_cross_capacity": {
+        "X3": 0.5999999999999996
+      },
+      "available_intra_capacity": {
+        "A12": 4.0,
+        "A23": 2.5,
+        "A13": 4.0,
+        "B12": 4.0,
+        "B23": 2.5,
+        "B13": 4.0
+      }
+    },
+    {
+      "segment_index": 7,
+      "start": 10.0,
+      "end": 11.0,
+      "duration": 1.0,
+      "active_task_count": 1,
+      "demand_req": 0.35000000000000053,
+      "cross_demand_req": 0.35000000000000053,
+      "required_cross_link_count": 1,
+      "cross_link_count": 1,
+      "cross_capacity": 2.0999999999999996,
+      "cross_supply": 2.0999999999999996,
+      "cross_rate_used": 0.7000000000000011,
+      "cross_data_used": 0.7000000000000011,
+      "eta_cap_shortfall": 0.0,
+      "zero_cross_req": 0,
+      "zero_cross_demand": 0,
+      "eta0_indicator": 0,
+      "active_task_ids": [
+        "R3"
+      ],
+      "active_cross_window_ids": [
+        "X3"
+      ],
+      "occupied_cross_window_ids": [
+        "X3"
+      ],
+      "available_cross_capacity": {
+        "X3": 1.3999999999999986
+      },
+      "available_intra_capacity": {
+        "A12": 4.0,
+        "A23": 3.299999999999999,
+        "A13": 4.0,
+        "B12": 4.0,
+        "B23": 3.299999999999999,
+        "B13": 4.0
+      }
+    },
+    {
+      "segment_index": 8,
+      "start": 11.0,
+      "end": 12.0,
+      "duration": 1.0,
+      "active_task_count": 0,
+      "demand_req": 0,
+      "cross_demand_req": 0,
+      "required_cross_link_count": 0,
+      "cross_link_count": 0,
+      "cross_capacity": 0.0,
+      "cross_supply": 0.0,
+      "cross_rate_used": 0,
+      "cross_data_used": 0.0,
+      "eta_cap_shortfall": 0.0,
+      "zero_cross_req": 0,
+      "zero_cross_demand": 0,
+      "eta0_indicator": 0,
+      "active_task_ids": [],
+      "active_cross_window_ids": [],
+      "occupied_cross_window_ids": [],
+      "available_cross_capacity": {},
+      "available_intra_capacity": {
+        "A12": 4.0,
+        "A23": 4.0,
+        "A13": 4.0,
+        "B12": 4.0,
+        "B23": 4.0,
+        "B13": 4.0
+      }
+    }
+  ],
+  "allocations": [
+    {
+      "task_id": "R1",
+      "segment_index": 1,
+      "path_id": "R1:1:X1:stage1:0",
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "rate": 2.0,
+      "delivered": 2.0,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 1,
+      "path_id": "R2:1:X1:stage1:0",
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.09999999999999964,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R1",
+      "segment_index": 2,
+      "path_id": "R1:2:X1:stage1:0",
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "rate": 2.0,
+      "delivered": 2.0,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 2,
+      "path_id": "R2:2:X1:stage1:0",
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.09999999999999964,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R1",
+      "segment_index": 3,
+      "path_id": "R1:3:X1:stage1:0",
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "rate": 2.0,
+      "delivered": 4.0,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 3,
+      "path_id": "R2:3:X2:stage1:0",
+      "edge_ids": [
+        "A23",
+        "A12",
+        "X2"
+      ],
+      "rate": 2.0,
+      "delivered": 4.0,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R3",
+      "segment_index": 3,
+      "path_id": "R3:3:X1:stage1:0",
+      "edge_ids": [
+        "X1"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.1999999999999993,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 4,
+      "path_id": "R2:4:X2:stage1:0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 2.0,
+      "delivered": 2.0,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R3",
+      "segment_index": 4,
+      "path_id": "R3:4:X2:stage1:0",
+      "edge_ids": [
+        "A12",
+        "X2",
+        "B12"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.09999999999999964,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 5,
+      "path_id": "R2:5:X2:stage1:0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 1.9000000000000004,
+      "delivered": 3.8000000000000007,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R3",
+      "segment_index": 5,
+      "path_id": "R3:5:X3:stage1:0",
+      "edge_ids": [
+        "A23",
+        "X3",
+        "B23"
+      ],
+      "rate": 1.5,
+      "delivered": 3.0,
+      "task_type": "reg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R3",
+      "segment_index": 6,
+      "path_id": "R3:6:X3:stage1:0",
+      "edge_ids": [
+        "A23",
+        "X3",
+        "B23"
+      ],
+      "rate": 1.5,
+      "delivered": 3.0,
+      "task_type": "reg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R3",
+      "segment_index": 7,
+      "path_id": "R3:7:X3:stage1:0",
+      "edge_ids": [
+        "A23",
+        "X3",
+        "B23"
+      ],
+      "rate": 0.7000000000000011,
+      "delivered": 0.7000000000000011,
+      "task_type": "reg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    }
+  ],
+  "task_states": [
+    {
+      "segment_index": 0,
+      "segment_start": 0.0,
+      "segment_end": 1.0,
+      "task_id": "R1",
+      "active": true,
+      "served": false,
+      "remaining_before": 8.0,
+      "remaining_after": 8.0,
+      "delivered": 0.0,
+      "rate": 0.0,
+      "path_id": null,
+      "path_key": null,
+      "edge_ids": [],
+      "cross_window_id": null,
+      "completed_after": 0
+    },
+    {
+      "segment_index": 0,
+      "segment_start": 0.0,
+      "segment_end": 1.0,
+      "task_id": "R2",
+      "active": false,
+      "served": false,
+      "remaining_before": 10.0,
+      "remaining_after": 10.0,
+      "delivered": 0.0,
+      "rate": 0.0,
+      "path_id": null,
+      "path_key": null,
+      "edge_ids": [],
+      "cross_window_id": null,
+      "completed_after": 0
+    },
+    {
+      "segment_index": 0,
+      "segment_start": 0.0,
+      "segment_end": 1.0,
+      "task_id": "R3",
+      "active": false,
+      "served": false,
+      "remaining_before": 7.0,
+      "remaining_after": 7.0,
+      "delivered": 0.0,
+      "rate": 0.0,
+      "path_id": null,
+      "path_key": null,
+      "edge_ids": [],
+      "cross_window_id": null,
+      "completed_after": 0
+    },
+    {
+      "segment_index": 1,
+      "segment_start": 1.0,
+      "segment_end": 2.0,
+      "task_id": "R1",
+      "active": true,
+      "served": true,
+      "remaining_before": 8.0,
+      "remaining_after": 6.0,
+      "delivered": 2.0,
+      "rate": 2.0,
+      "path_id": "R1:1:X1:stage1:0",
+      "path_key": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "cross_window_id": "X1",
+      "completed_after": 0
+    },
+    {
+      "segment_index": 1,
+      "segment_start": 1.0,
+      "segment_end": 2.0,
+      "task_id": "R2",
+      "active": true,
+      "served": true,
+      "remaining_before": 10.0,
+      "remaining_after": 9.9,
+      "delivered": 0.09999999999999964,
+      "rate": 0.09999999999999964,
+      "path_id": "R2:1:X1:stage1:0",
+      "path_key": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "cross_window_id": "X1",
+      "completed_after": 0
+    },
+    {
+      "segment_index": 1,
+      "segment_start": 1.0,
+      "segment_end": 2.0,
+      "task_id": "R3",
+      "active": false,
+      "served": false,
+      "remaining_before": 7.0,
+      "remaining_after": 7.0,
+      "delivered": 0.0,
+      "rate": 0.0,
+      "path_id": null,
+      "path_key": null,
+      "edge_ids": [],
+      "cross_window_id": null,
+      "completed_after": 0
+    },
+    {
+      "segment_index": 2,
+      "segment_start": 2.0,
+      "segment_end": 3.0,
+      "task_id": "R1",
+      "active": true,
+      "served": true,
+      "remaining_before": 6.0,
+      "remaining_after": 4.0,
+      "delivered": 2.0,
+      "rate": 2.0,
+      "path_id": "R1:2:X1:stage1:0",
+      "path_key": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "cross_window_id": "X1",
+      "completed_after": 0
+    },
+    {
+      "segment_index": 2,
+      "segment_start": 2.0,
+      "segment_end": 3.0,
+      "task_id": "R2",
+      "active": true,
+      "served": true,
+      "remaining_before": 9.9,
+      "remaining_after": 9.8,
+      "delivered": 0.09999999999999964,
+      "rate": 0.09999999999999964,
+      "path_id": "R2:2:X1:stage1:0",
+      "path_key": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "cross_window_id": "X1",
+      "completed_after": 0
+    },
+    {
+      "segment_index": 2,
+      "segment_start": 2.0,
+      "segment_end": 3.0,
+      "task_id": "R3",
+      "active": true,
+      "served": false,
+      "remaining_before": 7.0,
+      "remaining_after": 7.0,
+      "delivered": 0.0,
+      "rate": 0.0,
+      "path_id": null,
+      "path_key": null,
+      "edge_ids": [],
+      "cross_window_id": null,
+      "completed_after": 0
+    },
+    {
+      "segment_index": 3,
+      "segment_start": 3.0,
+      "segment_end": 5.0,
+      "task_id": "R1",
+      "active": true,
+      "served": true,
+      "remaining_before": 4.0,
+      "remaining_after": 0.0,
+      "delivered": 4.0,
+      "rate": 2.0,
+      "path_id": "R1:3:X1:stage1:0",
+      "path_key": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "cross_window_id": "X1",
+      "completed_after": 1
+    },
+    {
+      "segment_index": 3,
+      "segment_start": 3.0,
+      "segment_end": 5.0,
+      "task_id": "R2",
+      "active": true,
+      "served": true,
+      "remaining_before": 9.8,
+      "remaining_after": 5.800000000000001,
+      "delivered": 4.0,
+      "rate": 2.0,
+      "path_id": "R2:3:X2:stage1:0",
+      "path_key": [
+        "A23",
+        "A12",
+        "X2"
+      ],
+      "edge_ids": [
+        "A23",
+        "A12",
+        "X2"
+      ],
+      "cross_window_id": "X2",
+      "completed_after": 0
+    },
+    {
+      "segment_index": 3,
+      "segment_start": 3.0,
+      "segment_end": 5.0,
+      "task_id": "R3",
+      "active": true,
+      "served": true,
+      "remaining_before": 7.0,
+      "remaining_after": 6.800000000000001,
+      "delivered": 0.1999999999999993,
+      "rate": 0.09999999999999964,
+      "path_id": "R3:3:X1:stage1:0",
+      "path_key": [
+        "X1"
+      ],
+      "edge_ids": [
+        "X1"
+      ],
+      "cross_window_id": "X1",
+      "completed_after": 0
+    },
+    {
+      "segment_index": 4,
+      "segment_start": 5.0,
+      "segment_end": 6.0,
+      "task_id": "R1",
+      "active": true,
+      "served": false,
+      "remaining_before": 0.0,
+      "remaining_after": 0.0,
+      "delivered": 0.0,
+      "rate": 0.0,
+      "path_id": null,
+      "path_key": null,
+      "edge_ids": [],
+      "cross_window_id": null,
+      "completed_after": 1
+    },
+    {
+      "segment_index": 4,
+      "segment_start": 5.0,
+      "segment_end": 6.0,
+      "task_id": "R2",
+      "active": true,
+      "served": true,
+      "remaining_before": 5.800000000000001,
+      "remaining_after": 3.8000000000000007,
+      "delivered": 2.0,
+      "rate": 2.0,
+      "path_id": "R2:4:X2:stage1:0",
+      "path_key": [
+        "A13",
+        "X2"
+      ],
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "cross_window_id": "X2",
+      "completed_after": 0
+    },
+    {
+      "segment_index": 4,
+      "segment_start": 5.0,
+      "segment_end": 6.0,
+      "task_id": "R3",
+      "active": true,
+      "served": true,
+      "remaining_before": 6.800000000000001,
+      "remaining_after": 6.700000000000001,
+      "delivered": 0.09999999999999964,
+      "rate": 0.09999999999999964,
+      "path_id": "R3:4:X2:stage1:0",
+      "path_key": [
+        "A12",
+        "X2",
+        "B12"
+      ],
+      "edge_ids": [
+        "A12",
+        "X2",
+        "B12"
+      ],
+      "cross_window_id": "X2",
+      "completed_after": 0
+    },
+    {
+      "segment_index": 5,
+      "segment_start": 6.0,
+      "segment_end": 8.0,
+      "task_id": "R1",
+      "active": false,
+      "served": false,
+      "remaining_before": 0.0,
+      "remaining_after": 0.0,
+      "delivered": 0.0,
+      "rate": 0.0,
+      "path_id": null,
+      "path_key": null,
+      "edge_ids": [],
+      "cross_window_id": null,
+      "completed_after": 1
+    },
+    {
+      "segment_index": 5,
+      "segment_start": 6.0,
+      "segment_end": 8.0,
+      "task_id": "R2",
+      "active": true,
+      "served": true,
+      "remaining_before": 3.8000000000000007,
+      "remaining_after": 0.0,
+      "delivered": 3.8000000000000007,
+      "rate": 1.9000000000000004,
+      "path_id": "R2:5:X2:stage1:0",
+      "path_key": [
+        "A13",
+        "X2"
+      ],
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "cross_window_id": "X2",
+      "completed_after": 1
+    },
+    {
+      "segment_index": 5,
+      "segment_start": 6.0,
+      "segment_end": 8.0,
+      "task_id": "R3",
+      "active": true,
+      "served": true,
+      "remaining_before": 6.700000000000001,
+      "remaining_after": 3.700000000000001,
+      "delivered": 3.0,
+      "rate": 1.5,
+      "path_id": "R3:5:X3:stage1:0",
+      "path_key": [
+        "A23",
+        "X3",
+        "B23"
+      ],
+      "edge_ids": [
+        "A23",
+        "X3",
+        "B23"
+      ],
+      "cross_window_id": "X3",
+      "completed_after": 0
+    },
+    {
+      "segment_index": 6,
+      "segment_start": 8.0,
+      "segment_end": 10.0,
+      "task_id": "R1",
+      "active": false,
+      "served": false,
+      "remaining_before": 0.0,
+      "remaining_after": 0.0,
+      "delivered": 0.0,
+      "rate": 0.0,
+      "path_id": null,
+      "path_key": null,
+      "edge_ids": [],
+      "cross_window_id": null,
+      "completed_after": 1
+    },
+    {
+      "segment_index": 6,
+      "segment_start": 8.0,
+      "segment_end": 10.0,
+      "task_id": "R2",
+      "active": true,
+      "served": false,
+      "remaining_before": 0.0,
+      "remaining_after": 0.0,
+      "delivered": 0.0,
+      "rate": 0.0,
+      "path_id": null,
+      "path_key": null,
+      "edge_ids": [],
+      "cross_window_id": null,
+      "completed_after": 1
+    },
+    {
+      "segment_index": 6,
+      "segment_start": 8.0,
+      "segment_end": 10.0,
+      "task_id": "R3",
+      "active": true,
+      "served": true,
+      "remaining_before": 3.700000000000001,
+      "remaining_after": 0.7000000000000011,
+      "delivered": 3.0,
+      "rate": 1.5,
+      "path_id": "R3:6:X3:stage1:0",
+      "path_key": [
+        "A23",
+        "X3",
+        "B23"
+      ],
+      "edge_ids": [
+        "A23",
+        "X3",
+        "B23"
+      ],
+      "cross_window_id": "X3",
+      "completed_after": 0
+    },
+    {
+      "segment_index": 7,
+      "segment_start": 10.0,
+      "segment_end": 11.0,
+      "task_id": "R1",
+      "active": false,
+      "served": false,
+      "remaining_before": 0.0,
+      "remaining_after": 0.0,
+      "delivered": 0.0,
+      "rate": 0.0,
+      "path_id": null,
+      "path_key": null,
+      "edge_ids": [],
+      "cross_window_id": null,
+      "completed_after": 1
+    },
+    {
+      "segment_index": 7,
+      "segment_start": 10.0,
+      "segment_end": 11.0,
+      "task_id": "R2",
+      "active": false,
+      "served": false,
+      "remaining_before": 0.0,
+      "remaining_after": 0.0,
+      "delivered": 0.0,
+      "rate": 0.0,
+      "path_id": null,
+      "path_key": null,
+      "edge_ids": [],
+      "cross_window_id": null,
+      "completed_after": 1
+    },
+    {
+      "segment_index": 7,
+      "segment_start": 10.0,
+      "segment_end": 11.0,
+      "task_id": "R3",
+      "active": true,
+      "served": true,
+      "remaining_before": 0.7000000000000011,
+      "remaining_after": 0.0,
+      "delivered": 0.7000000000000011,
+      "rate": 0.7000000000000011,
+      "path_id": "R3:7:X3:stage1:0",
+      "path_key": [
+        "A23",
+        "X3",
+        "B23"
+      ],
+      "edge_ids": [
+        "A23",
+        "X3",
+        "B23"
+      ],
+      "cross_window_id": "X3",
+      "completed_after": 1
+    },
+    {
+      "segment_index": 8,
+      "segment_start": 11.0,
+      "segment_end": 12.0,
+      "task_id": "R1",
+      "active": false,
+      "served": false,
+      "remaining_before": 0.0,
+      "remaining_after": 0.0,
+      "delivered": 0.0,
+      "rate": 0.0,
+      "path_id": null,
+      "path_key": null,
+      "edge_ids": [],
+      "cross_window_id": null,
+      "completed_after": 1
+    },
+    {
+      "segment_index": 8,
+      "segment_start": 11.0,
+      "segment_end": 12.0,
+      "task_id": "R2",
+      "active": false,
+      "served": false,
+      "remaining_before": 0.0,
+      "remaining_after": 0.0,
+      "delivered": 0.0,
+      "rate": 0.0,
+      "path_id": null,
+      "path_key": null,
+      "edge_ids": [],
+      "cross_window_id": null,
+      "completed_after": 1
+    },
+    {
+      "segment_index": 8,
+      "segment_start": 11.0,
+      "segment_end": 12.0,
+      "task_id": "R3",
+      "active": true,
+      "served": false,
+      "remaining_before": 0.0,
+      "remaining_after": 0.0,
+      "delivered": 0.0,
+      "rate": 0.0,
+      "path_id": null,
+      "path_key": null,
+      "edge_ids": [],
+      "cross_window_id": null,
+      "completed_after": 1
+    }
+  ],
+  "window_states": [
+    {
+      "segment_index": 1,
+      "segment_start": 1.0,
+      "segment_end": 2.0,
+      "window_id": "X1",
+      "a": "A2",
+      "b": "B2",
+      "active": true,
+      "used_rate": 2.0999999999999996,
+      "available_rate": 0.0,
+      "delivered": 2.0999999999999996,
+      "occupied": true
+    },
+    {
+      "segment_index": 2,
+      "segment_start": 2.0,
+      "segment_end": 3.0,
+      "window_id": "X1",
+      "a": "A2",
+      "b": "B2",
+      "active": true,
+      "used_rate": 2.0999999999999996,
+      "available_rate": 0.0,
+      "delivered": 2.0999999999999996,
+      "occupied": true
+    },
+    {
+      "segment_index": 3,
+      "segment_start": 3.0,
+      "segment_end": 5.0,
+      "window_id": "X1",
+      "a": "A2",
+      "b": "B2",
+      "active": true,
+      "used_rate": 2.0999999999999996,
+      "available_rate": 0.0,
+      "delivered": 4.199999999999999,
+      "occupied": true
+    },
+    {
+      "segment_index": 3,
+      "segment_start": 3.0,
+      "segment_end": 5.0,
+      "window_id": "X2",
+      "a": "A1",
+      "b": "B1",
+      "active": true,
+      "used_rate": 2.0,
+      "available_rate": 0.09999999999999964,
+      "delivered": 4.0,
+      "occupied": true
+    },
+    {
+      "segment_index": 4,
+      "segment_start": 5.0,
+      "segment_end": 6.0,
+      "window_id": "X2",
+      "a": "A1",
+      "b": "B1",
+      "active": true,
+      "used_rate": 2.0999999999999996,
+      "available_rate": 0.0,
+      "delivered": 2.0999999999999996,
+      "occupied": true
+    },
+    {
+      "segment_index": 5,
+      "segment_start": 6.0,
+      "segment_end": 8.0,
+      "window_id": "X2",
+      "a": "A1",
+      "b": "B1",
+      "active": true,
+      "used_rate": 1.9000000000000004,
+      "available_rate": 0.1999999999999993,
+      "delivered": 3.8000000000000007,
+      "occupied": true
+    },
+    {
+      "segment_index": 5,
+      "segment_start": 6.0,
+      "segment_end": 8.0,
+      "window_id": "X3",
+      "a": "A3",
+      "b": "B3",
+      "active": true,
+      "used_rate": 1.5,
+      "available_rate": 0.5999999999999996,
+      "delivered": 3.0,
+      "occupied": true
+    },
+    {
+      "segment_index": 6,
+      "segment_start": 8.0,
+      "segment_end": 10.0,
+      "window_id": "X3",
+      "a": "A3",
+      "b": "B3",
+      "active": true,
+      "used_rate": 1.5,
+      "available_rate": 0.5999999999999996,
+      "delivered": 3.0,
+      "occupied": true
+    },
+    {
+      "segment_index": 7,
+      "segment_start": 10.0,
+      "segment_end": 11.0,
+      "window_id": "X3",
+      "a": "A3",
+      "b": "B3",
+      "active": true,
+      "used_rate": 0.7000000000000011,
+      "available_rate": 1.3999999999999986,
+      "delivered": 0.7000000000000011,
+      "occupied": true
+    }
+  ],
+  "remaining_before_by_segment": {
+    "R1": {
+      "0": 8.0,
+      "1": 8.0,
+      "2": 6.0,
+      "3": 4.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0
+    },
+    "R2": {
+      "0": 10.0,
+      "1": 10.0,
+      "2": 9.9,
+      "3": 9.8,
+      "4": 5.800000000000001,
+      "5": 3.8000000000000007,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0
+    },
+    "R3": {
+      "0": 7.0,
+      "1": 7.0,
+      "2": 7.0,
+      "3": 7.0,
+      "4": 6.800000000000001,
+      "5": 6.700000000000001,
+      "6": 3.700000000000001,
+      "7": 0.7000000000000011,
+      "8": 0.0
+    }
+  },
+  "remaining_after_by_segment": {
+    "R1": {
+      "0": 8.0,
+      "1": 6.0,
+      "2": 4.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0
+    },
+    "R2": {
+      "0": 10.0,
+      "1": 9.9,
+      "2": 9.8,
+      "3": 5.800000000000001,
+      "4": 3.8000000000000007,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0
+    },
+    "R3": {
+      "0": 7.0,
+      "1": 7.0,
+      "2": 7.0,
+      "3": 6.800000000000001,
+      "4": 6.700000000000001,
+      "5": 3.700000000000001,
+      "6": 0.7000000000000011,
+      "7": 0.0,
+      "8": 0.0
+    }
+  },
+  "remaining_end": {
+    "R1": 0.0,
+    "R2": 0.0,
+    "R3": 0.0
+  },
+  "completed": {
+    "R1": true,
+    "R2": true,
+    "R3": true
+  },
+  "cross_window_usage_by_segment": {
+    "0": {},
+    "1": {
+      "X1": 2.0999999999999996
+    },
+    "2": {
+      "X1": 2.0999999999999996
+    },
+    "3": {
+      "X1": 2.0999999999999996,
+      "X2": 2.0
+    },
+    "4": {
+      "X2": 2.0999999999999996
+    },
+    "5": {
+      "X2": 1.9000000000000004,
+      "X3": 1.5
+    },
+    "6": {
+      "X3": 1.5
+    },
+    "7": {
+      "X3": 0.7000000000000011
+    },
+    "8": {}
+  },
+  "available_cross_capacity_by_segment": {
+    "0": {},
+    "1": {
+      "X1": 0.0
+    },
+    "2": {
+      "X1": 0.0
+    },
+    "3": {
+      "X1": 0.0,
+      "X2": 0.09999999999999964
+    },
+    "4": {
+      "X2": 0.0
+    },
+    "5": {
+      "X2": 0.1999999999999993,
+      "X3": 0.5999999999999996
+    },
+    "6": {
+      "X3": 0.5999999999999996
+    },
+    "7": {
+      "X3": 1.3999999999999986
+    },
+    "8": {}
+  },
+  "occupied_cross_windows_by_segment": {
+    "0": [],
+    "1": [
+      "X1"
+    ],
+    "2": [
+      "X1"
+    ],
+    "3": [
+      "X1",
+      "X2"
+    ],
+    "4": [
+      "X2"
+    ],
+    "5": [
+      "X2",
+      "X3"
+    ],
+    "6": [
+      "X3"
+    ],
+    "7": [
+      "X3"
+    ],
+    "8": []
+  },
+  "active_cross_windows_by_segment": {
+    "0": [],
+    "1": [
+      "X1"
+    ],
+    "2": [
+      "X1"
+    ],
+    "3": [
+      "X1",
+      "X2"
+    ],
+    "4": [
+      "X2"
+    ],
+    "5": [
+      "X2",
+      "X3"
+    ],
+    "6": [
+      "X3"
+    ],
+    "7": [
+      "X3"
+    ],
+    "8": []
+  },
+  "active_intra_edges_by_segment": {
+    "0": {
+      "A": [
+        "A12",
+        "A23"
+      ],
+      "B": [
+        "B12",
+        "B23"
+      ]
+    },
+    "1": {
+      "A": [
+        "A12",
+        "A23"
+      ],
+      "B": [
+        "B12",
+        "B23"
+      ]
+    },
+    "2": {
+      "A": [
+        "A12",
+        "A23"
+      ],
+      "B": [
+        "B12",
+        "B23"
+      ]
+    },
+    "3": {
+      "A": [
+        "A12",
+        "A23"
+      ],
+      "B": [
+        "B12",
+        "B23"
+      ]
+    },
+    "4": {
+      "A": [
+        "A12",
+        "A23",
+        "A13"
+      ],
+      "B": [
+        "B12",
+        "B23"
+      ]
+    },
+    "5": {
+      "A": [
+        "A12",
+        "A23",
+        "A13"
+      ],
+      "B": [
+        "B12",
+        "B23",
+        "B13"
+      ]
+    },
+    "6": {
+      "A": [
+        "A12",
+        "A23",
+        "A13"
+      ],
+      "B": [
+        "B12",
+        "B23",
+        "B13"
+      ]
+    },
+    "7": {
+      "A": [
+        "A12",
+        "A23",
+        "A13"
+      ],
+      "B": [
+        "B12",
+        "B23",
+        "B13"
+      ]
+    },
+    "8": {
+      "A": [
+        "A12",
+        "A23",
+        "A13"
+      ],
+      "B": [
+        "B12",
+        "B23",
+        "B13"
+      ]
+    }
+  },
+  "available_intra_capacity_by_segment": {
+    "0": {
+      "A12": 4.0,
+      "A23": 4.0,
+      "B12": 4.0,
+      "B23": 4.0
+    },
+    "1": {
+      "A12": 2.0,
+      "A23": 3.9000000000000004,
+      "B12": 3.9000000000000004,
+      "B23": 2.0
+    },
+    "2": {
+      "A12": 2.0,
+      "A23": 3.9000000000000004,
+      "B12": 3.9000000000000004,
+      "B23": 2.0
+    },
+    "3": {
+      "A12": 0.0,
+      "A23": 2.0,
+      "B12": 4.0,
+      "B23": 2.0
+    },
+    "4": {
+      "A12": 3.9000000000000004,
+      "A23": 4.0,
+      "A13": 2.0,
+      "B12": 3.9000000000000004,
+      "B23": 4.0
+    },
+    "5": {
+      "A12": 4.0,
+      "A23": 2.5,
+      "A13": 2.0999999999999996,
+      "B12": 4.0,
+      "B23": 2.5,
+      "B13": 4.0
+    },
+    "6": {
+      "A12": 4.0,
+      "A23": 2.5,
+      "A13": 4.0,
+      "B12": 4.0,
+      "B23": 2.5,
+      "B13": 4.0
+    },
+    "7": {
+      "A12": 4.0,
+      "A23": 3.299999999999999,
+      "A13": 4.0,
+      "B12": 4.0,
+      "B23": 3.299999999999999,
+      "B13": 4.0
+    },
+    "8": {
+      "A12": 4.0,
+      "A23": 4.0,
+      "A13": 4.0,
+      "B12": 4.0,
+      "B23": 4.0,
+      "B13": 4.0
+    }
+  },
+  "summary": {
+    "baseline_regular_task_count": 3,
+    "completed_baseline_regular_task_count": 3,
+    "incomplete_baseline_regular_task_count": 0,
+    "stage1_metric_regular_task_count": 3,
+    "completed_stage1_metric_regular_task_count": 3,
+    "segment_count": 9,
+    "allocation_count": 13,
+    "window_count": 3,
+    "mean_completion_ratio": 1.0,
+    "fr": 1.0,
+    "eta_cap": 0.14425457441015863,
+    "eta_0": 0.058049435311224695,
+    "max_cross_rate_used": 4.1,
+    "max_cross_window_util": 1.0
+  }
+}

@@ -1,0 +1,749 @@
+{
+  "plan": [
+    {
+      "window_id": "X1",
+      "a": "A2",
+      "b": "B2",
+      "start": 1.0,
+      "end": 5.0,
+      "on": 1.0,
+      "off": 5.0,
+      "value": 10.396296296296295,
+      "delay": 0.0,
+      "distance_km": null
+    },
+    {
+      "window_id": "X2",
+      "a": "A1",
+      "b": "B1",
+      "start": 3.0,
+      "end": 8.0,
+      "on": 3.0,
+      "off": 8.0,
+      "value": 9.61111111111111,
+      "delay": 0.0,
+      "distance_km": null
+    },
+    {
+      "window_id": "X3",
+      "a": "A3",
+      "b": "B3",
+      "start": 6.0,
+      "end": 11.0,
+      "on": 6.0,
+      "off": 11.0,
+      "value": 5.611111111111112,
+      "delay": 0.0,
+      "distance_km": null
+    }
+  ],
+  "cr_reg": 0.8333333333333334,
+  "cr_emg": 1.0,
+  "n_preemptions": 1,
+  "u_cross": 0.784784637425304,
+  "u_all": 0.2993919197257571,
+  "allocations": [
+    {
+      "task_id": "R1",
+      "segment_index": 1,
+      "path_id": "R1:1:X1:stage1:0:split0",
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "rate": 2.0,
+      "delivered": 1.782845942499748,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 1,
+      "path_id": "R2:1:X1:stage1:0:split0",
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.08914229712498709,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R1",
+      "segment_index": 2,
+      "path_id": "R1:1:X1:stage1:0:split1",
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "rate": 2.0,
+      "delivered": 0.21715405750025196,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 2,
+      "path_id": "R2:1:X1:stage1:0:split1",
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.01085770287501256,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "light_load_emg_01",
+      "segment_index": 3,
+      "path_id": "light_load_emg_01:3:X1:0:0",
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "rate": 0.9000000000000004,
+      "delivered": 0.9000000000000004,
+      "task_type": "emg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R1",
+      "segment_index": 3,
+      "path_id": "R1:2:X1:stage1:0",
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "rate": 2.0,
+      "delivered": 2.0,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 3,
+      "path_id": "R2:2:X1:stage1:0",
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.09999999999999964,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "light_load_emg_01",
+      "segment_index": 4,
+      "path_id": "light_load_emg_01:4:X1:0:0:split0",
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "rate": 0.9000000000000004,
+      "delivered": 1.5134484303514355,
+      "task_type": "emg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R1",
+      "segment_index": 4,
+      "path_id": "R1:3:X1:stage1:0:split0",
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "rate": 2.0,
+      "delivered": 3.3632187341143,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 4,
+      "path_id": "R2:3:X2:stage1:0:split0",
+      "edge_ids": [
+        "A23",
+        "A12",
+        "X2"
+      ],
+      "rate": 2.0,
+      "delivered": 3.3632187341143,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R3",
+      "segment_index": 4,
+      "path_id": "R3:3:X1:stage1:0:split0",
+      "edge_ids": [
+        "X1"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.1681609367057144,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "light_load_emg_01",
+      "segment_index": 5,
+      "path_id": "light_load_emg_01:4:X1:0:0:split1",
+      "edge_ids": [
+        "A23",
+        "X1",
+        "B12"
+      ],
+      "rate": 0.9000000000000005,
+      "delivered": 0.2865515696485652,
+      "task_type": "emg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R1",
+      "segment_index": 5,
+      "path_id": "R1:3:X1:stage1:0:split1",
+      "edge_ids": [
+        "A12",
+        "X1",
+        "B23"
+      ],
+      "rate": 2.0,
+      "delivered": 0.6367812658857002,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 5,
+      "path_id": "R2:3:X2:stage1:0:split1",
+      "edge_ids": [
+        "A23",
+        "A12",
+        "X2"
+      ],
+      "rate": 2.0,
+      "delivered": 0.6367812658857002,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R3",
+      "segment_index": 5,
+      "path_id": "R3:3:X1:stage1:0:split1",
+      "edge_ids": [
+        "X1"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.031839063294284896,
+      "task_type": "reg",
+      "cross_window_id": "X1",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 6,
+      "path_id": "R2:4:X2:stage1:0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 2.0,
+      "delivered": 2.0,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R3",
+      "segment_index": 6,
+      "path_id": "R3:4:X2:stage1:0",
+      "edge_ids": [
+        "A12",
+        "X2",
+        "B12"
+      ],
+      "rate": 0.09999999999999964,
+      "delivered": 0.09999999999999964,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "light_load_emg_01",
+      "segment_index": 7,
+      "path_id": "light_load_emg_01:6:X3:0:0:split0",
+      "edge_ids": [
+        "X3",
+        "B13"
+      ],
+      "rate": 1.159207839162094,
+      "delivered": 0.6536537292448402,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "light_load_emg_02",
+      "segment_index": 7,
+      "path_id": "light_load_emg_02:7:X2:0:0:split0",
+      "edge_ids": [
+        "A12",
+        "X2",
+        "B12"
+      ],
+      "rate": 1.0999999999999996,
+      "delivered": 0.6202676326697808,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 7,
+      "path_id": "R2:5:X2:stage1:0:split0",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 1.9000000000000001,
+      "delivered": 1.071371365520531,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R3",
+      "segment_index": 7,
+      "path_id": "R3:5:X3:stage1:0:split0",
+      "edge_ids": [
+        "A23",
+        "X3",
+        "B23"
+      ],
+      "rate": 1.5,
+      "delivered": 0.845819499095156,
+      "task_type": "reg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "light_load_emg_01",
+      "segment_index": 8,
+      "path_id": "light_load_emg_01:6:X3:0:0:split1",
+      "edge_ids": [
+        "X3",
+        "B13"
+      ],
+      "rate": 1.159207839162094,
+      "delivered": 1.6647619490793475,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "light_load_emg_02",
+      "segment_index": 8,
+      "path_id": "light_load_emg_02:7:X2:0:0:split1",
+      "edge_ids": [
+        "A12",
+        "X2",
+        "B12"
+      ],
+      "rate": 1.0999999999999996,
+      "delivered": 1.5797323673302184,
+      "task_type": "emg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "R2",
+      "segment_index": 8,
+      "path_id": "R2:5:X2:stage1:0:split1",
+      "edge_ids": [
+        "A13",
+        "X2"
+      ],
+      "rate": 1.9000000000000004,
+      "delivered": 2.7286286344794695,
+      "task_type": "reg",
+      "cross_window_id": "X2",
+      "is_preempted": false
+    },
+    {
+      "task_id": "light_load_emg_02",
+      "segment_index": 10,
+      "path_id": "light_load_emg_02:9:X3:0:0",
+      "edge_ids": [
+        "A23",
+        "X3",
+        "B23"
+      ],
+      "rate": 0.9327418678578386,
+      "delivered": 1.8583599987458541,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "light_load_emg_03",
+      "segment_index": 10,
+      "path_id": "light_load_emg_03:10:X3:0:0",
+      "edge_ids": [
+        "A23",
+        "X3"
+      ],
+      "rate": 1.794399984624613,
+      "delivered": 3.5750953914344894,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "light_load_emg_03",
+      "segment_index": 11,
+      "path_id": "light_load_emg_03:11:X3:0:0",
+      "edge_ids": [
+        "A23",
+        "X3"
+      ],
+      "rate": 1.794399984624613,
+      "delivered": 1.0278003110506175,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    },
+    {
+      "task_id": "light_load_emg_03",
+      "segment_index": 12,
+      "path_id": "light_load_emg_03:12:X3:0:0",
+      "edge_ids": [
+        "A23",
+        "X3"
+      ],
+      "rate": 0.3170838917324019,
+      "delivered": 0.13546389321246166,
+      "task_type": "emg",
+      "cross_window_id": "X3",
+      "is_preempted": false
+    }
+  ],
+  "solver_mode": "stage2_emergency_insert",
+  "metadata": {
+    "stage2_role": "emergency_event_insert_only",
+    "solver_mode": "stage2_emergency_insert",
+    "event_segment_count": 9,
+    "event_segment_count_raw": 9,
+    "regular_task_count": 3,
+    "plan_window_count": 3,
+    "elapsed_seconds": 0.00933120003901422,
+    "baseline_source": "stage1_result",
+    "baseline_summary": {
+      "baseline_regular_task_count": 3,
+      "completed_baseline_regular_task_count": 3,
+      "incomplete_baseline_regular_task_count": 0,
+      "stage1_metric_regular_task_count": 3,
+      "completed_stage1_metric_regular_task_count": 3,
+      "segment_count": 9,
+      "allocation_count": 13,
+      "window_count": 3,
+      "mean_completion_ratio": 1.0,
+      "fr": 1.0,
+      "eta_cap": 0.14425457441015863,
+      "eta_0": 0.058049435311224695,
+      "max_cross_rate_used": 4.1,
+      "max_cross_window_util": 1.0
+    },
+    "baseline_completed_count": 3,
+    "final_regular_completed_count": 2,
+    "regular_tasks_degraded_by_emergency": [
+      "R3"
+    ],
+    "regular_remaining_end": {
+      "R1": 0.0,
+      "R2": 0.0,
+      "R3": 5.854180500904845
+    },
+    "baseline_remaining_end": {
+      "R1": 0.0,
+      "R2": 0.0,
+      "R3": 0.0
+    },
+    "baseline_regular_allocation_count": 13,
+    "executed_regular_allocation_count": 17,
+    "executed_emergency_allocation_count": 11,
+    "emergency_insertions": [
+      {
+        "task_id": "light_load_emg_01",
+        "arrival": 1.891422971249874,
+        "deadline": 8.007637415254216,
+        "data": 5.018415678324189,
+        "weight": 1.8280818986582814,
+        "segment_index": 2,
+        "preemptions_added": 0,
+        "strategy": "direct_insert",
+        "completed": true,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "planned_delivery": 5.018415678324189,
+        "direct_plan_delivery": 5.018415678324189
+      },
+      {
+        "task_id": "light_load_emg_02",
+        "arrival": 4.68160936705715,
+        "deadline": 10.572782166661483,
+        "data": 4.058359998745853,
+        "weight": 1.8776606547047459,
+        "segment_index": 5,
+        "preemptions_added": 0,
+        "strategy": "direct_insert",
+        "completed": true,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "planned_delivery": 4.058359998745853,
+        "direct_plan_delivery": 4.058359998745853
+      },
+      {
+        "task_id": "light_load_emg_03",
+        "arrival": 6.563879666063437,
+        "deadline": 12.0,
+        "data": 4.738359595697569,
+        "weight": 2.233711365245446,
+        "segment_index": 8,
+        "preemptions_added": 1,
+        "strategy": "controlled_preemption",
+        "completed": true,
+        "used_preemption": true,
+        "preemptions": 1,
+        "preempted_task_id": "R3",
+        "released_segments": [
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "horizon_segment_indices": [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "planned_delivery": 4.738359595697569,
+        "direct_plan_delivery": 3.4254585377042552
+      }
+    ],
+    "emergency_task_count": 3,
+    "emergency_insertions_count": 3,
+    "emergency_insertions_used_preemption_count": 1,
+    "emergency_insertions_direct_count": 2,
+    "empty_emergency_insert": false,
+    "baseline_cross_window_usage_by_segment": {
+      "0": {},
+      "1": {
+        "X1": 2.0999999999999996
+      },
+      "2": {
+        "X1": 2.0999999999999996
+      },
+      "3": {
+        "X1": 2.0999999999999996,
+        "X2": 2.0
+      },
+      "4": {
+        "X2": 2.0999999999999996
+      },
+      "5": {
+        "X2": 1.9000000000000004,
+        "X3": 1.5
+      },
+      "6": {
+        "X3": 1.5
+      },
+      "7": {
+        "X3": 0.7000000000000011
+      },
+      "8": {}
+    },
+    "final_cross_window_usage_by_segment": {
+      "1": {
+        "X1": 2.0999999999999996
+      },
+      "2": {
+        "X1": 2.0999999999999996
+      },
+      "3": {
+        "X1": 3.0
+      },
+      "4": {
+        "X1": 3.0,
+        "X2": 2.0
+      },
+      "5": {
+        "X1": 3.0,
+        "X2": 2.0
+      },
+      "6": {
+        "X2": 2.0999999999999996
+      },
+      "7": {
+        "X3": 2.659207839162094,
+        "X2": 3.0
+      },
+      "8": {
+        "X3": 1.159207839162094,
+        "X2": 3.0
+      },
+      "10": {
+        "X3": 2.727141852482452
+      },
+      "11": {
+        "X3": 1.794399984624613
+      },
+      "12": {
+        "X3": 0.3170838917324019
+      }
+    },
+    "regular_cross_window_usage_by_segment": {
+      "1": {
+        "X1": 2.0999999999999996
+      },
+      "2": {
+        "X1": 2.0999999999999996
+      },
+      "3": {
+        "X1": 2.0999999999999996
+      },
+      "4": {
+        "X1": 2.0999999999999996,
+        "X2": 2.0
+      },
+      "5": {
+        "X1": 2.0999999999999996,
+        "X2": 2.0
+      },
+      "6": {
+        "X2": 2.0999999999999996
+      },
+      "7": {
+        "X2": 1.9000000000000001,
+        "X3": 1.5
+      },
+      "8": {
+        "X2": 1.9000000000000004
+      }
+    },
+    "emergency_cross_window_usage_by_segment": {
+      "3": {
+        "X1": 0.9000000000000004
+      },
+      "4": {
+        "X1": 0.9000000000000004
+      },
+      "5": {
+        "X1": 0.9000000000000005
+      },
+      "7": {
+        "X3": 1.159207839162094,
+        "X2": 1.0999999999999996
+      },
+      "8": {
+        "X3": 1.159207839162094,
+        "X2": 1.0999999999999996
+      },
+      "10": {
+        "X3": 2.727141852482452
+      },
+      "11": {
+        "X3": 1.794399984624613
+      },
+      "12": {
+        "X3": 0.3170838917324019
+      }
+    },
+    "cross_window_usage_delta_by_segment": {
+      "3": {
+        "X1": 0.9000000000000004,
+        "X2": -2.0
+      },
+      "4": {
+        "X1": 3.0,
+        "X2": -0.09999999999999964
+      },
+      "5": {
+        "X1": 3.0,
+        "X2": 0.09999999999999964,
+        "X3": -1.5
+      },
+      "6": {
+        "X2": 2.0999999999999996,
+        "X3": -1.5
+      },
+      "7": {
+        "X2": 3.0,
+        "X3": 1.9592078391620928
+      },
+      "8": {
+        "X2": 3.0,
+        "X3": 1.159207839162094
+      },
+      "10": {
+        "X3": 2.727141852482452
+      },
+      "11": {
+        "X3": 1.794399984624613
+      },
+      "12": {
+        "X3": 0.3170838917324019
+      }
+    }
+  },
+  "gateway_count": 6,
+  "activation_count": 6
+}

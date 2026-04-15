@@ -1,0 +1,82 @@
+{
+  "case_name": "light_load",
+  "case_type": "light",
+  "seed": 18,
+  "task_id_mapping": {
+    "light_load_emg_01": "light_load_emg_01",
+    "light_load_emg_02": "light_load_emg_02",
+    "light_load_emg_03": "light_load_emg_03",
+    "light_load_emg_04": "light_load_emg_04"
+  },
+  "tasks": [
+    {
+      "id": "light_load_emg_01",
+      "src": "A1",
+      "dst": "B1",
+      "arrival": 1.5131383769998994,
+      "deadline": 6.747595765159391,
+      "data": 3.8430517320826607,
+      "weight": 1.9068307960095388,
+      "max_rate": 2.2025502055527846,
+      "type": "emg",
+      "preemption_priority": 1.9068307960095388,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "light_load_emg_01"
+    },
+    {
+      "id": "light_load_emg_02",
+      "src": "A2",
+      "dst": "B2",
+      "arrival": 3.74528749364572,
+      "deadline": 12.0,
+      "data": 5.733976663846995,
+      "weight": 1.7825999865465365,
+      "max_rate": 1.8568943575251158,
+      "type": "emg",
+      "preemption_priority": 1.7825999865465365,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "light_load_emg_02"
+    },
+    {
+      "id": "light_load_emg_03",
+      "src": "A3",
+      "dst": "B3",
+      "arrival": 5.25110373285075,
+      "deadline": 12.0,
+      "data": 5.438139898033714,
+      "weight": 2.3061618833020536,
+      "max_rate": 2.239856456294327,
+      "type": "emg",
+      "preemption_priority": 2.3061618833020536,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "light_load_emg_03"
+    },
+    {
+      "id": "light_load_emg_04",
+      "src": "A3",
+      "dst": "B1",
+      "arrival": 6.9281456437462685,
+      "deadline": 12.0,
+      "data": 3.8885958714778703,
+      "weight": 1.9558749921834484,
+      "max_rate": 1.835222507938127,
+      "type": "emg",
+      "preemption_priority": 1.9558749921834484,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "light_load_emg_04"
+    }
+  ],
+  "summary": {
+    "count": 4,
+    "count_emg": 4,
+    "total_data_Mb": 18.90376416544124,
+    "mean_data_Mb": 4.72594104136031,
+    "mean_weight": 1.9878669145103944,
+    "arrival_min": 1.5131383769998994,
+    "arrival_max": 6.9281456437462685,
+    "deadline_min": 6.747595765159391,
+    "deadline_max": 12.0,
+    "mean_window_s": 6.327480129479189,
+    "peak_overlap": 3
+  }
+}

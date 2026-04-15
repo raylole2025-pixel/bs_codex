@@ -1,6 +1,6 @@
 # BS3 Parameter Settings
 
-Updated: 2026-04-14
+Updated: 2026-04-15
 
 This repository now uses a two-stage structure:
 
@@ -55,6 +55,64 @@ The old Stage2-1 hotspot-relief / closed-loop / regular repair path has been rem
 | `label_keep_limit` | `null` |
 
 `label_keep_limit` controls how many nondominated labels Stage 2 keeps per bucket during emergency insertion. When omitted, the code derives the effective value from `k_paths`.
+
+## Stage 2 Emergency Insertion Policy
+
+Stage 2 now keeps the existing external strategy labels:
+
+- `direct_insert`
+- `controlled_preemption`
+- `direct_insert_best_effort`
+- `blocked`
+
+Emergency insertion still runs on top of a fixed Stage 1 `selected_plan` plus `baseline_trace`, and it does not add any new required JSON fields.
+
+### Capacity tiers on active cross-domain windows
+
+For every active cross-domain window `x` and segment `r`, Stage 2 computes:
+
+- `total_free = Cx - used_reg - used_emg`
+- `reserve_free = max(rho * Cx - used_emg, 0)`
+
+where:
+
+- `used_reg` is committed regular usage on that active cross-domain window in the segment
+- `used_emg` is committed emergency usage from previously inserted emergency tasks
+
+Emergency direct insert treats these tiers as:
+
+- `reserved_only`: requested rate fits inside `reserve_free`
+- `borrow_unused_regular_share`: `reserve_free` is not enough, but `total_free` is still enough
+- `preempted`: direct insert only becomes feasible after releasing one lower-priority regular task
+- `blocked`: neither direct insert nor the single-task preemption pass can provide useful service
+
+Reserve is a protected priority region, not a hard ceiling. Emergency traffic may exceed `rho * Cx` whenever total residual capacity is available. All intra-domain edges and cross-domain windows are still checked against residual capacity along the full end-to-end candidate path.
+
+### Label planner ordering
+
+For emergency insertion, nondominated labels now track `tier_cost` and use these orderings:
+
+- partial key: `(remaining_data, tier_cost, switches, load_cost, idle_steps)`
+- terminal key: `(tier_cost, finish_time, switches, load_cost, idle_steps)`
+
+`load_cost` is now the sum of each chosen segment-path's post-allocation maximum edge utilization over the full path, not only the cross-domain window.
+
+### Controlled preemption defaults
+
+Controlled preemption is limited to one regular task per emergency insertion attempt. Candidate regular tasks must:
+
+- overlap the emergency corridor on real future edges
+- be lower priority than the emergency task
+- fall into the lowest regular weight tier when no explicit A/B/C class exists
+
+The implementation ranks candidates by a loss-to-release score using these module defaults:
+
+- `PREEMPTION_WEIGHT_COEFF = 0.45`
+- `PREEMPTION_SENT_RATIO_COEFF = 0.35`
+- `PREEMPTION_SLACK_COEFF = 0.20`
+- `PREEMPTION_SCORE_EPS = 1e-6`
+
+No extra scenario schema fields are required for these constants. Each emergency insertion event records the chosen capacity tier, direct-plan delivery, whether preemption was used, the released task/window/edge details, and the computed preemption score.
 
 ## Active Outputs
 

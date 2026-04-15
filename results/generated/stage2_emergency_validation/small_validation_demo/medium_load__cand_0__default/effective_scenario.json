@@ -1,0 +1,333 @@
+{
+  "metadata": {
+    "name": "sample-cross-domain-scenario",
+    "stage2_emergency_validation": {
+      "suite_name": "small-validation",
+      "case_name": "medium_load",
+      "case_type": "medium",
+      "candidate_index": 0,
+      "rho": 0.3,
+      "rho_label": "default",
+      "seed": 30
+    }
+  },
+  "planning_end": 12,
+  "nodes": {
+    "A": [
+      "A1",
+      "A2",
+      "A3"
+    ],
+    "B": [
+      "B1",
+      "B2",
+      "B3"
+    ]
+  },
+  "capacities": {
+    "A": 4.0,
+    "B": 4.0,
+    "X": 3.0
+  },
+  "stage1": {
+    "rho": 0.3,
+    "t_pre": 0.5,
+    "d_min": 1.0,
+    "theta_cap": 0.2,
+    "theta_hot": 0.0,
+    "hot_hop_limit": 4,
+    "bottleneck_factor_alpha": 0.85,
+    "eta_x": 0.9,
+    "static_value_snapshot_seconds": 600,
+    "candidate_pool_base_size": 20,
+    "candidate_pool_hot_fraction": 0.3,
+    "candidate_pool_min_per_coarse_segment": 1,
+    "candidate_pool_max_additional": 8,
+    "q_eval": 2,
+    "omega_fr": 0.4444444444444444,
+    "omega_cap": 0.3333333333333333,
+    "omega_hot": 0.2222222222222222,
+    "elite_prune_count": 2,
+    "ga": {
+      "population_size": 20,
+      "crossover_probability": 0.9,
+      "mutation_probability": 0.2,
+      "max_generations": 8,
+      "stall_generations": 4,
+      "top_m": 3
+    }
+  },
+  "stage2": {
+    "k_paths": 2,
+    "completion_tolerance": 1e-06,
+    "label_keep_limit": 16
+  },
+  "intra_domain_links": [
+    {
+      "id": "A12",
+      "u": "A1",
+      "v": "A2",
+      "domain": "A",
+      "start": 0,
+      "end": 12,
+      "delay": 0.2
+    },
+    {
+      "id": "A23",
+      "u": "A2",
+      "v": "A3",
+      "domain": "A",
+      "start": 0,
+      "end": 12,
+      "delay": 0.2
+    },
+    {
+      "id": "A13",
+      "u": "A1",
+      "v": "A3",
+      "domain": "A",
+      "start": 5,
+      "end": 12,
+      "delay": 0.1
+    },
+    {
+      "id": "B12",
+      "u": "B1",
+      "v": "B2",
+      "domain": "B",
+      "start": 0,
+      "end": 12,
+      "delay": 0.2
+    },
+    {
+      "id": "B23",
+      "u": "B2",
+      "v": "B3",
+      "domain": "B",
+      "start": 0,
+      "end": 12,
+      "delay": 0.2
+    },
+    {
+      "id": "B13",
+      "u": "B1",
+      "v": "B3",
+      "domain": "B",
+      "start": 6,
+      "end": 12,
+      "delay": 0.1
+    }
+  ],
+  "candidate_windows": [
+    {
+      "id": "X1",
+      "a": "A2",
+      "b": "B2",
+      "start": 1,
+      "end": 5,
+      "value": 4.0
+    },
+    {
+      "id": "X2",
+      "a": "A1",
+      "b": "B1",
+      "start": 3,
+      "end": 8,
+      "value": 4.8
+    },
+    {
+      "id": "X3",
+      "a": "A3",
+      "b": "B3",
+      "start": 6,
+      "end": 11,
+      "value": 5.0
+    },
+    {
+      "id": "X4",
+      "a": "A2",
+      "b": "B3",
+      "start": 8,
+      "end": 12,
+      "value": 3.5
+    }
+  ],
+  "tasks": [
+    {
+      "id": "R1",
+      "src": "A1",
+      "dst": "B3",
+      "arrival": 0,
+      "deadline": 6,
+      "data": 8,
+      "weight": 3,
+      "max_rate": 2,
+      "type": "reg",
+      "preemption_priority": 3
+    },
+    {
+      "id": "R2",
+      "src": "A3",
+      "dst": "B1",
+      "arrival": 1,
+      "deadline": 10,
+      "data": 10,
+      "weight": 2,
+      "max_rate": 2,
+      "type": "reg",
+      "preemption_priority": 2
+    },
+    {
+      "id": "R3",
+      "src": "A2",
+      "dst": "B2",
+      "arrival": 2,
+      "deadline": 12,
+      "data": 7,
+      "weight": 1,
+      "max_rate": 1.5,
+      "type": "reg",
+      "preemption_priority": 1
+    },
+    {
+      "id": "medium_load_emg_01",
+      "src": "A3",
+      "dst": "B3",
+      "arrival": 4.301832209862576,
+      "deadline": 9.648759537456378,
+      "data": 6.66777235652315,
+      "weight": 2.1885644737624235,
+      "max_rate": 2.494057595326902,
+      "type": "emg",
+      "preemption_priority": 2.1885644737624235,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "medium_load_emg_01"
+    },
+    {
+      "id": "medium_load_emg_02",
+      "src": "A3",
+      "dst": "B1",
+      "arrival": 4.630577793548782,
+      "deadline": 12.0,
+      "data": 9.190837861880963,
+      "weight": 2.589471004365234,
+      "max_rate": 2.426829468261616,
+      "type": "emg",
+      "preemption_priority": 2.589471004365234,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "medium_load_emg_02"
+    },
+    {
+      "id": "medium_load_emg_03",
+      "src": "A1",
+      "dst": "B1",
+      "arrival": 5.207171818247561,
+      "deadline": 12.0,
+      "data": 8.479464810587183,
+      "weight": 2.5933041844279408,
+      "max_rate": 2.4777352859490174,
+      "type": "emg",
+      "preemption_priority": 2.5933041844279408,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "medium_load_emg_03"
+    },
+    {
+      "id": "medium_load_emg_04",
+      "src": "A1",
+      "dst": "B3",
+      "arrival": 5.324967927674444,
+      "deadline": 11.948907709840343,
+      "data": 6.693918928081503,
+      "weight": 2.6174656094087174,
+      "max_rate": 2.0211291612595916,
+      "type": "emg",
+      "preemption_priority": 2.6174656094087174,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "medium_load_emg_04"
+    },
+    {
+      "id": "medium_load_emg_05",
+      "src": "A2",
+      "dst": "B2",
+      "arrival": 5.58409662955566,
+      "deadline": 12.0,
+      "data": 8.088870859296188,
+      "weight": 2.714657039334074,
+      "max_rate": 2.310409393482348,
+      "type": "emg",
+      "preemption_priority": 2.714657039334074,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "medium_load_emg_05"
+    },
+    {
+      "id": "medium_load_emg_06",
+      "src": "A2",
+      "dst": "B3",
+      "arrival": 5.662269154961711,
+      "deadline": 12.0,
+      "data": 9.867875588623434,
+      "weight": 2.6617805971402237,
+      "max_rate": 2.1498273068378904,
+      "type": "emg",
+      "preemption_priority": 2.6617805971402237,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "medium_load_emg_06"
+    },
+    {
+      "id": "medium_load_emg_07",
+      "src": "A2",
+      "dst": "B2",
+      "arrival": 6.1171716993785745,
+      "deadline": 12.0,
+      "data": 6.957940184020539,
+      "weight": 2.397758866440701,
+      "max_rate": 1.8034762253126198,
+      "type": "emg",
+      "preemption_priority": 2.397758866440701,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "medium_load_emg_07"
+    },
+    {
+      "id": "medium_load_emg_08",
+      "src": "A3",
+      "dst": "B3",
+      "arrival": 6.227788012795369,
+      "deadline": 12.0,
+      "data": 6.670183961669258,
+      "weight": 2.4002881290667375,
+      "max_rate": 1.7642739840646868,
+      "type": "emg",
+      "preemption_priority": 2.4002881290667375,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "medium_load_emg_08"
+    },
+    {
+      "id": "medium_load_emg_09",
+      "src": "A1",
+      "dst": "B3",
+      "arrival": 6.465534887407395,
+      "deadline": 12.0,
+      "data": 8.899558337222402,
+      "weight": 2.3883353567250394,
+      "max_rate": 2.0277809614920725,
+      "type": "emg",
+      "preemption_priority": 2.3883353567250394,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "medium_load_emg_09"
+    },
+    {
+      "id": "medium_load_emg_10",
+      "src": "A3",
+      "dst": "B3",
+      "arrival": 6.773132947301175,
+      "deadline": 12.0,
+      "data": 7.676905593571744,
+      "weight": 2.4148378312510754,
+      "max_rate": 2.214450092234425,
+      "type": "emg",
+      "preemption_priority": 2.4148378312510754,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "medium_load_emg_10"
+    }
+  ]
+}

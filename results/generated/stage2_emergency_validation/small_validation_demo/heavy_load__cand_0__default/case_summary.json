@@ -1,0 +1,1170 @@
+{
+  "case_id": "heavy_load__cand_0__default",
+  "case_name": "heavy_load",
+  "case_type": "heavy",
+  "description": "15+ emergencies with concentrated arrivals and tight deadlines.",
+  "scenario_path": "D:\\Codex_Project\\bs3 - 副本\\examples\\sample_scenario.json",
+  "stage1_result_path": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\sample_stage1_result.json",
+  "case_dir": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_emergency_validation\\small_validation_demo\\heavy_load__cand_0__default",
+  "seed": 44,
+  "rho": 0.3,
+  "rho_label": "default",
+  "candidate_label": "candidate_0",
+  "selected_candidate": {
+    "requested_candidate_index": 0,
+    "stage1_selected_candidate_index": 0,
+    "stage1_selected_candidate_source": "best_feasible",
+    "uses_stage1_selected_plan": true,
+    "window_count": 3,
+    "gateway_count": 6,
+    "activation_count": 6,
+    "fr": 1.0,
+    "mean_completion_ratio": 1.0,
+    "eta_cap": 0.14425457441015863,
+    "eta_0": 0.058049435311224695,
+    "max_cross_gap": 1.0,
+    "cross_active_fraction": 0.8333333333333334
+  },
+  "emergency_task_set": {
+    "source_mode": "generate",
+    "summary": {
+      "count": 16,
+      "count_emg": 16,
+      "total_data_Mb": 192.93057070101315,
+      "mean_data_Mb": 12.058160668813322,
+      "mean_weight": 3.338182770554118,
+      "arrival_min": 4.3930384000325144,
+      "arrival_max": 6.873169593808838,
+      "deadline_min": 11.337547128888987,
+      "deadline_max": 12.0,
+      "mean_window_s": 6.393548403370829,
+      "peak_overlap": 16
+    },
+    "task_ids": [
+      "heavy_load_emg_01",
+      "heavy_load_emg_02",
+      "heavy_load_emg_03",
+      "heavy_load_emg_04",
+      "heavy_load_emg_05",
+      "heavy_load_emg_06",
+      "heavy_load_emg_07",
+      "heavy_load_emg_08",
+      "heavy_load_emg_09",
+      "heavy_load_emg_10",
+      "heavy_load_emg_11",
+      "heavy_load_emg_12",
+      "heavy_load_emg_13",
+      "heavy_load_emg_14",
+      "heavy_load_emg_15",
+      "heavy_load_emg_16"
+    ]
+  },
+  "baseline": {
+    "baseline_source": "stage1_result",
+    "stage2_reported_baseline_source": "stage1_result",
+    "selected_plan_scale": {
+      "window_count": 3,
+      "gateway_count": 6,
+      "activation_count": 6
+    },
+    "baseline_summary": {
+      "baseline_regular_task_count": 3,
+      "completed_baseline_regular_task_count": 3,
+      "incomplete_baseline_regular_task_count": 0,
+      "stage1_metric_regular_task_count": 3,
+      "completed_stage1_metric_regular_task_count": 3,
+      "segment_count": 9,
+      "allocation_count": 13,
+      "window_count": 3,
+      "mean_completion_ratio": 1.0,
+      "fr": 1.0,
+      "eta_cap": 0.14425457441015863,
+      "eta_0": 0.058049435311224695,
+      "max_cross_rate_used": 4.1,
+      "max_cross_window_util": 1.0
+    }
+  },
+  "stage2": {
+    "solver_mode": "stage2_emergency_insert",
+    "cr_reg": 0.8333333333333334,
+    "cr_emg": 0.05426107588687913,
+    "n_preemptions": 1,
+    "u_cross": 0.8890921732681376,
+    "u_all": 0.32030151801966006,
+    "elapsed_seconds": 0.019827099982649088
+  },
+  "diagnostics": {
+    "emergency_total": 16,
+    "emergency_success_count": 1,
+    "emergency_unfinished_count": 15,
+    "controlled_preemption_count": 1,
+    "affected_regular_task_count": 1,
+    "affected_regular_task_ids": [
+      "R3"
+    ],
+    "regular_completion_rate_dropped": true,
+    "direct_success_task_ids": [],
+    "preemption_success_task_ids": [
+      "heavy_load_emg_01"
+    ],
+    "failed_emergency_task_ids": [
+      "heavy_load_emg_02",
+      "heavy_load_emg_03",
+      "heavy_load_emg_04",
+      "heavy_load_emg_05",
+      "heavy_load_emg_06",
+      "heavy_load_emg_07",
+      "heavy_load_emg_08",
+      "heavy_load_emg_09",
+      "heavy_load_emg_10",
+      "heavy_load_emg_11",
+      "heavy_load_emg_12",
+      "heavy_load_emg_13",
+      "heavy_load_emg_14",
+      "heavy_load_emg_15",
+      "heavy_load_emg_16"
+    ],
+    "insertion_events": [
+      {
+        "task_id": "heavy_load_emg_01",
+        "arrival": 4.3930384000325144,
+        "deadline": 11.337547128888987,
+        "data": 10.950416492411707,
+        "weight": 2.898134218196951,
+        "segment_index": 4,
+        "preemptions_added": 1,
+        "strategy": "controlled_preemption",
+        "completed": true,
+        "used_preemption": true,
+        "preemptions": 1,
+        "preempted_task_id": "R3",
+        "released_segments": [
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "horizon_segment_indices": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "planned_delivery": 10.950416492411707,
+        "direct_plan_delivery": 9.478018322617555
+      },
+      {
+        "task_id": "heavy_load_emg_02",
+        "arrival": 4.60439416270895,
+        "deadline": 11.456533596888992,
+        "data": 9.626177925920567,
+        "weight": 3.7939940347766865,
+        "segment_index": 5,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "planned_delivery": 6.194264390146965,
+        "direct_plan_delivery": 6.194264390146965
+      },
+      {
+        "task_id": "heavy_load_emg_03",
+        "arrival": 4.6934850595261075,
+        "deadline": 12.0,
+        "data": 14.745660570455753,
+        "weight": 3.0444719293654243,
+        "segment_index": 6,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "planned_delivery": 2.0578865546998633,
+        "direct_plan_delivery": 2.0578865546998633
+      },
+      {
+        "task_id": "heavy_load_emg_04",
+        "arrival": 4.9437018446035035,
+        "deadline": 12.0,
+        "data": 12.320058032213074,
+        "weight": 3.746916195552426,
+        "segment_index": 7,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "heavy_load_emg_05",
+        "arrival": 5.092545957214872,
+        "deadline": 12.0,
+        "data": 14.219698380125099,
+        "weight": 3.5897478358083164,
+        "segment_index": 9,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "heavy_load_emg_06",
+        "arrival": 5.302602763784053,
+        "deadline": 12.0,
+        "data": 14.709606301681863,
+        "weight": 3.208728857003489,
+        "segment_index": 10,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "heavy_load_emg_07",
+        "arrival": 5.436264823559455,
+        "deadline": 12.0,
+        "data": 13.85080880216363,
+        "weight": 3.665790327279714,
+        "segment_index": 11,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "heavy_load_emg_08",
+        "arrival": 5.485425578429956,
+        "deadline": 12.0,
+        "data": 12.274982289963438,
+        "weight": 3.2280651880858127,
+        "segment_index": 12,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "heavy_load_emg_09",
+        "arrival": 5.494894059144776,
+        "deadline": 12.0,
+        "data": 12.363493237549292,
+        "weight": 3.8327316076259823,
+        "segment_index": 13,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "heavy_load_emg_10",
+        "arrival": 5.630461855030967,
+        "deadline": 11.969561889603833,
+        "data": 11.395187848943593,
+        "weight": 3.637967630402362,
+        "segment_index": 14,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "heavy_load_emg_11",
+        "arrival": 5.787423514497918,
+        "deadline": 12.0,
+        "data": 10.067175550948091,
+        "weight": 2.9699240853572673,
+        "segment_index": 15,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "heavy_load_emg_12",
+        "arrival": 6.037787682376039,
+        "deadline": 12.0,
+        "data": 13.210960259984468,
+        "weight": 3.3427178285150667,
+        "segment_index": 17,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "heavy_load_emg_13",
+        "arrival": 6.052108075106063,
+        "deadline": 11.797422014222157,
+        "data": 11.471012845984752,
+        "weight": 2.9429325840851286,
+        "segment_index": 18,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "heavy_load_emg_14",
+        "arrival": 6.076729390178616,
+        "deadline": 12.0,
+        "data": 9.750878597348317,
+        "weight": 2.9706504514778724,
+        "segment_index": 19,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "heavy_load_emg_15",
+        "arrival": 6.3602574156680705,
+        "deadline": 12.0,
+        "data": 12.009969174231788,
+        "weight": 2.7737394532335635,
+        "segment_index": 20,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      },
+      {
+        "task_id": "heavy_load_emg_16",
+        "arrival": 6.873169593808838,
+        "deadline": 12.0,
+        "data": 9.964484391087733,
+        "weight": 3.764412102099824,
+        "segment_index": 21,
+        "preemptions_added": 0,
+        "strategy": "direct_insert_best_effort",
+        "completed": false,
+        "used_preemption": false,
+        "preemptions": 0,
+        "preempted_task_id": null,
+        "released_segments": [],
+        "horizon_segment_indices": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28
+        ],
+        "planned_delivery": 0.0,
+        "direct_plan_delivery": 0.0
+      }
+    ]
+  },
+  "baseline_impact": {
+    "cr_reg_before": 1.0,
+    "cr_reg_after": 0.8333333333333334,
+    "cr_emg": 0.05426107588687913,
+    "regular_task_degradation": [
+      "R3"
+    ],
+    "cross_window_usage_delta_by_segment": {
+      "4": {
+        "X1": 2.0,
+        "X2": 0.9000000000000004
+      },
+      "5": {
+        "X1": 3.0,
+        "X2": 1.0999999999999996,
+        "X3": -1.5
+      },
+      "6": {
+        "X1": 3.0,
+        "X2": 3.0,
+        "X3": -1.5
+      },
+      "7": {
+        "X1": 3.0,
+        "X2": 3.0,
+        "X3": -0.7000000000000011
+      },
+      "8": {
+        "X2": 3.0
+      },
+      "9": {
+        "X2": 3.0
+      },
+      "10": {
+        "X2": 3.0
+      },
+      "11": {
+        "X2": 3.0
+      },
+      "12": {
+        "X2": 3.0
+      },
+      "13": {
+        "X2": 3.0
+      },
+      "14": {
+        "X2": 3.0
+      },
+      "15": {
+        "X2": 3.0
+      },
+      "16": {
+        "X2": 3.0,
+        "X3": 3.0
+      },
+      "17": {
+        "X2": 3.0,
+        "X3": 3.0
+      },
+      "18": {
+        "X2": 3.0,
+        "X3": 3.0
+      },
+      "19": {
+        "X2": 3.0,
+        "X3": 3.0
+      },
+      "20": {
+        "X2": 3.0,
+        "X3": 3.0
+      },
+      "21": {
+        "X2": 3.0,
+        "X3": 3.0
+      },
+      "22": {
+        "X3": 3.0
+      },
+      "23": {
+        "X3": 2.9999999999999947
+      }
+    },
+    "regular_success_rate_before": 1.0,
+    "regular_success_rate_after": 0.6666666666666666,
+    "degenerates_to_baseline": false
+  },
+  "task_outcomes": {
+    "baseline": {
+      "summary": {
+        "baseline_regular_task_count": 3,
+        "completed_baseline_regular_task_count": 3,
+        "incomplete_baseline_regular_task_count": 0,
+        "stage1_metric_regular_task_count": 3,
+        "completed_stage1_metric_regular_task_count": 3,
+        "segment_count": 9,
+        "allocation_count": 13,
+        "window_count": 3,
+        "mean_completion_ratio": 1.0,
+        "fr": 1.0,
+        "eta_cap": 0.14425457441015863,
+        "eta_0": 0.058049435311224695,
+        "max_cross_rate_used": 4.1,
+        "max_cross_window_util": 1.0
+      },
+      "reg": {
+        "count": 3,
+        "success_count": 3,
+        "failure_count": 0,
+        "success_rate": 1.0,
+        "weighted_true_completion": 1.0,
+        "mean_completion_ratio": 1.0,
+        "failed_task_ids": [],
+        "completion_by_task": [
+          {
+            "task_id": "R1",
+            "task_type": "reg",
+            "data": 8.0,
+            "weight": 3.0,
+            "delivered": 8.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          },
+          {
+            "task_id": "R2",
+            "task_type": "reg",
+            "data": 10.0,
+            "weight": 2.0,
+            "delivered": 10.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          },
+          {
+            "task_id": "R3",
+            "task_type": "reg",
+            "data": 7.0,
+            "weight": 1.0,
+            "delivered": 7.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          }
+        ]
+      },
+      "completed": {
+        "R1": true,
+        "R2": true,
+        "R3": true
+      },
+      "remaining_end": {
+        "R1": 0.0,
+        "R2": 0.0,
+        "R3": 0.0
+      }
+    },
+    "stage2": {
+      "overall": {
+        "count": 19,
+        "success_count": 3,
+        "failure_count": 16,
+        "success_rate": 0.15789473684210525,
+        "weighted_true_completion": 0.13294077322341027,
+        "mean_completion_ratio": 0.20015476448821662,
+        "failed_task_ids": [
+          "R3",
+          "heavy_load_emg_02",
+          "heavy_load_emg_03",
+          "heavy_load_emg_04",
+          "heavy_load_emg_05",
+          "heavy_load_emg_06",
+          "heavy_load_emg_07",
+          "heavy_load_emg_08",
+          "heavy_load_emg_09",
+          "heavy_load_emg_10",
+          "heavy_load_emg_11",
+          "heavy_load_emg_12",
+          "heavy_load_emg_13",
+          "heavy_load_emg_14",
+          "heavy_load_emg_15",
+          "heavy_load_emg_16"
+        ],
+        "completion_by_task": [
+          {
+            "task_id": "R1",
+            "task_type": "reg",
+            "data": 8.0,
+            "weight": 3.0,
+            "delivered": 8.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          },
+          {
+            "task_id": "R2",
+            "task_type": "reg",
+            "data": 10.0,
+            "weight": 2.0,
+            "delivered": 10.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          },
+          {
+            "task_id": "R3",
+            "task_type": "reg",
+            "data": 7.0,
+            "weight": 1.0,
+            "delivered": 0.13930384000325094,
+            "remaining": 6.860696159996749,
+            "completion_ratio": 0.019900548571892992,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_01",
+            "task_type": "emg",
+            "data": 10.950416492411707,
+            "weight": 2.898134218196951,
+            "delivered": 10.950416492411701,
+            "remaining": 5.329070518200751e-15,
+            "completion_ratio": 0.9999999999999996,
+            "success": true
+          },
+          {
+            "task_id": "heavy_load_emg_02",
+            "task_type": "emg",
+            "data": 9.626177925920567,
+            "weight": 3.7939940347766865,
+            "delivered": 6.194264390146966,
+            "remaining": 3.4319135357736013,
+            "completion_ratio": 0.6434811861795706,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_03",
+            "task_type": "emg",
+            "data": 14.745660570455753,
+            "weight": 3.0444719293654243,
+            "delivered": 2.0578865546998633,
+            "remaining": 12.68777401575589,
+            "completion_ratio": 0.13955879052465256,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_04",
+            "task_type": "emg",
+            "data": 12.320058032213074,
+            "weight": 3.746916195552426,
+            "delivered": 0.0,
+            "remaining": 12.320058032213074,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_05",
+            "task_type": "emg",
+            "data": 14.219698380125099,
+            "weight": 3.5897478358083164,
+            "delivered": 0.0,
+            "remaining": 14.219698380125099,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_06",
+            "task_type": "emg",
+            "data": 14.709606301681863,
+            "weight": 3.208728857003489,
+            "delivered": 0.0,
+            "remaining": 14.709606301681863,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_07",
+            "task_type": "emg",
+            "data": 13.85080880216363,
+            "weight": 3.665790327279714,
+            "delivered": 0.0,
+            "remaining": 13.85080880216363,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_08",
+            "task_type": "emg",
+            "data": 12.274982289963438,
+            "weight": 3.2280651880858127,
+            "delivered": 0.0,
+            "remaining": 12.274982289963438,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_09",
+            "task_type": "emg",
+            "data": 12.363493237549292,
+            "weight": 3.8327316076259823,
+            "delivered": 0.0,
+            "remaining": 12.363493237549292,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_10",
+            "task_type": "emg",
+            "data": 11.395187848943593,
+            "weight": 3.637967630402362,
+            "delivered": 0.0,
+            "remaining": 11.395187848943593,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_11",
+            "task_type": "emg",
+            "data": 10.067175550948091,
+            "weight": 2.9699240853572673,
+            "delivered": 0.0,
+            "remaining": 10.067175550948091,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_12",
+            "task_type": "emg",
+            "data": 13.210960259984468,
+            "weight": 3.3427178285150667,
+            "delivered": 0.0,
+            "remaining": 13.210960259984468,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_13",
+            "task_type": "emg",
+            "data": 11.471012845984752,
+            "weight": 2.9429325840851286,
+            "delivered": 0.0,
+            "remaining": 11.471012845984752,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_14",
+            "task_type": "emg",
+            "data": 9.750878597348317,
+            "weight": 2.9706504514778724,
+            "delivered": 0.0,
+            "remaining": 9.750878597348317,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_15",
+            "task_type": "emg",
+            "data": 12.009969174231788,
+            "weight": 2.7737394532335635,
+            "delivered": 0.0,
+            "remaining": 12.009969174231788,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_16",
+            "task_type": "emg",
+            "data": 9.964484391087733,
+            "weight": 3.764412102099824,
+            "delivered": 0.0,
+            "remaining": 9.964484391087733,
+            "completion_ratio": 0.0,
+            "success": false
+          }
+        ]
+      },
+      "reg": {
+        "count": 3,
+        "success_count": 2,
+        "failure_count": 1,
+        "success_rate": 0.6666666666666666,
+        "weighted_true_completion": 0.8333333333333334,
+        "mean_completion_ratio": 0.6733001828572976,
+        "failed_task_ids": [
+          "R3"
+        ],
+        "completion_by_task": [
+          {
+            "task_id": "R1",
+            "task_type": "reg",
+            "data": 8.0,
+            "weight": 3.0,
+            "delivered": 8.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          },
+          {
+            "task_id": "R2",
+            "task_type": "reg",
+            "data": 10.0,
+            "weight": 2.0,
+            "delivered": 10.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          },
+          {
+            "task_id": "R3",
+            "task_type": "reg",
+            "data": 7.0,
+            "weight": 1.0,
+            "delivered": 0.13930384000325094,
+            "remaining": 6.860696159996749,
+            "completion_ratio": 0.019900548571892992,
+            "success": false
+          }
+        ]
+      },
+      "emg": {
+        "count": 16,
+        "success_count": 1,
+        "failure_count": 15,
+        "success_rate": 0.0625,
+        "weighted_true_completion": 0.05426107588687912,
+        "mean_completion_ratio": 0.11143999854401392,
+        "failed_task_ids": [
+          "heavy_load_emg_02",
+          "heavy_load_emg_03",
+          "heavy_load_emg_04",
+          "heavy_load_emg_05",
+          "heavy_load_emg_06",
+          "heavy_load_emg_07",
+          "heavy_load_emg_08",
+          "heavy_load_emg_09",
+          "heavy_load_emg_10",
+          "heavy_load_emg_11",
+          "heavy_load_emg_12",
+          "heavy_load_emg_13",
+          "heavy_load_emg_14",
+          "heavy_load_emg_15",
+          "heavy_load_emg_16"
+        ],
+        "completion_by_task": [
+          {
+            "task_id": "heavy_load_emg_01",
+            "task_type": "emg",
+            "data": 10.950416492411707,
+            "weight": 2.898134218196951,
+            "delivered": 10.950416492411701,
+            "remaining": 5.329070518200751e-15,
+            "completion_ratio": 0.9999999999999996,
+            "success": true
+          },
+          {
+            "task_id": "heavy_load_emg_02",
+            "task_type": "emg",
+            "data": 9.626177925920567,
+            "weight": 3.7939940347766865,
+            "delivered": 6.194264390146966,
+            "remaining": 3.4319135357736013,
+            "completion_ratio": 0.6434811861795706,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_03",
+            "task_type": "emg",
+            "data": 14.745660570455753,
+            "weight": 3.0444719293654243,
+            "delivered": 2.0578865546998633,
+            "remaining": 12.68777401575589,
+            "completion_ratio": 0.13955879052465256,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_04",
+            "task_type": "emg",
+            "data": 12.320058032213074,
+            "weight": 3.746916195552426,
+            "delivered": 0.0,
+            "remaining": 12.320058032213074,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_05",
+            "task_type": "emg",
+            "data": 14.219698380125099,
+            "weight": 3.5897478358083164,
+            "delivered": 0.0,
+            "remaining": 14.219698380125099,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_06",
+            "task_type": "emg",
+            "data": 14.709606301681863,
+            "weight": 3.208728857003489,
+            "delivered": 0.0,
+            "remaining": 14.709606301681863,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_07",
+            "task_type": "emg",
+            "data": 13.85080880216363,
+            "weight": 3.665790327279714,
+            "delivered": 0.0,
+            "remaining": 13.85080880216363,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_08",
+            "task_type": "emg",
+            "data": 12.274982289963438,
+            "weight": 3.2280651880858127,
+            "delivered": 0.0,
+            "remaining": 12.274982289963438,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_09",
+            "task_type": "emg",
+            "data": 12.363493237549292,
+            "weight": 3.8327316076259823,
+            "delivered": 0.0,
+            "remaining": 12.363493237549292,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_10",
+            "task_type": "emg",
+            "data": 11.395187848943593,
+            "weight": 3.637967630402362,
+            "delivered": 0.0,
+            "remaining": 11.395187848943593,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_11",
+            "task_type": "emg",
+            "data": 10.067175550948091,
+            "weight": 2.9699240853572673,
+            "delivered": 0.0,
+            "remaining": 10.067175550948091,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_12",
+            "task_type": "emg",
+            "data": 13.210960259984468,
+            "weight": 3.3427178285150667,
+            "delivered": 0.0,
+            "remaining": 13.210960259984468,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_13",
+            "task_type": "emg",
+            "data": 11.471012845984752,
+            "weight": 2.9429325840851286,
+            "delivered": 0.0,
+            "remaining": 11.471012845984752,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_14",
+            "task_type": "emg",
+            "data": 9.750878597348317,
+            "weight": 2.9706504514778724,
+            "delivered": 0.0,
+            "remaining": 9.750878597348317,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_15",
+            "task_type": "emg",
+            "data": 12.009969174231788,
+            "weight": 2.7737394532335635,
+            "delivered": 0.0,
+            "remaining": 12.009969174231788,
+            "completion_ratio": 0.0,
+            "success": false
+          },
+          {
+            "task_id": "heavy_load_emg_16",
+            "task_type": "emg",
+            "data": 9.964484391087733,
+            "weight": 3.764412102099824,
+            "delivered": 0.0,
+            "remaining": 9.964484391087733,
+            "completion_ratio": 0.0,
+            "success": false
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "effective_scenario": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_emergency_validation\\small_validation_demo\\heavy_load__cand_0__default\\effective_scenario.json",
+    "emergency_tasks": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_emergency_validation\\small_validation_demo\\heavy_load__cand_0__default\\emergency_tasks.json",
+    "stage2_result": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_emergency_validation\\small_validation_demo\\heavy_load__cand_0__default\\stage2_result.json",
+    "summary_json": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_emergency_validation\\small_validation_demo\\heavy_load__cand_0__default\\case_summary.json",
+    "summary_md": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_emergency_validation\\small_validation_demo\\heavy_load__cand_0__default\\case_summary.md"
+  }
+}

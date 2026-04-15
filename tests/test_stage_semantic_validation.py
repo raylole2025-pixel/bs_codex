@@ -201,9 +201,13 @@ class StageSemanticValidationTests(unittest.TestCase):
         self.assertEqual(result.metadata["emergency_insertions_used_preemption_count"], 1)
         self.assertEqual(result.n_preemptions, 1)
         self.assertEqual(insertions[0]["strategy"], "direct_insert")
+        self.assertEqual(insertions[0]["capacity_tier"], "reserved_only")
         self.assertFalse(insertions[0]["used_preemption"])
         self.assertEqual(insertions[1]["strategy"], "controlled_preemption")
+        self.assertEqual(insertions[1]["capacity_tier"], "preempted")
         self.assertTrue(insertions[1]["used_preemption"])
+        self.assertEqual(insertions[1]["released_cross_window_ids"], ["X1"])
+        self.assertIsNotNone(insertions[1]["preemption_score"])
         self.assertIn("R1", result.metadata["regular_tasks_degraded_by_emergency"])
         self.assertNotEqual(
             result.metadata["baseline_cross_window_usage_by_segment"],

@@ -5,15 +5,27 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 from .models import Allocation, PathCandidate, ScheduledWindow, Scenario, Segment, Stage1BaselineTrace, Stage2Result, Task
+from .regular_routing_common import clamp01, cross_link_from_edges, post_allocation_max_utilization
 from .scenario import active_cross_links, active_intra_links, build_segments, generate_candidate_paths
 
 EPS = 1e-9
+CAPACITY_TIER_RESERVED_ONLY = "reserved_only"
+CAPACITY_TIER_BORROW_UNUSED_REGULAR_SHARE = "borrow_unused_regular_share"
+CAPACITY_TIER_PREEMPTED = "preempted"
+CAPACITY_TIER_BLOCKED = "blocked"
+PREEMPTION_WEIGHT_COEFF = 0.45
+PREEMPTION_SENT_RATIO_COEFF = 0.35
+PREEMPTION_SLACK_COEFF = 0.20
+PREEMPTION_SCORE_EPS = 1e-6
 
 
 @dataclass(frozen=True)
 class _CapacityState:
-    total: dict[str, float]
-    regular_cross: dict[str, float]
+    capacity: dict[str, float]
+    total_free: dict[str, float]
+    regular_cross_free: dict[str, float]
+    used_regular_cross: dict[str, float]
+    used_emergency_cross: dict[str, float]
     edge_kind: dict[str, str]
 
 
@@ -23,12 +35,14 @@ class _PlannedAction:
     path: PathCandidate | None
     rate: float
     delivered: float
+    tier: int = 0
 
 
 @dataclass(frozen=True)
 class _PlanLabel:
     last_cross_link: str | None
     remaining_data: float
+    tier_cost: int
     idle_steps: int
     switches: int
     deviations: int
@@ -43,9 +57,19 @@ class _TaskPlan:
     remaining_data: float
     completed: bool
     finish_time: float | None
+    tier_cost: int
     switches: int
     deviations: int
     load_cost: float
+
+
+@dataclass(frozen=True)
+class _PreemptionCandidate:
+    task: Task
+    score: float
+    released_segments: tuple[int, ...]
+    released_edge_ids: tuple[str, ...]
+    released_cross_window_ids: tuple[str, ...]
 
 
 class TwoPhaseEventDrivenScheduler:
@@ -462,6 +486,12 @@ class TwoPhaseEventDrivenScheduler:
             return 0.0
         return float(sum(action.delivered for action in task_plan.actions))
 
+    @staticmethod
+    def _plan_capacity_tier(task_plan: _TaskPlan | None) -> str:
+        if task_plan is None:
+            return CAPACITY_TIER_BLOCKED
+        return CAPACITY_TIER_BORROW_UNUSED_REGULAR_SHARE if int(task_plan.tier_cost) > 0 else CAPACITY_TIER_RESERVED_ONLY
+
     def _insert_emergency_task(
         self,
         emergency: Task,
@@ -476,12 +506,16 @@ class TwoPhaseEventDrivenScheduler:
         if not horizon:
             return {
                 "task_id": emergency.task_id,
-                "strategy": "no_horizon",
+                "strategy": "blocked",
                 "completed": False,
+                "capacity_tier": CAPACITY_TIER_BLOCKED,
                 "used_preemption": False,
                 "preemptions": 0,
                 "preempted_task_id": None,
                 "released_segments": [],
+                "released_edge_ids": [],
+                "released_cross_window_ids": [],
+                "preemption_score": None,
                 "horizon_segment_indices": [],
                 "planned_delivery": 0.0,
                 "direct_plan_delivery": 0.0,
@@ -496,29 +530,42 @@ class TwoPhaseEventDrivenScheduler:
             prev_cross_link=prev_cross_link,
         )
         direct_plan_delivery = self._task_plan_delivery(direct_plan)
+        corridor = self._candidate_corridor(plan, emergency, horizon, committed)
+        affected = self._affected_regular_tasks(
+            emergency=emergency,
+            horizon=horizon,
+            committed=committed,
+            actual_remaining=actual_remaining,
+            corridor=corridor,
+        )
         if direct_plan is not None and direct_plan.completed:
             self._commit_single_task_plan(committed, emergency, horizon, direct_plan.actions)
             return {
                 "task_id": emergency.task_id,
                 "strategy": "direct_insert",
                 "completed": True,
+                "capacity_tier": self._plan_capacity_tier(direct_plan),
                 "used_preemption": False,
                 "preemptions": 0,
                 "preempted_task_id": None,
                 "released_segments": [],
+                "released_edge_ids": [],
+                "released_cross_window_ids": [],
+                "preemption_score": None,
                 "horizon_segment_indices": [segment.index for segment in horizon],
                 "planned_delivery": float(direct_plan_delivery),
                 "direct_plan_delivery": float(direct_plan_delivery),
             }
 
-        affected = self._affected_regular_tasks(
-            emergency=emergency,
-            plan=plan,
-            horizon=horizon,
-            committed=committed,
-            actual_remaining=actual_remaining,
-        )
-        preemptions, preempted_task_id, released_segments, repaired = self._try_controlled_preemption(
+        (
+            preemptions,
+            preempted_task_id,
+            released_segments,
+            released_edge_ids,
+            released_cross_window_ids,
+            preemption_score,
+            repaired,
+        ) = self._try_controlled_preemption(
             emergency=emergency,
             affected=affected,
             plan=plan,
@@ -526,6 +573,7 @@ class TwoPhaseEventDrivenScheduler:
             committed=committed,
             actual_remaining=actual_remaining,
             prev_cross_link=prev_cross_link,
+            corridor=corridor,
         )
         if repaired is not None:
             for segment_index in released_segments:
@@ -535,25 +583,33 @@ class TwoPhaseEventDrivenScheduler:
                 "task_id": emergency.task_id,
                 "strategy": "controlled_preemption",
                 "completed": bool(repaired.completed),
+                "capacity_tier": CAPACITY_TIER_PREEMPTED,
                 "used_preemption": True,
                 "preemptions": int(preemptions),
                 "preempted_task_id": preempted_task_id,
-                "released_segments": sorted(int(index) for index in released_segments),
+                "released_segments": [int(index) for index in released_segments],
+                "released_edge_ids": [str(edge_id) for edge_id in released_edge_ids],
+                "released_cross_window_ids": [str(window_id) for window_id in released_cross_window_ids],
+                "preemption_score": None if preemption_score is None else float(preemption_score),
                 "horizon_segment_indices": [segment.index for segment in horizon],
                 "planned_delivery": float(self._task_plan_delivery(repaired)),
                 "direct_plan_delivery": float(direct_plan_delivery),
             }
 
-        if direct_plan is not None:
+        if direct_plan is not None and direct_plan_delivery > self.numeric_tolerance:
             self._commit_single_task_plan(committed, emergency, horizon, direct_plan.actions)
             return {
                 "task_id": emergency.task_id,
                 "strategy": "direct_insert_best_effort",
                 "completed": False,
+                "capacity_tier": self._plan_capacity_tier(direct_plan),
                 "used_preemption": False,
                 "preemptions": int(preemptions),
                 "preempted_task_id": None,
                 "released_segments": [],
+                "released_edge_ids": [],
+                "released_cross_window_ids": [],
+                "preemption_score": None,
                 "horizon_segment_indices": [segment.index for segment in horizon],
                 "planned_delivery": float(direct_plan_delivery),
                 "direct_plan_delivery": float(direct_plan_delivery),
@@ -562,10 +618,14 @@ class TwoPhaseEventDrivenScheduler:
             "task_id": emergency.task_id,
             "strategy": "blocked",
             "completed": False,
+            "capacity_tier": CAPACITY_TIER_BLOCKED,
             "used_preemption": False,
             "preemptions": int(preemptions),
             "preempted_task_id": None,
             "released_segments": [],
+            "released_edge_ids": [],
+            "released_cross_window_ids": [],
+            "preemption_score": None,
             "horizon_segment_indices": [segment.index for segment in horizon],
             "planned_delivery": 0.0,
             "direct_plan_delivery": float(direct_plan_delivery),
@@ -601,34 +661,27 @@ class TwoPhaseEventDrivenScheduler:
         committed: dict[tuple[str, int], Allocation],
         actual_remaining: dict[str, float],
         prev_cross_link: dict[str, str | None],
-    ) -> tuple[int, str | None, set[int], _TaskPlan | None]:
+        corridor: dict[int, set[str]],
+    ) -> tuple[int, str | None, tuple[int, ...], tuple[str, ...], tuple[str, ...], float | None, _TaskPlan | None]:
         if not affected:
-            return 0, None, set(), None
+            return 0, None, tuple(), tuple(), tuple(), None, None
 
-        corridor = self._candidate_corridor(plan, emergency, horizon)
-        candidates = [
-            task
-            for task in affected
-            if task.weight < emergency.weight and self._is_committed_complete(task, committed, actual_remaining)
-        ]
-        candidates.sort(
-            key=lambda task: (
-                task.weight,
-                -self._task_slack(task, actual_remaining, horizon[0].start),
-                -self._task_overlap(task.task_id, committed, corridor),
-                task.task_id,
-            )
+        candidates = self._rank_preemption_candidates(
+            emergency=emergency,
+            affected=affected,
+            committed=committed,
+            actual_remaining=actual_remaining,
+            horizon=horizon,
+            corridor=corridor,
         )
-
-        for task in candidates:
-            released_segments = self._conflict_segments(task.task_id, committed, corridor)
-            if not released_segments:
+        for candidate in candidates:
+            if not candidate.released_segments:
                 continue
 
             tentative = {
                 key: alloc
                 for key, alloc in committed.items()
-                if not (key[0] == task.task_id and key[1] in released_segments)
+                if not (key[0] == candidate.task.task_id and key[1] in set(candidate.released_segments))
             }
             direct_plan = self._solve_direct_insert(
                 task=emergency,
@@ -639,9 +692,17 @@ class TwoPhaseEventDrivenScheduler:
                 prev_cross_link=prev_cross_link,
             )
             if direct_plan is not None and direct_plan.completed:
-                return 1, task.task_id, released_segments, direct_plan
+                return (
+                    1,
+                    candidate.task.task_id,
+                    candidate.released_segments,
+                    candidate.released_edge_ids,
+                    candidate.released_cross_window_ids,
+                    candidate.score,
+                    direct_plan,
+                )
 
-        return 0, None, set(), None
+        return 0, None, tuple(), tuple(), tuple(), None, None
 
     def _plan_task(
         self,
@@ -656,7 +717,16 @@ class TwoPhaseEventDrivenScheduler:
     ) -> _TaskPlan | None:
         completion_tolerance = self._task_completion_tolerance(task)
         if remaining_data <= completion_tolerance:
-            return _TaskPlan(actions=tuple(), remaining_data=0.0, completed=True, finish_time=None, switches=0, deviations=0, load_cost=0.0)
+            return _TaskPlan(
+                actions=tuple(),
+                remaining_data=0.0,
+                completed=True,
+                finish_time=None,
+                tier_cost=0,
+                switches=0,
+                deviations=0,
+                load_cost=0.0,
+            )
         if not segments:
             return None
 
@@ -665,6 +735,7 @@ class TwoPhaseEventDrivenScheduler:
             _PlanLabel(
                 last_cross_link=initial_cross_link,
                 remaining_data=remaining_data,
+                tier_cost=0,
                 idle_steps=0,
                 switches=0,
                 deviations=0,
@@ -686,12 +757,13 @@ class TwoPhaseEventDrivenScheduler:
                 wait_label = _PlanLabel(
                     last_cross_link=None,
                     remaining_data=label.remaining_data,
+                    tier_cost=label.tier_cost,
                     idle_steps=label.idle_steps + 1,
                     switches=label.switches,
                     deviations=label.deviations + self._deviation_penalty(preferred_cross_links.get(segment.index), None),
                     load_cost=label.load_cost,
                     finish_time=label.finish_time,
-                    actions=label.actions + (_PlannedAction(segment_index=segment.index, path=None, rate=0.0, delivered=0.0),),
+                    actions=label.actions + (_PlannedAction(segment_index=segment.index, path=None, rate=0.0, delivered=0.0, tier=0),),
                 )
                 partial.append(wait_label)
                 self._insert_nondominated(buckets[None], wait_label, objective)
@@ -700,12 +772,10 @@ class TwoPhaseEventDrivenScheduler:
                     state = capacity_states.get(segment.index)
                     if state is None or segment.duration <= EPS:
                         continue
-                    bottleneck = self._path_bottleneck(task, candidate, state)
-                    if bottleneck <= self.numeric_tolerance:
+                    capacity_option = self._path_rate_and_tier(task, candidate, state, label.remaining_data, segment.duration)
+                    if capacity_option is None:
                         continue
-                    rate = min(task.max_rate, bottleneck, label.remaining_data / segment.duration)
-                    if rate <= self.numeric_tolerance:
-                        continue
+                    rate, tier = capacity_option
                     delivered = rate * segment.duration
                     remaining_after = max(0.0, label.remaining_data - delivered)
                     cross_link = candidate.cross_window_id
@@ -720,12 +790,13 @@ class TwoPhaseEventDrivenScheduler:
                     next_label = _PlanLabel(
                         last_cross_link=cross_link,
                         remaining_data=remaining_after,
+                        tier_cost=label.tier_cost + tier,
                         idle_steps=label.idle_steps,
                         switches=switches,
                         deviations=deviations,
                         load_cost=load_cost,
                         finish_time=finish_time,
-                        actions=label.actions + (_PlannedAction(segment_index=segment.index, path=candidate, rate=rate, delivered=delivered),),
+                        actions=label.actions + (_PlannedAction(segment_index=segment.index, path=candidate, rate=rate, delivered=delivered, tier=tier),),
                     )
                     partial.append(next_label)
                     if remaining_after <= completion_tolerance and finish_time is not None and finish_time <= task.deadline + self.numeric_tolerance:
@@ -744,6 +815,7 @@ class TwoPhaseEventDrivenScheduler:
                 remaining_data=max(0.0, best.remaining_data),
                 completed=True,
                 finish_time=best.finish_time,
+                tier_cost=best.tier_cost,
                 switches=best.switches,
                 deviations=best.deviations,
                 load_cost=best.load_cost,
@@ -756,6 +828,7 @@ class TwoPhaseEventDrivenScheduler:
             remaining_data=max(0.0, best.remaining_data),
             completed=False,
             finish_time=best.finish_time,
+            tier_cost=best.tier_cost,
             switches=best.switches,
             deviations=best.deviations,
             load_cost=best.load_cost,
@@ -796,6 +869,7 @@ class TwoPhaseEventDrivenScheduler:
         rhs_remaining = self._remaining_key(rhs.remaining_data)
         no_worse = (
             lhs_remaining <= rhs_remaining + self.numeric_tolerance
+            and lhs.tier_cost <= rhs.tier_cost
             and lhs.switches <= rhs.switches
             and lhs.deviations <= rhs.deviations
             and lhs.load_cost <= rhs.load_cost + self.numeric_tolerance
@@ -803,6 +877,7 @@ class TwoPhaseEventDrivenScheduler:
         )
         strictly_better = (
             lhs_remaining < rhs_remaining - self.numeric_tolerance
+            or lhs.tier_cost < rhs.tier_cost
             or lhs.switches < rhs.switches
             or lhs.deviations < rhs.deviations
             or lhs.load_cost < rhs.load_cost - self.numeric_tolerance
@@ -820,7 +895,7 @@ class TwoPhaseEventDrivenScheduler:
         if objective == "baseline":
             return (label.load_cost, float(label.switches), finish_time, float(label.idle_steps))
         if objective == "emergency":
-            return (float(label.switches), label.load_cost, finish_time, float(label.idle_steps))
+            return (float(label.tier_cost), finish_time, float(label.switches), label.load_cost, float(label.idle_steps))
         return (float(label.deviations), label.load_cost, float(label.switches), finish_time, float(label.idle_steps))
 
     def _partial_key(self, label: _PlanLabel, objective: str) -> tuple[float, ...]:
@@ -828,26 +903,41 @@ class TwoPhaseEventDrivenScheduler:
         if objective == "baseline":
             return (remaining, label.load_cost, float(label.switches), float(label.idle_steps))
         if objective == "emergency":
-            return (remaining, float(label.switches), label.load_cost, float(label.idle_steps))
+            return (remaining, float(label.tier_cost), float(label.switches), label.load_cost, float(label.idle_steps))
         return (remaining, float(label.deviations), label.load_cost, float(label.switches), float(label.idle_steps))
 
     def _build_capacity_state(self, plan: list[ScheduledWindow], segment: Segment) -> _CapacityState:
-        total: dict[str, float] = {}
-        regular_cross: dict[str, float] = {}
+        capacity: dict[str, float] = {}
+        total_free: dict[str, float] = {}
+        regular_cross_free: dict[str, float] = {}
+        used_regular_cross: dict[str, float] = {}
+        used_emergency_cross: dict[str, float] = {}
         edge_kind: dict[str, str] = {}
         regular_cross_capacity = max((1.0 - self.scenario.stage1.rho) * self.scenario.capacities.cross, 0.0)
 
         for link in active_intra_links(self.scenario, "A", segment.start):
-            total[link.link_id] = self.scenario.capacities.domain_a
+            capacity[link.link_id] = self.scenario.capacities.domain_a
+            total_free[link.link_id] = self.scenario.capacities.domain_a
             edge_kind[link.link_id] = "A"
         for link in active_intra_links(self.scenario, "B", segment.start):
-            total[link.link_id] = self.scenario.capacities.domain_b
+            capacity[link.link_id] = self.scenario.capacities.domain_b
+            total_free[link.link_id] = self.scenario.capacities.domain_b
             edge_kind[link.link_id] = "B"
         for window in active_cross_links(plan, segment.start):
-            total[window.window_id] = self.scenario.capacities.cross
-            regular_cross[window.window_id] = regular_cross_capacity
+            capacity[window.window_id] = self.scenario.capacities.cross
+            total_free[window.window_id] = self.scenario.capacities.cross
+            regular_cross_free[window.window_id] = regular_cross_capacity
+            used_regular_cross[window.window_id] = 0.0
+            used_emergency_cross[window.window_id] = 0.0
             edge_kind[window.window_id] = "X"
-        return _CapacityState(total=total, regular_cross=regular_cross, edge_kind=edge_kind)
+        return _CapacityState(
+            capacity=capacity,
+            total_free=total_free,
+            regular_cross_free=regular_cross_free,
+            used_regular_cross=used_regular_cross,
+            used_emergency_cross=used_emergency_cross,
+            edge_kind=edge_kind,
+        )
 
     def _free_capacity_states(
         self,
@@ -855,21 +945,31 @@ class TwoPhaseEventDrivenScheduler:
         plan: list[ScheduledWindow],
         committed: dict[tuple[str, int], Allocation],
         exclude_tasks: set[str],
+        exclude_task_types: set[str] | None = None,
     ) -> dict[int, _CapacityState]:
         states = {segment.index: self._build_capacity_state(plan, segment) for segment in segments}
         valid_indices = set(states)
         for (task_id, segment_index), alloc in committed.items():
-            if task_id in exclude_tasks or segment_index not in valid_indices:
+            if (
+                task_id in exclude_tasks
+                or segment_index not in valid_indices
+                or (exclude_task_types and alloc.task_type in exclude_task_types)
+            ):
                 continue
             self._apply_existing_allocation(states[segment_index], alloc)
         return states
 
     def _apply_existing_allocation(self, state: _CapacityState, alloc: Allocation) -> None:
         for edge_id in alloc.edge_ids:
-            if edge_id in state.total:
-                state.total[edge_id] = max(0.0, state.total[edge_id] - alloc.rate)
-            if alloc.task_type == "reg" and state.edge_kind.get(edge_id) == "X" and edge_id in state.regular_cross:
-                state.regular_cross[edge_id] = max(0.0, state.regular_cross[edge_id] - alloc.rate)
+            if edge_id in state.total_free:
+                state.total_free[edge_id] = max(0.0, state.total_free[edge_id] - alloc.rate)
+            if state.edge_kind.get(edge_id) != "X":
+                continue
+            if alloc.task_type == "reg" and edge_id in state.regular_cross_free:
+                state.regular_cross_free[edge_id] = max(0.0, state.regular_cross_free[edge_id] - alloc.rate)
+                state.used_regular_cross[edge_id] = float(state.used_regular_cross.get(edge_id, 0.0)) + float(alloc.rate)
+            elif alloc.task_type == "emg":
+                state.used_emergency_cross[edge_id] = float(state.used_emergency_cross.get(edge_id, 0.0)) + float(alloc.rate)
 
     def _apply_action_to_capacity(
         self,
@@ -883,10 +983,15 @@ class TwoPhaseEventDrivenScheduler:
         if state is None:
             return
         for edge_id in action.path.edge_ids:
-            if edge_id in state.total:
-                state.total[edge_id] = max(0.0, state.total[edge_id] - action.rate)
-            if task_type == "reg" and state.edge_kind.get(edge_id) == "X" and edge_id in state.regular_cross:
-                state.regular_cross[edge_id] = max(0.0, state.regular_cross[edge_id] - action.rate)
+            if edge_id in state.total_free:
+                state.total_free[edge_id] = max(0.0, state.total_free[edge_id] - action.rate)
+            if state.edge_kind.get(edge_id) != "X":
+                continue
+            if task_type == "reg" and edge_id in state.regular_cross_free:
+                state.regular_cross_free[edge_id] = max(0.0, state.regular_cross_free[edge_id] - action.rate)
+                state.used_regular_cross[edge_id] = float(state.used_regular_cross.get(edge_id, 0.0)) + float(action.rate)
+            elif task_type == "emg":
+                state.used_emergency_cross[edge_id] = float(state.used_emergency_cross.get(edge_id, 0.0)) + float(action.rate)
 
     def _apply_actions_to_capacity(
         self,
@@ -897,18 +1002,50 @@ class TwoPhaseEventDrivenScheduler:
         for action in actions:
             self._apply_action_to_capacity(capacity_states, action, task_type)
 
-    def _path_bottleneck(self, task: Task, path: PathCandidate, state: _CapacityState) -> float:
+    def _path_bottleneck_bounds(self, task: Task, path: PathCandidate, state: _CapacityState) -> tuple[float, float]:
         if not path.edge_ids:
-            return float("inf")
-        bottleneck = float("inf")
+            return float("inf"), float("inf")
+        total_bottleneck = float("inf")
+        reserved_bottleneck = float("inf")
         for edge_id in path.edge_ids:
-            available = state.total.get(edge_id)
-            if available is None:
-                return 0.0
+            total_available = state.total_free.get(edge_id)
+            if total_available is None:
+                return 0.0, 0.0
             if task.task_type == "reg" and state.edge_kind.get(edge_id) == "X":
-                available = min(available, state.regular_cross.get(edge_id, 0.0))
-            bottleneck = min(bottleneck, available)
-        return bottleneck
+                total_available = min(total_available, state.regular_cross_free.get(edge_id, 0.0))
+            total_bottleneck = min(total_bottleneck, total_available)
+
+            reserved_available = total_available
+            if task.task_type == "emg" and state.edge_kind.get(edge_id) == "X":
+                reserved_available = min(total_available, self._reserve_free(edge_id, state))
+            reserved_bottleneck = min(reserved_bottleneck, reserved_available)
+        return total_bottleneck, reserved_bottleneck
+
+    def _path_rate_and_tier(
+        self,
+        task: Task,
+        path: PathCandidate,
+        state: _CapacityState,
+        remaining_data: float,
+        segment_duration: float,
+    ) -> tuple[float, int] | None:
+        total_bottleneck, reserved_bottleneck = self._path_bottleneck_bounds(task, path, state)
+        if total_bottleneck <= self.numeric_tolerance or segment_duration <= self.numeric_tolerance:
+            return None
+        rate = min(float(task.max_rate), float(total_bottleneck), max(float(remaining_data), 0.0) / segment_duration)
+        if rate <= self.numeric_tolerance:
+            return None
+        tier = 0
+        if task.task_type == "emg" and rate > reserved_bottleneck + self.numeric_tolerance:
+            tier = 1
+        return rate, tier
+
+    def _reserve_free(self, edge_id: str, state: _CapacityState) -> float:
+        capacity = float(state.capacity.get(edge_id, 0.0))
+        if capacity <= self.numeric_tolerance:
+            return 0.0
+        used_emergency = float(state.used_emergency_cross.get(edge_id, 0.0))
+        return max(float(self.scenario.stage1.rho) * capacity - used_emergency, 0.0)
 
     def _path_load_cost(
         self,
@@ -917,14 +1054,10 @@ class TwoPhaseEventDrivenScheduler:
         rate: float,
         capacity_states: dict[int, _CapacityState],
     ) -> float:
-        cross_link = path.cross_window_id
-        if cross_link is None or self.scenario.capacities.cross <= self.numeric_tolerance:
-            return 0.0
         state = capacity_states.get(segment_index)
-        if state is None or cross_link not in state.total:
+        if state is None:
             return 0.0
-        used_after = max(self.scenario.capacities.cross - state.total[cross_link] + rate, 0.0)
-        return used_after / self.scenario.capacities.cross
+        return post_allocation_max_utilization(path.edge_ids, state.capacity, state.total_free, rate)
 
     def _deviation_penalty(self, preferred: str | None, selected: str | None) -> int:
         if preferred == selected:
@@ -1005,30 +1138,71 @@ class TwoPhaseEventDrivenScheduler:
         plan: list[ScheduledWindow],
         emergency: Task,
         horizon: list[Segment],
+        committed: dict[tuple[str, int], Allocation],
     ) -> dict[int, set[str]]:
         corridor: dict[int, set[str]] = {}
         path_cache: dict[tuple[str, int], list[PathCandidate]] = {}
+        capacity_states = self._free_capacity_states(
+            horizon,
+            plan,
+            committed,
+            exclude_tasks=set(),
+            exclude_task_types={"reg"},
+        )
         for segment in horizon:
             edges: set[str] = set()
-            for path in self._candidate_paths(plan, emergency, segment, path_cache):
+            state = capacity_states.get(segment.index)
+            for path in self._near_optimal_candidate_paths(plan, emergency, segment, state, path_cache):
                 edges.update(path.edge_ids)
             corridor[segment.index] = edges
         return corridor
 
+    def _near_optimal_candidate_paths(
+        self,
+        plan: list[ScheduledWindow],
+        task: Task,
+        segment: Segment,
+        state: _CapacityState | None,
+        path_cache: dict[tuple[str, int], list[PathCandidate]],
+    ) -> list[PathCandidate]:
+        if state is None or segment.duration <= self.numeric_tolerance:
+            return []
+        scored: list[tuple[float, float, int, str, PathCandidate]] = []
+        for candidate in self._candidate_paths(plan, task, segment, path_cache):
+            capacity_option = self._path_rate_and_tier(task, candidate, state, task.data, segment.duration)
+            if capacity_option is None:
+                continue
+            rate, tier = capacity_option
+            delivered = rate * segment.duration
+            if delivered <= self.numeric_tolerance:
+                continue
+            scored.append((delivered, float(candidate.delay), tier, str(candidate.path_id), candidate))
+        if not scored:
+            return []
+        max_delivered = max(item[0] for item in scored)
+        near_threshold = float(self.scenario.stage1.eta_x) * max_delivered
+        near = [item for item in scored if item[0] + self.numeric_tolerance >= near_threshold]
+        near.sort(key=lambda item: (item[2], item[1], int(item[4].hop_count), item[3]))
+        return [item[4] for item in near]
+
     def _affected_regular_tasks(
         self,
         emergency: Task,
-        plan: list[ScheduledWindow],
         horizon: list[Segment],
         committed: dict[tuple[str, int], Allocation],
         actual_remaining: dict[str, float],
+        corridor: dict[int, set[str]],
     ) -> list[Task]:
-        corridor = self._candidate_corridor(plan, emergency, horizon)
         affected: list[tuple[int, Task]] = []
+        lowest_regular_weight = self._lowest_regular_weight()
         for task in self.scenario.tasks:
             if task.task_type != "reg":
                 continue
             if not (task.arrival <= horizon[0].start < task.deadline):
+                continue
+            if not self._is_lower_priority_regular(task, emergency):
+                continue
+            if task.weight > lowest_regular_weight + self.numeric_tolerance:
                 continue
             if self._is_task_complete(task, actual_remaining.get(task.task_id, 0.0)):
                 continue
@@ -1036,8 +1210,135 @@ class TwoPhaseEventDrivenScheduler:
             if overlap <= 0:
                 continue
             affected.append((overlap, task))
-        affected.sort(key=lambda item: (-item[0], -item[1].weight, item[1].deadline, item[1].task_id))
+        affected.sort(key=lambda item: (-item[0], float(item[1].weight), item[1].deadline, item[1].task_id))
         return [task for _, task in affected]
+
+    def _rank_preemption_candidates(
+        self,
+        emergency: Task,
+        affected: list[Task],
+        committed: dict[tuple[str, int], Allocation],
+        actual_remaining: dict[str, float],
+        horizon: list[Segment],
+        corridor: dict[int, set[str]],
+    ) -> list[_PreemptionCandidate]:
+        ranked: list[_PreemptionCandidate] = []
+        for task in affected:
+            released_segments = tuple(sorted(self._conflict_segments(task.task_id, committed, corridor)))
+            if not released_segments:
+                continue
+            released_edge_ids, released_cross_window_ids = self._released_allocation_details(
+                task.task_id,
+                committed,
+                set(released_segments),
+            )
+            score = self._preemption_loss_score(
+                task=task,
+                emergency=emergency,
+                committed=committed,
+                actual_remaining=actual_remaining,
+                corridor=corridor,
+                horizon=horizon,
+            )
+            ranked.append(
+                _PreemptionCandidate(
+                    task=task,
+                    score=score,
+                    released_segments=released_segments,
+                    released_edge_ids=released_edge_ids,
+                    released_cross_window_ids=released_cross_window_ids,
+                )
+            )
+
+        ranked.sort(
+            key=lambda candidate: (
+                0 if self._is_committed_complete(candidate.task, committed, actual_remaining) else 1,
+                float(candidate.score),
+                float(candidate.task.weight),
+                -self._task_overlap(candidate.task.task_id, committed, corridor),
+                candidate.task.task_id,
+            )
+        )
+        return ranked
+
+    def _preemption_loss_score(
+        self,
+        task: Task,
+        emergency: Task,
+        committed: dict[tuple[str, int], Allocation],
+        actual_remaining: dict[str, float],
+        corridor: dict[int, set[str]],
+        horizon: list[Segment],
+    ) -> float:
+        regular_weights = [float(item.weight) for item in self.scenario.tasks if item.task_type == "reg"]
+        max_regular_weight = max(regular_weights, default=1.0)
+        normalized_weight = clamp01(float(task.weight) / max(max_regular_weight, self.numeric_tolerance))
+        transmitted = max(float(task.data) - float(actual_remaining.get(task.task_id, 0.0)), 0.0)
+        sent_ratio = clamp01(transmitted / max(float(task.data), self.numeric_tolerance))
+        current_time = float(horizon[0].start)
+        slack = self._task_slack(task, actual_remaining, current_time)
+        time_left = max(float(task.deadline) - current_time, self.numeric_tolerance)
+        normalized_slack = clamp01(slack / time_left)
+        normalized_useful_release = self._normalized_useful_release(
+            task_id=task.task_id,
+            emergency=emergency,
+            committed=committed,
+            corridor=corridor,
+            horizon=horizon,
+        )
+        loss = (
+            PREEMPTION_WEIGHT_COEFF * normalized_weight
+            + PREEMPTION_SENT_RATIO_COEFF * sent_ratio
+            + PREEMPTION_SLACK_COEFF * (1.0 - normalized_slack)
+        )
+        return loss / (PREEMPTION_SCORE_EPS + normalized_useful_release)
+
+    def _normalized_useful_release(
+        self,
+        task_id: str,
+        emergency: Task,
+        committed: dict[tuple[str, int], Allocation],
+        corridor: dict[int, set[str]],
+        horizon: list[Segment],
+    ) -> float:
+        useful_release = 0.0
+        release_reference = min(
+            float(emergency.data),
+            float(emergency.max_rate) * sum(max(float(segment.duration), 0.0) for segment in horizon),
+        )
+        if release_reference <= self.numeric_tolerance:
+            return 0.0
+        remaining_need = release_reference
+        for segment in horizon:
+            if remaining_need <= self.numeric_tolerance or segment.duration <= self.numeric_tolerance:
+                continue
+            segment_need_rate = min(float(emergency.max_rate), remaining_need / float(segment.duration))
+            segment_release_rate = 0.0
+            for (alloc_task_id, segment_index), alloc in committed.items():
+                if alloc_task_id != task_id or segment_index != segment.index:
+                    continue
+                if not set(alloc.edge_ids).intersection(corridor.get(segment.index, set())):
+                    continue
+                segment_release_rate = max(segment_release_rate, min(float(alloc.rate), segment_need_rate))
+            useful_release += segment_release_rate * float(segment.duration)
+            remaining_need = max(0.0, remaining_need - segment_need_rate * float(segment.duration))
+        return clamp01(useful_release / release_reference)
+
+    def _released_allocation_details(
+        self,
+        task_id: str,
+        committed: dict[tuple[str, int], Allocation],
+        released_segments: set[int],
+    ) -> tuple[tuple[str, ...], tuple[str, ...]]:
+        edge_ids: set[str] = set()
+        cross_window_ids: set[str] = set()
+        for (alloc_task_id, segment_index), alloc in committed.items():
+            if alloc_task_id != task_id or segment_index not in released_segments:
+                continue
+            edge_ids.update(str(edge_id) for edge_id in alloc.edge_ids)
+            if alloc.cross_window_id is not None:
+                cross_window_ids.add(str(alloc.cross_window_id))
+        return tuple(sorted(edge_ids)), tuple(sorted(cross_window_ids))
 
     def _task_overlap(
         self,
@@ -1084,6 +1385,15 @@ class TwoPhaseEventDrivenScheduler:
         remaining = actual_remaining.get(task.task_id, 0.0)
         return task.deadline - current_time - (remaining / max(task.max_rate, self.numeric_tolerance))
 
+    def _lowest_regular_weight(self) -> float:
+        weights = [float(task.weight) for task in self.scenario.tasks if task.task_type == "reg"]
+        return min(weights, default=0.0)
+
+    def _is_lower_priority_regular(self, regular: Task, emergency: Task) -> bool:
+        regular_priority = (float(regular.preemption_priority), float(regular.weight))
+        emergency_priority = (float(emergency.preemption_priority), float(emergency.weight))
+        return regular_priority < emergency_priority
+
     def _emergency_horizon(self, segments: list[Segment], current_index: int, task: Task) -> list[Segment]:
         return [segment for segment in segments[current_index:] if task.arrival <= segment.start < task.deadline]
 
@@ -1097,16 +1407,8 @@ class TwoPhaseEventDrivenScheduler:
         return sum(task.weight * float(self._is_task_complete(task, remaining.get(task.task_id, 0.0))) for task in tasks) / total_weight
 
     def _cross_link_from_edges(self, edge_ids: tuple[str, ...], cross_edge_ids: set[str]) -> str | None:
-        if not cross_edge_ids:
-            cross_edge_ids = {window.window_id for window in self.scenario.candidate_windows}
-        if cross_edge_ids:
-            for edge_id in edge_ids:
-                if edge_id in cross_edge_ids:
-                    return edge_id
-        for edge_id in edge_ids:
-            if edge_id.startswith("X") or edge_id.startswith("W"):
-                return edge_id
-        return None
+        effective_cross_edge_ids = cross_edge_ids or {window.window_id for window in self.scenario.candidate_windows}
+        return cross_link_from_edges(edge_ids, effective_cross_edge_ids)
 
 
 def run_stage2_two_phase_event_insert(

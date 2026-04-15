@@ -1,0 +1,417 @@
+{
+  "metadata": {
+    "name": "sample-cross-domain-scenario",
+    "stage2_emergency_validation": {
+      "suite_name": "small-validation",
+      "case_name": "heavy_load",
+      "case_type": "heavy",
+      "candidate_index": 0,
+      "rho": 0.3,
+      "rho_label": "default",
+      "seed": 44
+    }
+  },
+  "planning_end": 12,
+  "nodes": {
+    "A": [
+      "A1",
+      "A2",
+      "A3"
+    ],
+    "B": [
+      "B1",
+      "B2",
+      "B3"
+    ]
+  },
+  "capacities": {
+    "A": 4.0,
+    "B": 4.0,
+    "X": 3.0
+  },
+  "stage1": {
+    "rho": 0.3,
+    "t_pre": 0.5,
+    "d_min": 1.0,
+    "theta_cap": 0.2,
+    "theta_hot": 0.0,
+    "hot_hop_limit": 4,
+    "bottleneck_factor_alpha": 0.85,
+    "eta_x": 0.9,
+    "static_value_snapshot_seconds": 600,
+    "candidate_pool_base_size": 20,
+    "candidate_pool_hot_fraction": 0.3,
+    "candidate_pool_min_per_coarse_segment": 1,
+    "candidate_pool_max_additional": 8,
+    "q_eval": 2,
+    "omega_fr": 0.4444444444444444,
+    "omega_cap": 0.3333333333333333,
+    "omega_hot": 0.2222222222222222,
+    "elite_prune_count": 2,
+    "ga": {
+      "population_size": 20,
+      "crossover_probability": 0.9,
+      "mutation_probability": 0.2,
+      "max_generations": 8,
+      "stall_generations": 4,
+      "top_m": 3
+    }
+  },
+  "stage2": {
+    "k_paths": 2,
+    "completion_tolerance": 1e-06,
+    "label_keep_limit": 16
+  },
+  "intra_domain_links": [
+    {
+      "id": "A12",
+      "u": "A1",
+      "v": "A2",
+      "domain": "A",
+      "start": 0,
+      "end": 12,
+      "delay": 0.2
+    },
+    {
+      "id": "A23",
+      "u": "A2",
+      "v": "A3",
+      "domain": "A",
+      "start": 0,
+      "end": 12,
+      "delay": 0.2
+    },
+    {
+      "id": "A13",
+      "u": "A1",
+      "v": "A3",
+      "domain": "A",
+      "start": 5,
+      "end": 12,
+      "delay": 0.1
+    },
+    {
+      "id": "B12",
+      "u": "B1",
+      "v": "B2",
+      "domain": "B",
+      "start": 0,
+      "end": 12,
+      "delay": 0.2
+    },
+    {
+      "id": "B23",
+      "u": "B2",
+      "v": "B3",
+      "domain": "B",
+      "start": 0,
+      "end": 12,
+      "delay": 0.2
+    },
+    {
+      "id": "B13",
+      "u": "B1",
+      "v": "B3",
+      "domain": "B",
+      "start": 6,
+      "end": 12,
+      "delay": 0.1
+    }
+  ],
+  "candidate_windows": [
+    {
+      "id": "X1",
+      "a": "A2",
+      "b": "B2",
+      "start": 1,
+      "end": 5,
+      "value": 4.0
+    },
+    {
+      "id": "X2",
+      "a": "A1",
+      "b": "B1",
+      "start": 3,
+      "end": 8,
+      "value": 4.8
+    },
+    {
+      "id": "X3",
+      "a": "A3",
+      "b": "B3",
+      "start": 6,
+      "end": 11,
+      "value": 5.0
+    },
+    {
+      "id": "X4",
+      "a": "A2",
+      "b": "B3",
+      "start": 8,
+      "end": 12,
+      "value": 3.5
+    }
+  ],
+  "tasks": [
+    {
+      "id": "R1",
+      "src": "A1",
+      "dst": "B3",
+      "arrival": 0,
+      "deadline": 6,
+      "data": 8,
+      "weight": 3,
+      "max_rate": 2,
+      "type": "reg",
+      "preemption_priority": 3
+    },
+    {
+      "id": "R2",
+      "src": "A3",
+      "dst": "B1",
+      "arrival": 1,
+      "deadline": 10,
+      "data": 10,
+      "weight": 2,
+      "max_rate": 2,
+      "type": "reg",
+      "preemption_priority": 2
+    },
+    {
+      "id": "R3",
+      "src": "A2",
+      "dst": "B2",
+      "arrival": 2,
+      "deadline": 12,
+      "data": 7,
+      "weight": 1,
+      "max_rate": 1.5,
+      "type": "reg",
+      "preemption_priority": 1
+    },
+    {
+      "id": "heavy_load_emg_01",
+      "src": "A1",
+      "dst": "B3",
+      "arrival": 4.3930384000325144,
+      "deadline": 11.337547128888987,
+      "data": 10.950416492411707,
+      "weight": 2.898134218196951,
+      "max_rate": 1.9710567226500684,
+      "type": "emg",
+      "preemption_priority": 2.898134218196951,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_01"
+    },
+    {
+      "id": "heavy_load_emg_02",
+      "src": "A3",
+      "dst": "B3",
+      "arrival": 4.60439416270895,
+      "deadline": 11.456533596888992,
+      "data": 9.626177925920567,
+      "weight": 3.7939940347766865,
+      "max_rate": 1.7560533499039337,
+      "type": "emg",
+      "preemption_priority": 3.7939940347766865,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_02"
+    },
+    {
+      "id": "heavy_load_emg_03",
+      "src": "A1",
+      "dst": "B3",
+      "arrival": 4.6934850595261075,
+      "deadline": 12.0,
+      "data": 14.745660570455753,
+      "weight": 3.0444719293654243,
+      "max_rate": 2.4544943250734628,
+      "type": "emg",
+      "preemption_priority": 3.0444719293654243,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_03"
+    },
+    {
+      "id": "heavy_load_emg_04",
+      "src": "A2",
+      "dst": "B2",
+      "arrival": 4.9437018446035035,
+      "deadline": 12.0,
+      "data": 12.320058032213074,
+      "weight": 3.746916195552426,
+      "max_rate": 2.0087030774105363,
+      "type": "emg",
+      "preemption_priority": 3.746916195552426,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_04"
+    },
+    {
+      "id": "heavy_load_emg_05",
+      "src": "A3",
+      "dst": "B1",
+      "arrival": 5.092545957214872,
+      "deadline": 12.0,
+      "data": 14.219698380125099,
+      "weight": 3.5897478358083164,
+      "max_rate": 1.8040340915819815,
+      "type": "emg",
+      "preemption_priority": 3.5897478358083164,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_05"
+    },
+    {
+      "id": "heavy_load_emg_06",
+      "src": "A1",
+      "dst": "B3",
+      "arrival": 5.302602763784053,
+      "deadline": 12.0,
+      "data": 14.709606301681863,
+      "weight": 3.208728857003489,
+      "max_rate": 2.2389734563861583,
+      "type": "emg",
+      "preemption_priority": 3.208728857003489,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_06"
+    },
+    {
+      "id": "heavy_load_emg_07",
+      "src": "A1",
+      "dst": "B3",
+      "arrival": 5.436264823559455,
+      "deadline": 12.0,
+      "data": 13.85080880216363,
+      "weight": 3.665790327279714,
+      "max_rate": 2.2908838553045987,
+      "type": "emg",
+      "preemption_priority": 3.665790327279714,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_07"
+    },
+    {
+      "id": "heavy_load_emg_08",
+      "src": "A2",
+      "dst": "B2",
+      "arrival": 5.485425578429956,
+      "deadline": 12.0,
+      "data": 12.274982289963438,
+      "weight": 3.2280651880858127,
+      "max_rate": 1.9956112851529222,
+      "type": "emg",
+      "preemption_priority": 3.2280651880858127,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_08"
+    },
+    {
+      "id": "heavy_load_emg_09",
+      "src": "A3",
+      "dst": "B3",
+      "arrival": 5.494894059144776,
+      "deadline": 12.0,
+      "data": 12.363493237549292,
+      "weight": 3.8327316076259823,
+      "max_rate": 1.8204694940642205,
+      "type": "emg",
+      "preemption_priority": 3.8327316076259823,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_09"
+    },
+    {
+      "id": "heavy_load_emg_10",
+      "src": "A2",
+      "dst": "B3",
+      "arrival": 5.630461855030967,
+      "deadline": 11.969561889603833,
+      "data": 11.395187848943593,
+      "weight": 3.637967630402362,
+      "max_rate": 2.247004264563442,
+      "type": "emg",
+      "preemption_priority": 3.637967630402362,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_10"
+    },
+    {
+      "id": "heavy_load_emg_11",
+      "src": "A2",
+      "dst": "B3",
+      "arrival": 5.787423514497918,
+      "deadline": 12.0,
+      "data": 10.067175550948091,
+      "weight": 2.9699240853572673,
+      "max_rate": 1.7348985509751411,
+      "type": "emg",
+      "preemption_priority": 2.9699240853572673,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_11"
+    },
+    {
+      "id": "heavy_load_emg_12",
+      "src": "A1",
+      "dst": "B3",
+      "arrival": 6.037787682376039,
+      "deadline": 12.0,
+      "data": 13.210960259984468,
+      "weight": 3.3427178285150667,
+      "max_rate": 2.164030472954841,
+      "type": "emg",
+      "preemption_priority": 3.3427178285150667,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_12"
+    },
+    {
+      "id": "heavy_load_emg_13",
+      "src": "A2",
+      "dst": "B2",
+      "arrival": 6.052108075106063,
+      "deadline": 11.797422014222157,
+      "data": 11.471012845984752,
+      "weight": 2.9429325840851286,
+      "max_rate": 2.4957323845887065,
+      "type": "emg",
+      "preemption_priority": 2.9429325840851286,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_13"
+    },
+    {
+      "id": "heavy_load_emg_14",
+      "src": "A1",
+      "dst": "B3",
+      "arrival": 6.076729390178616,
+      "deadline": 12.0,
+      "data": 9.750878597348317,
+      "weight": 2.9706504514778724,
+      "max_rate": 1.9887544771440653,
+      "type": "emg",
+      "preemption_priority": 2.9706504514778724,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_14"
+    },
+    {
+      "id": "heavy_load_emg_15",
+      "src": "A2",
+      "dst": "B3",
+      "arrival": 6.3602574156680705,
+      "deadline": 12.0,
+      "data": 12.009969174231788,
+      "weight": 2.7737394532335635,
+      "max_rate": 1.7474180221493156,
+      "type": "emg",
+      "preemption_priority": 2.7737394532335635,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_15"
+    },
+    {
+      "id": "heavy_load_emg_16",
+      "src": "A3",
+      "dst": "B3",
+      "arrival": 6.873169593808838,
+      "deadline": 12.0,
+      "data": 9.964484391087733,
+      "weight": 3.764412102099824,
+      "max_rate": 2.0791562564521406,
+      "type": "emg",
+      "preemption_priority": 3.764412102099824,
+      "notes": "generated_by=stage2_emergency_validation",
+      "source_task_id": "heavy_load_emg_16"
+    }
+  ]
+}

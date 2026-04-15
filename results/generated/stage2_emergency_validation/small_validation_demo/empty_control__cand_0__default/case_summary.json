@@ -1,0 +1,274 @@
+{
+  "case_id": "empty_control__cand_0__default",
+  "case_name": "empty_control",
+  "case_type": "empty",
+  "description": "No emergency task. Used to verify strict degeneration to baseline.",
+  "scenario_path": "D:\\Codex_Project\\bs3 - 副本\\examples\\sample_scenario.json",
+  "stage1_result_path": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\sample_stage1_result.json",
+  "case_dir": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_emergency_validation\\small_validation_demo\\empty_control__cand_0__default",
+  "seed": 7,
+  "rho": 0.3,
+  "rho_label": "default",
+  "candidate_label": "candidate_0",
+  "selected_candidate": {
+    "requested_candidate_index": 0,
+    "stage1_selected_candidate_index": 0,
+    "stage1_selected_candidate_source": "best_feasible",
+    "uses_stage1_selected_plan": true,
+    "window_count": 3,
+    "gateway_count": 6,
+    "activation_count": 6,
+    "fr": 1.0,
+    "mean_completion_ratio": 1.0,
+    "eta_cap": 0.14425457441015863,
+    "eta_0": 0.058049435311224695,
+    "max_cross_gap": 1.0,
+    "cross_active_fraction": 0.8333333333333334
+  },
+  "emergency_task_set": {
+    "source_mode": "generate",
+    "summary": {
+      "count": 0,
+      "count_emg": 0,
+      "total_data_Mb": 0.0,
+      "mean_data_Mb": 0.0,
+      "mean_weight": 0.0,
+      "arrival_min": null,
+      "arrival_max": null,
+      "deadline_min": null,
+      "deadline_max": null,
+      "mean_window_s": 0.0,
+      "peak_overlap": 0
+    },
+    "task_ids": []
+  },
+  "baseline": {
+    "baseline_source": "stage1_result",
+    "stage2_reported_baseline_source": "stage1_result",
+    "selected_plan_scale": {
+      "window_count": 3,
+      "gateway_count": 6,
+      "activation_count": 6
+    },
+    "baseline_summary": {
+      "baseline_regular_task_count": 3,
+      "completed_baseline_regular_task_count": 3,
+      "incomplete_baseline_regular_task_count": 0,
+      "stage1_metric_regular_task_count": 3,
+      "completed_stage1_metric_regular_task_count": 3,
+      "segment_count": 9,
+      "allocation_count": 13,
+      "window_count": 3,
+      "mean_completion_ratio": 1.0,
+      "fr": 1.0,
+      "eta_cap": 0.14425457441015863,
+      "eta_0": 0.058049435311224695,
+      "max_cross_rate_used": 4.1,
+      "max_cross_window_util": 1.0
+    }
+  },
+  "stage2": {
+    "solver_mode": "stage2_emergency_insert",
+    "cr_reg": 1.0,
+    "cr_emg": 1.0,
+    "n_preemptions": 0,
+    "u_cross": 0.5952380952380952,
+    "u_all": 0.24055944055944056,
+    "elapsed_seconds": 0.0001577999209985137
+  },
+  "diagnostics": {
+    "emergency_total": 0,
+    "emergency_success_count": 0,
+    "emergency_unfinished_count": 0,
+    "controlled_preemption_count": 0,
+    "affected_regular_task_count": 0,
+    "affected_regular_task_ids": [],
+    "regular_completion_rate_dropped": false,
+    "direct_success_task_ids": [],
+    "preemption_success_task_ids": [],
+    "failed_emergency_task_ids": [],
+    "insertion_events": []
+  },
+  "baseline_impact": {
+    "cr_reg_before": 1.0,
+    "cr_reg_after": 1.0,
+    "cr_emg": 1.0,
+    "regular_task_degradation": [],
+    "cross_window_usage_delta_by_segment": {},
+    "regular_success_rate_before": 1.0,
+    "regular_success_rate_after": 1.0,
+    "degenerates_to_baseline": true
+  },
+  "task_outcomes": {
+    "baseline": {
+      "summary": {
+        "baseline_regular_task_count": 3,
+        "completed_baseline_regular_task_count": 3,
+        "incomplete_baseline_regular_task_count": 0,
+        "stage1_metric_regular_task_count": 3,
+        "completed_stage1_metric_regular_task_count": 3,
+        "segment_count": 9,
+        "allocation_count": 13,
+        "window_count": 3,
+        "mean_completion_ratio": 1.0,
+        "fr": 1.0,
+        "eta_cap": 0.14425457441015863,
+        "eta_0": 0.058049435311224695,
+        "max_cross_rate_used": 4.1,
+        "max_cross_window_util": 1.0
+      },
+      "reg": {
+        "count": 3,
+        "success_count": 3,
+        "failure_count": 0,
+        "success_rate": 1.0,
+        "weighted_true_completion": 1.0,
+        "mean_completion_ratio": 1.0,
+        "failed_task_ids": [],
+        "completion_by_task": [
+          {
+            "task_id": "R1",
+            "task_type": "reg",
+            "data": 8.0,
+            "weight": 3.0,
+            "delivered": 8.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          },
+          {
+            "task_id": "R2",
+            "task_type": "reg",
+            "data": 10.0,
+            "weight": 2.0,
+            "delivered": 10.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          },
+          {
+            "task_id": "R3",
+            "task_type": "reg",
+            "data": 7.0,
+            "weight": 1.0,
+            "delivered": 7.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          }
+        ]
+      },
+      "completed": {
+        "R1": true,
+        "R2": true,
+        "R3": true
+      },
+      "remaining_end": {
+        "R1": 0.0,
+        "R2": 0.0,
+        "R3": 0.0
+      }
+    },
+    "stage2": {
+      "overall": {
+        "count": 3,
+        "success_count": 3,
+        "failure_count": 0,
+        "success_rate": 1.0,
+        "weighted_true_completion": 1.0,
+        "mean_completion_ratio": 1.0,
+        "failed_task_ids": [],
+        "completion_by_task": [
+          {
+            "task_id": "R1",
+            "task_type": "reg",
+            "data": 8.0,
+            "weight": 3.0,
+            "delivered": 8.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          },
+          {
+            "task_id": "R2",
+            "task_type": "reg",
+            "data": 10.0,
+            "weight": 2.0,
+            "delivered": 10.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          },
+          {
+            "task_id": "R3",
+            "task_type": "reg",
+            "data": 7.0,
+            "weight": 1.0,
+            "delivered": 7.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          }
+        ]
+      },
+      "reg": {
+        "count": 3,
+        "success_count": 3,
+        "failure_count": 0,
+        "success_rate": 1.0,
+        "weighted_true_completion": 1.0,
+        "mean_completion_ratio": 1.0,
+        "failed_task_ids": [],
+        "completion_by_task": [
+          {
+            "task_id": "R1",
+            "task_type": "reg",
+            "data": 8.0,
+            "weight": 3.0,
+            "delivered": 8.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          },
+          {
+            "task_id": "R2",
+            "task_type": "reg",
+            "data": 10.0,
+            "weight": 2.0,
+            "delivered": 10.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          },
+          {
+            "task_id": "R3",
+            "task_type": "reg",
+            "data": 7.0,
+            "weight": 1.0,
+            "delivered": 7.0,
+            "remaining": 0.0,
+            "completion_ratio": 1.0,
+            "success": true
+          }
+        ]
+      },
+      "emg": {
+        "count": 0,
+        "success_count": 0,
+        "failure_count": 0,
+        "success_rate": 1.0,
+        "weighted_true_completion": 1.0,
+        "mean_completion_ratio": 1.0,
+        "failed_task_ids": [],
+        "completion_by_task": []
+      }
+    }
+  },
+  "paths": {
+    "effective_scenario": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_emergency_validation\\small_validation_demo\\empty_control__cand_0__default\\effective_scenario.json",
+    "emergency_tasks": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_emergency_validation\\small_validation_demo\\empty_control__cand_0__default\\emergency_tasks.json",
+    "stage2_result": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_emergency_validation\\small_validation_demo\\empty_control__cand_0__default\\stage2_result.json",
+    "summary_json": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_emergency_validation\\small_validation_demo\\empty_control__cand_0__default\\case_summary.json",
+    "summary_md": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_emergency_validation\\small_validation_demo\\empty_control__cand_0__default\\case_summary.md"
+  }
+}
