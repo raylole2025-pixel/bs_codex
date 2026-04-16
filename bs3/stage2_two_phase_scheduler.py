@@ -21,6 +21,7 @@ TASK_RUNTIME_NORMAL = "normal"
 TASK_RUNTIME_PREEMPTED_RECOVERABLE = "preempted_recoverable"
 TASK_RUNTIME_RECOVERED_PARTIAL = "recovered_partial"
 TASK_RUNTIME_RECOVERED_COMPLETE = "recovered_complete"
+RECOVERY_START_BASIS_PREEMPTION = "max(last_released_segment_end, emergency_finish_time)"
 
 
 @dataclass(frozen=True)
@@ -86,6 +87,9 @@ class _PreemptionAttempt:
     victim_recovery_completed: bool
     original_finish_time: float | None
     recovery_start_time: float | None
+    recovery_basis: str | None
+    last_released_segment_end: float | None
+    repaired_emergency_finish_time: float | None
     remaining_after_preemption: float
 
 
@@ -247,6 +251,16 @@ class TwoPhaseEventDrivenScheduler:
                 segments, baseline_schedule, committed = self._split_segment_if_needed(
                     segments,
                     pending_emergencies[0].arrival,
+                    baseline_schedule,
+                    committed,
+                )
+                continue
+
+            recovery_split_time = self._pending_recovery_split_time(segment, pending_recovery_tasks)
+            if recovery_split_time is not None:
+                segments, baseline_schedule, committed = self._split_segment_if_needed(
+                    segments,
+                    recovery_split_time,
                     baseline_schedule,
                     committed,
                 )
@@ -546,6 +560,22 @@ class TwoPhaseEventDrivenScheduler:
             )
         return result
 
+    def _pending_recovery_split_time(
+        self,
+        segment: Segment,
+        pending_recovery_tasks: dict[str, dict[str, object]],
+    ) -> float | None:
+        split_times = [
+            float(info["recovery_start_time"])
+            for info in pending_recovery_tasks.values()
+            if not bool(info.get("processed"))
+            and info.get("recovery_start_time") is not None
+            and segment.start + self.numeric_tolerance < float(info["recovery_start_time"]) < segment.end - self.numeric_tolerance
+        ]
+        if not split_times:
+            return None
+        return min(split_times)
+
     def _solver_mode_label(self) -> str:
         return "stage2_emergency_insert"
 
@@ -656,6 +686,9 @@ class TwoPhaseEventDrivenScheduler:
         preemption_score: float | None = None,
         victim_original_finish_time: float | None = None,
         victim_recovery_start_time: float | None = None,
+        victim_recovery_basis: str | None = None,
+        last_released_segment_end: float | None = None,
+        repaired_emergency_finish_time: float | None = None,
         victim_recovery_delivery: float | None = None,
         victim_recovery_completed: bool | None = None,
         best_effort_source: str | None = None,
@@ -677,6 +710,11 @@ class TwoPhaseEventDrivenScheduler:
             "direct_plan_delivery": float(direct_plan_delivery),
             "victim_original_finish_time": None if victim_original_finish_time is None else float(victim_original_finish_time),
             "victim_recovery_start_time": None if victim_recovery_start_time is None else float(victim_recovery_start_time),
+            "victim_recovery_basis": victim_recovery_basis,
+            "last_released_segment_end": None if last_released_segment_end is None else float(last_released_segment_end),
+            "repaired_emergency_finish_time": (
+                None if repaired_emergency_finish_time is None else float(repaired_emergency_finish_time)
+            ),
             "victim_recovery_delivery": None if victim_recovery_delivery is None else float(victim_recovery_delivery),
             "victim_recovery_completed": None if victim_recovery_completed is None else bool(victim_recovery_completed),
             "best_effort_source": best_effort_source,
@@ -785,6 +823,9 @@ class TwoPhaseEventDrivenScheduler:
                 preemption_score=best_complete.candidate.score,
                 victim_original_finish_time=best_complete.original_finish_time,
                 victim_recovery_start_time=best_complete.recovery_start_time,
+                victim_recovery_basis=best_complete.recovery_basis,
+                last_released_segment_end=best_complete.last_released_segment_end,
+                repaired_emergency_finish_time=best_complete.repaired_emergency_finish_time,
             )
 
         if best_partial is not None and self._is_better_partial_plan(best_partial.repaired_plan, direct_plan):
@@ -817,6 +858,9 @@ class TwoPhaseEventDrivenScheduler:
                 preemption_score=best_partial.candidate.score,
                 victim_original_finish_time=best_partial.original_finish_time,
                 victim_recovery_start_time=best_partial.recovery_start_time,
+                victim_recovery_basis=best_partial.recovery_basis,
+                last_released_segment_end=best_partial.last_released_segment_end,
+                repaired_emergency_finish_time=best_partial.repaired_emergency_finish_time,
                 best_effort_source="preempted",
             )
 
@@ -917,7 +961,17 @@ class TwoPhaseEventDrivenScheduler:
                 continue
 
             original_finish_time = self._original_committed_finish_time(candidate.task.task_id, committed, segments)
-            recovery_start_time = original_finish_time
+            (
+                recovery_start_time,
+                recovery_basis,
+                last_released_segment_end,
+                repaired_emergency_finish_time,
+            ) = self._resolve_recovery_start_time(
+                released_segments=candidate.released_segments,
+                segments=segments,
+                repaired_plan=repaired_plan,
+                horizon=horizon,
+            )
             remaining_after_preemption = self._remaining_after_committed(candidate.task, tentative, actual_remaining)
 
             tentative_after_emergency = dict(tentative)
@@ -946,6 +1000,9 @@ class TwoPhaseEventDrivenScheduler:
                 victim_recovery_completed=victim_recovery_completed,
                 original_finish_time=original_finish_time,
                 recovery_start_time=recovery_start_time,
+                recovery_basis=recovery_basis,
+                last_released_segment_end=last_released_segment_end,
+                repaired_emergency_finish_time=repaired_emergency_finish_time,
                 remaining_after_preemption=remaining_after_preemption,
             )
             if repaired_plan.completed:
@@ -1021,6 +1078,15 @@ class TwoPhaseEventDrivenScheduler:
         pending_recovery_tasks[victim.task_id] = {
             "task_id": victim.task_id,
             "recovery_start_time": float(attempt.recovery_start_time),
+            "recovery_basis": attempt.recovery_basis,
+            "last_released_segment_end": (
+                None if attempt.last_released_segment_end is None else float(attempt.last_released_segment_end)
+            ),
+            "repaired_emergency_finish_time": (
+                None
+                if attempt.repaired_emergency_finish_time is None
+                else float(attempt.repaired_emergency_finish_time)
+            ),
             "deadline": float(victim.deadline),
             "remaining_after_preemption": float(attempt.remaining_after_preemption),
             "preempted_by": emergency.task_id,
@@ -1028,6 +1094,71 @@ class TwoPhaseEventDrivenScheduler:
             "processed": False,
             "insertion_event_index": None,
         }
+
+    def _released_segment_end_time(
+        self,
+        released_segments: tuple[int, ...] | list[int],
+        segments: list[Segment],
+    ) -> float | None:
+        if not segments or not released_segments:
+            return None
+        segment_by_index = {segment.index: segment for segment in segments}
+        released_ends = [
+            float(segment_by_index[index].end)
+            for index in released_segments
+            if index in segment_by_index
+        ]
+        if not released_ends:
+            return None
+        return max(released_ends)
+
+    def _task_plan_effective_finish_time(
+        self,
+        task_plan: _TaskPlan | None,
+        segments: list[Segment],
+        fallback_time: float | None = None,
+    ) -> float | None:
+        if task_plan is None:
+            return fallback_time
+        if task_plan.finish_time is not None:
+            return float(task_plan.finish_time)
+        if not segments:
+            return fallback_time
+        segment_by_index = {segment.index: segment for segment in segments}
+        finish_time = fallback_time
+        for action in task_plan.actions:
+            if action.delivered <= self.numeric_tolerance:
+                continue
+            segment = segment_by_index.get(action.segment_index)
+            if segment is None:
+                continue
+            segment_end = float(segment.end)
+            finish_time = segment_end if finish_time is None else max(float(finish_time), segment_end)
+        return finish_time
+
+    def _resolve_recovery_start_time(
+        self,
+        *,
+        released_segments: tuple[int, ...],
+        segments: list[Segment],
+        repaired_plan: _TaskPlan | None,
+        horizon: list[Segment],
+    ) -> tuple[float | None, str | None, float | None, float | None]:
+        last_released_segment_end = self._released_segment_end_time(released_segments, segments)
+        fallback_time = float(horizon[0].start) if horizon else None
+        repaired_emergency_finish_time = self._task_plan_effective_finish_time(
+            repaired_plan,
+            horizon,
+            fallback_time=fallback_time,
+        )
+        candidates = [
+            value
+            for value in (last_released_segment_end, repaired_emergency_finish_time)
+            if value is not None
+        ]
+        recovery_start_time = max(candidates) if candidates else fallback_time
+        recovery_basis = RECOVERY_START_BASIS_PREEMPTION if recovery_start_time is not None else None
+        return recovery_start_time, recovery_basis, last_released_segment_end, repaired_emergency_finish_time
 
     def _original_committed_finish_time(
         self,
@@ -1145,6 +1276,9 @@ class TwoPhaseEventDrivenScheduler:
             return {
                 "task_id": task.task_id,
                 "recovery_start_time": recovery_start,
+                "recovery_basis": recovery_info.get("recovery_basis"),
+                "last_released_segment_end": recovery_info.get("last_released_segment_end"),
+                "repaired_emergency_finish_time": recovery_info.get("repaired_emergency_finish_time"),
                 "delivery": 0.0,
                 "completed": True,
                 "remaining_after_recovery": 0.0,
@@ -1174,6 +1308,9 @@ class TwoPhaseEventDrivenScheduler:
         return {
             "task_id": task.task_id,
             "recovery_start_time": recovery_start,
+            "recovery_basis": recovery_info.get("recovery_basis"),
+            "last_released_segment_end": recovery_info.get("last_released_segment_end"),
+            "repaired_emergency_finish_time": recovery_info.get("repaired_emergency_finish_time"),
             "delivery": float(recovery_delivery),
             "completed": bool(recovery_completed),
             "remaining_after_recovery": float(remaining_after_recovery),
