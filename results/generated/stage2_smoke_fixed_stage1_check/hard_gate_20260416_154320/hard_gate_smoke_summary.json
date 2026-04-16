@@ -1,0 +1,78 @@
+{
+  "run_dir": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_smoke_fixed_stage1_check\\hard_gate_20260416_154320",
+  "current_metrics": {
+    "cr_reg": 0.9666666666666667,
+    "cr_emg": 0.625,
+    "n_preemptions": 2,
+    "u_cross": 0.6343072566586911,
+    "u_all": 0.018263482586782554,
+    "solver_mode": "stage2_emergency_insert"
+  },
+  "strategy_counts": {
+    "direct_insert": 3,
+    "blocked": 1,
+    "direct_insert_best_effort": 2,
+    "controlled_preemption": 2
+  },
+  "preempted_regular_tasks": [
+    "N72X_030",
+    "N72X_062"
+  ],
+  "recovered_regular_completed_count": 0,
+  "final_regular_completed_count": 70,
+  "key_emergencies": {
+    "EMG_SMK_003": {
+      "strategy": "direct_insert_best_effort",
+      "emergency_gain": 7650.0,
+      "emergency_gain_ratio": 0.022767857142857142,
+      "preemption_rejected_reason": "gain_ratio_below_threshold"
+    },
+    "EMG_SMK_004": {
+      "strategy": "controlled_preemption",
+      "emergency_gain": 217564.27199999968,
+      "emergency_gain_ratio": 0.5180101714285706,
+      "preemption_rejected_reason": null
+    },
+    "EMG_SMK_007": {
+      "strategy": "controlled_preemption",
+      "emergency_gain": 54826.89599999995,
+      "emergency_gain_ratio": 0.13054022857142844,
+      "preemption_rejected_reason": null
+    },
+    "EMG_SMK_006": {
+      "strategy": "direct_insert_best_effort",
+      "emergency_gain": 6106.124400000088,
+      "emergency_gain_ratio": 0.016961456666666912,
+      "preemption_rejected_reason": "gain_ratio_below_threshold"
+    }
+  },
+  "comparison": {
+    "before_strategy_counts": {
+      "direct_insert": 3,
+      "blocked": 1,
+      "controlled_preemption": 4
+    },
+    "after_strategy_counts": {
+      "direct_insert": 3,
+      "blocked": 1,
+      "direct_insert_best_effort": 2,
+      "controlled_preemption": 2
+    },
+    "before_n_preemptions": 4,
+    "after_n_preemptions": 2,
+    "before_preempted_regular_tasks": [
+      "N72X_015",
+      "N72X_030",
+      "N72X_062",
+      "N72X_066"
+    ],
+    "after_preempted_regular_tasks": [
+      "N72X_030",
+      "N72X_062"
+    ],
+    "before_recovered_regular_completed_count": 0,
+    "after_recovered_regular_completed_count": 0,
+    "before_final_regular_completed_count": 68,
+    "after_final_regular_completed_count": 70
+  }
+}

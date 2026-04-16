@@ -1,0 +1,123 @@
+{
+  "previous_run": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_smoke_fixed_stage1_check\\rerun_20260416_143206\\smoke_rerun_summary.json",
+  "current_run_dir": "D:\\Codex_Project\\bs3 - 副本\\results\\generated\\stage2_smoke_fixed_stage1_check\\gain_gate_20260416_152934",
+  "current_metrics": {
+    "cr_reg": 0.9333333333333333,
+    "cr_emg": 0.875,
+    "n_preemptions": 4,
+    "u_cross": 0.6311983780754513,
+    "u_all": 0.01820166082364648,
+    "solver_mode": "stage2_emergency_insert"
+  },
+  "current_strategy_counts": {
+    "direct_insert": 3,
+    "blocked": 1,
+    "controlled_preemption": 4
+  },
+  "current_preempted_regular_tasks": [
+    "N72X_015",
+    "N72X_030",
+    "N72X_062",
+    "N72X_066"
+  ],
+  "current_recovered_regular_completed_count": 0,
+  "current_final_regular_completed_count": 68,
+  "current_per_emergency": {
+    "EMG_SMK_001": {
+      "strategy": "direct_insert",
+      "preempted_task_id": null,
+      "emergency_gain": 0.0,
+      "emergency_gain_ratio": 0.0,
+      "preemption_rejected_reason": null,
+      "completed": true
+    },
+    "EMG_SMK_002": {
+      "strategy": "direct_insert",
+      "preempted_task_id": null,
+      "emergency_gain": 0.0,
+      "emergency_gain_ratio": 0.0,
+      "preemption_rejected_reason": null,
+      "completed": true
+    },
+    "EMG_SMK_005": {
+      "strategy": "blocked",
+      "preempted_task_id": null,
+      "emergency_gain": 0.0,
+      "emergency_gain_ratio": 0.0,
+      "preemption_rejected_reason": null,
+      "completed": false
+    },
+    "EMG_SMK_003": {
+      "strategy": "controlled_preemption",
+      "preempted_task_id": "N72X_015",
+      "emergency_gain": 7650.0,
+      "emergency_gain_ratio": 0.022767857142857142,
+      "preemption_rejected_reason": null,
+      "completed": true
+    },
+    "EMG_SMK_004": {
+      "strategy": "controlled_preemption",
+      "preempted_task_id": "N72X_030",
+      "emergency_gain": 217564.27199999968,
+      "emergency_gain_ratio": 0.5180101714285706,
+      "preemption_rejected_reason": null,
+      "completed": true
+    },
+    "EMG_SMK_007": {
+      "strategy": "controlled_preemption",
+      "preempted_task_id": "N72X_062",
+      "emergency_gain": 54826.89599999995,
+      "emergency_gain_ratio": 0.13054022857142844,
+      "preemption_rejected_reason": null,
+      "completed": true
+    },
+    "EMG_SMK_006": {
+      "strategy": "controlled_preemption",
+      "preempted_task_id": "N72X_066",
+      "emergency_gain": 6106.124400000088,
+      "emergency_gain_ratio": 0.016961456666666912,
+      "preemption_rejected_reason": null,
+      "completed": true
+    },
+    "EMG_SMK_008": {
+      "strategy": "direct_insert",
+      "preempted_task_id": null,
+      "emergency_gain": 0.0,
+      "emergency_gain_ratio": 0.0,
+      "preemption_rejected_reason": null,
+      "completed": true
+    }
+  },
+  "comparison": {
+    "before_strategy_counts": {
+      "direct_insert": 3,
+      "blocked": 1,
+      "controlled_preemption": 4
+    },
+    "after_strategy_counts": {
+      "direct_insert": 3,
+      "blocked": 1,
+      "controlled_preemption": 4
+    },
+    "before_n_preemptions": 4,
+    "after_n_preemptions": 4,
+    "before_preempted_regular_tasks": [
+      "N72X_015",
+      "N72X_030",
+      "N72X_062",
+      "N72X_066"
+    ],
+    "after_preempted_regular_tasks": [
+      "N72X_015",
+      "N72X_030",
+      "N72X_062",
+      "N72X_066"
+    ],
+    "before_recovered_regular_completed_count": 0,
+    "after_recovered_regular_completed_count": 0,
+    "before_final_regular_completed_count": 68,
+    "after_final_regular_completed_count": 68,
+    "strategy_changes": []
+  },
+  "recovery_events_count": 4
+}

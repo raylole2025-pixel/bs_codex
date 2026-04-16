@@ -17,6 +17,7 @@ PREEMPTION_WEIGHT_COEFF = 0.35
 PREEMPTION_RECOVERY_SLACK_COEFF = 0.30
 PREEMPTION_RECOVERABILITY_COEFF = 0.35
 PREEMPTION_SCORE_EPS = 1e-6
+PREEMPTION_MIN_GAIN_RATIO = 0.05
 TASK_RUNTIME_NORMAL = "normal"
 TASK_RUNTIME_PREEMPTED_RECOVERABLE = "preempted_recoverable"
 TASK_RUNTIME_RECOVERED_PARTIAL = "recovered_partial"
@@ -82,6 +83,8 @@ class _PreemptionAttempt:
     candidate: _PreemptionCandidate
     repaired_plan: _TaskPlan | None
     repaired_delivery: float
+    emergency_gain: float
+    emergency_gain_ratio: float
     victim_recovery_plan: _TaskPlan | None
     victim_recovery_delivery: float
     victim_recovery_completed: bool
@@ -604,6 +607,12 @@ class TwoPhaseEventDrivenScheduler:
             return 0.0
         return float(sum(action.delivered for action in task_plan.actions))
 
+    def _emergency_gain(self, repaired_plan: _TaskPlan | None, direct_plan: _TaskPlan | None) -> float:
+        return max(0.0, self._task_plan_delivery(repaired_plan) - self._task_plan_delivery(direct_plan))
+
+    def _emergency_gain_ratio(self, task: Task, repaired_plan: _TaskPlan | None, direct_plan: _TaskPlan | None) -> float:
+        return self._emergency_gain(repaired_plan, direct_plan) / max(float(task.data), self.numeric_tolerance)
+
     @staticmethod
     def _plan_capacity_tier(task_plan: _TaskPlan | None) -> str:
         if task_plan is None:
@@ -684,6 +693,10 @@ class TwoPhaseEventDrivenScheduler:
         released_edge_ids: tuple[str, ...] = (),
         released_cross_window_ids: tuple[str, ...] = (),
         preemption_score: float | None = None,
+        emergency_gain: float = 0.0,
+        emergency_gain_ratio: float = 0.0,
+        preemption_accepted_by_gain_gate: bool = False,
+        preemption_rejected_reason: str | None = None,
         victim_original_finish_time: float | None = None,
         victim_recovery_start_time: float | None = None,
         victim_recovery_basis: str | None = None,
@@ -705,6 +718,10 @@ class TwoPhaseEventDrivenScheduler:
             "released_edge_ids": [str(edge_id) for edge_id in released_edge_ids],
             "released_cross_window_ids": [str(window_id) for window_id in released_cross_window_ids],
             "preemption_score": None if preemption_score is None else float(preemption_score),
+            "emergency_gain": float(emergency_gain),
+            "emergency_gain_ratio": float(emergency_gain_ratio),
+            "preemption_accepted_by_gain_gate": bool(preemption_accepted_by_gain_gate),
+            "preemption_rejected_reason": preemption_rejected_reason,
             "horizon_segment_indices": [segment.index for segment in horizon],
             "planned_delivery": float(planned_delivery),
             "direct_plan_delivery": float(direct_plan_delivery),
@@ -781,8 +798,9 @@ class TwoPhaseEventDrivenScheduler:
                 direct_plan_delivery=direct_plan_delivery,
             )
 
-        best_complete, best_partial = self._try_controlled_preemption(
+        best_complete, best_partial, preemption_rejection = self._try_controlled_preemption(
             emergency=emergency,
+            direct_plan=direct_plan,
             affected=affected,
             plan=plan,
             segments=segments,
@@ -792,6 +810,12 @@ class TwoPhaseEventDrivenScheduler:
             prev_cross_link=prev_cross_link,
             corridor=corridor,
         )
+        rejection_event_fields = {
+            "emergency_gain": float((preemption_rejection or {}).get("emergency_gain", 0.0)),
+            "emergency_gain_ratio": float((preemption_rejection or {}).get("emergency_gain_ratio", 0.0)),
+            "preemption_rejected_reason": (preemption_rejection or {}).get("preemption_rejected_reason"),
+            "victim_recovery_completed": (preemption_rejection or {}).get("victim_recovery_completed"),
+        }
 
         if best_complete is not None:
             self._activate_preemption_attempt(
@@ -821,6 +845,9 @@ class TwoPhaseEventDrivenScheduler:
                 released_edge_ids=best_complete.candidate.released_edge_ids,
                 released_cross_window_ids=best_complete.candidate.released_cross_window_ids,
                 preemption_score=best_complete.candidate.score,
+                emergency_gain=best_complete.emergency_gain,
+                emergency_gain_ratio=best_complete.emergency_gain_ratio,
+                preemption_accepted_by_gain_gate=True,
                 victim_original_finish_time=best_complete.original_finish_time,
                 victim_recovery_start_time=best_complete.recovery_start_time,
                 victim_recovery_basis=best_complete.recovery_basis,
@@ -856,6 +883,9 @@ class TwoPhaseEventDrivenScheduler:
                 released_edge_ids=best_partial.candidate.released_edge_ids,
                 released_cross_window_ids=best_partial.candidate.released_cross_window_ids,
                 preemption_score=best_partial.candidate.score,
+                emergency_gain=best_partial.emergency_gain,
+                emergency_gain_ratio=best_partial.emergency_gain_ratio,
+                preemption_accepted_by_gain_gate=True,
                 victim_original_finish_time=best_partial.original_finish_time,
                 victim_recovery_start_time=best_partial.recovery_start_time,
                 victim_recovery_basis=best_partial.recovery_basis,
@@ -877,6 +907,7 @@ class TwoPhaseEventDrivenScheduler:
                 planned_delivery=direct_plan_delivery,
                 direct_plan_delivery=direct_plan_delivery,
                 best_effort_source="direct",
+                **rejection_event_fields,
             )
         return self._make_insertion_event(
             emergency=emergency,
@@ -888,6 +919,7 @@ class TwoPhaseEventDrivenScheduler:
             preemptions=0,
             planned_delivery=0.0,
             direct_plan_delivery=direct_plan_delivery,
+            **rejection_event_fields,
         )
 
     def _solve_direct_insert(
@@ -914,6 +946,7 @@ class TwoPhaseEventDrivenScheduler:
     def _try_controlled_preemption(
         self,
         emergency: Task,
+        direct_plan: _TaskPlan | None,
         affected: list[Task],
         plan: list[ScheduledWindow],
         segments: list[Segment],
@@ -922,9 +955,9 @@ class TwoPhaseEventDrivenScheduler:
         actual_remaining: dict[str, float],
         prev_cross_link: dict[str, str | None],
         corridor: dict[int, set[str]],
-    ) -> tuple[_PreemptionAttempt | None, _PreemptionAttempt | None]:
+    ) -> tuple[_PreemptionAttempt | None, _PreemptionAttempt | None, dict[str, object] | None]:
         if not affected:
-            return None, None
+            return None, None, None
 
         candidates = self._rank_preemption_candidates(
             emergency=emergency,
@@ -938,6 +971,7 @@ class TwoPhaseEventDrivenScheduler:
         )
         best_complete: _PreemptionAttempt | None = None
         best_partial: _PreemptionAttempt | None = None
+        best_gain_gate_rejection: dict[str, object] | None = None
         for candidate in candidates:
             if not candidate.released_segments:
                 continue
@@ -959,6 +993,8 @@ class TwoPhaseEventDrivenScheduler:
             repaired_delivery = self._task_plan_delivery(repaired_plan)
             if repaired_plan is None or repaired_delivery <= self.numeric_tolerance:
                 continue
+            emergency_gain = self._emergency_gain(repaired_plan, direct_plan)
+            emergency_gain_ratio = self._emergency_gain_ratio(emergency, repaired_plan, direct_plan)
 
             original_finish_time = self._original_committed_finish_time(candidate.task.task_id, committed, segments)
             (
@@ -995,6 +1031,8 @@ class TwoPhaseEventDrivenScheduler:
                 candidate=candidate,
                 repaired_plan=repaired_plan,
                 repaired_delivery=repaired_delivery,
+                emergency_gain=emergency_gain,
+                emergency_gain_ratio=emergency_gain_ratio,
                 victim_recovery_plan=victim_recovery_plan,
                 victim_recovery_delivery=victim_recovery_delivery,
                 victim_recovery_completed=victim_recovery_completed,
@@ -1006,6 +1044,24 @@ class TwoPhaseEventDrivenScheduler:
                 remaining_after_preemption=remaining_after_preemption,
             )
             if repaired_plan.completed:
+                if emergency_gain_ratio + self.numeric_tolerance < PREEMPTION_MIN_GAIN_RATIO:
+                    rejection = {
+                        "preemption_rejected_reason": "gain_ratio_below_threshold",
+                        "emergency_gain": float(emergency_gain),
+                        "emergency_gain_ratio": float(emergency_gain_ratio),
+                        "victim_recovery_completed": bool(victim_recovery_completed),
+                    }
+                    if best_gain_gate_rejection is None or (
+                        float(rejection["emergency_gain_ratio"]) > float(best_gain_gate_rejection["emergency_gain_ratio"]) + self.numeric_tolerance
+                        or (
+                            abs(
+                                float(rejection["emergency_gain_ratio"]) - float(best_gain_gate_rejection["emergency_gain_ratio"])
+                            ) <= self.numeric_tolerance
+                            and float(rejection["emergency_gain"]) > float(best_gain_gate_rejection["emergency_gain"]) + self.numeric_tolerance
+                        )
+                    ):
+                        best_gain_gate_rejection = rejection
+                    continue
                 if best_complete is None:
                     best_complete = attempt
                     continue
@@ -1025,6 +1081,26 @@ class TwoPhaseEventDrivenScheduler:
                 )
                 if current_key < best_key:
                     best_complete = attempt
+                continue
+            if emergency_gain <= self.numeric_tolerance:
+                continue
+            if emergency_gain_ratio + self.numeric_tolerance < PREEMPTION_MIN_GAIN_RATIO:
+                rejection = {
+                    "preemption_rejected_reason": "gain_ratio_below_threshold",
+                    "emergency_gain": float(emergency_gain),
+                    "emergency_gain_ratio": float(emergency_gain_ratio),
+                    "victim_recovery_completed": bool(victim_recovery_completed),
+                }
+                if best_gain_gate_rejection is None or (
+                    float(rejection["emergency_gain_ratio"]) > float(best_gain_gate_rejection["emergency_gain_ratio"]) + self.numeric_tolerance
+                    or (
+                        abs(
+                            float(rejection["emergency_gain_ratio"]) - float(best_gain_gate_rejection["emergency_gain_ratio"])
+                        ) <= self.numeric_tolerance
+                        and float(rejection["emergency_gain"]) > float(best_gain_gate_rejection["emergency_gain"]) + self.numeric_tolerance
+                    )
+                ):
+                    best_gain_gate_rejection = rejection
                 continue
             if best_partial is None:
                 best_partial = attempt
@@ -1048,7 +1124,7 @@ class TwoPhaseEventDrivenScheduler:
                 if current_key < best_key:
                     best_partial = attempt
 
-        return best_complete, best_partial
+        return best_complete, best_partial, best_gain_gate_rejection
 
     def _activate_preemption_attempt(
         self,
