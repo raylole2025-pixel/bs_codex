@@ -18,6 +18,7 @@ PREEMPTION_RECOVERY_SLACK_COEFF = 0.30
 PREEMPTION_RECOVERABILITY_COEFF = 0.35
 PREEMPTION_SCORE_EPS = 1e-6
 PREEMPTION_MIN_GAIN_RATIO = 0.05
+RECOVERY_K_PATHS = 5
 TASK_RUNTIME_NORMAL = "normal"
 TASK_RUNTIME_PREEMPTED_RECOVERABLE = "preempted_recoverable"
 TASK_RUNTIME_RECOVERED_PARTIAL = "recovered_partial"
@@ -301,6 +302,18 @@ class TwoPhaseEventDrivenScheduler:
                 if isinstance(insertion_event_index, int) and 0 <= insertion_event_index < len(insertion_events):
                     insertion_events[insertion_event_index]["victim_recovery_delivery"] = float(recovery_event["delivery"])
                     insertion_events[insertion_event_index]["victim_recovery_completed"] = bool(recovery_event["completed"])
+                    insertion_events[insertion_event_index]["victim_recovery_candidate_path_count"] = int(
+                        recovery_event.get("victim_recovery_candidate_path_count", 0)
+                    )
+                    insertion_events[insertion_event_index]["victim_recovery_cross_windows_considered"] = list(
+                        recovery_event.get("victim_recovery_cross_windows_considered") or []
+                    )
+                    insertion_events[insertion_event_index]["victim_recovery_objective"] = recovery_event.get(
+                        "victim_recovery_objective"
+                    )
+                    insertion_events[insertion_event_index]["victim_recovery_best_path_cross_window_id"] = recovery_event.get(
+                        "victim_recovery_best_path_cross_window_id"
+                    )
 
             active_a = active_intra_links(self.scenario, "A", segment.start)
             active_b = active_intra_links(self.scenario, "B", segment.start)
@@ -702,6 +715,10 @@ class TwoPhaseEventDrivenScheduler:
         victim_recovery_basis: str | None = None,
         last_released_segment_end: float | None = None,
         repaired_emergency_finish_time: float | None = None,
+        victim_recovery_candidate_path_count: int | None = None,
+        victim_recovery_cross_windows_considered: tuple[str, ...] | None = None,
+        victim_recovery_objective: str | None = None,
+        victim_recovery_best_path_cross_window_id: str | None = None,
         victim_recovery_delivery: float | None = None,
         victim_recovery_completed: bool | None = None,
         best_effort_source: str | None = None,
@@ -732,6 +749,12 @@ class TwoPhaseEventDrivenScheduler:
             "repaired_emergency_finish_time": (
                 None if repaired_emergency_finish_time is None else float(repaired_emergency_finish_time)
             ),
+            "victim_recovery_candidate_path_count": (
+                None if victim_recovery_candidate_path_count is None else int(victim_recovery_candidate_path_count)
+            ),
+            "victim_recovery_cross_windows_considered": list(victim_recovery_cross_windows_considered or ()),
+            "victim_recovery_objective": victim_recovery_objective,
+            "victim_recovery_best_path_cross_window_id": victim_recovery_best_path_cross_window_id,
             "victim_recovery_delivery": None if victim_recovery_delivery is None else float(victim_recovery_delivery),
             "victim_recovery_completed": None if victim_recovery_completed is None else bool(victim_recovery_completed),
             "best_effort_source": best_effort_source,
@@ -1236,6 +1259,54 @@ class TwoPhaseEventDrivenScheduler:
         recovery_basis = RECOVERY_START_BASIS_PREEMPTION if recovery_start_time is not None else None
         return recovery_start_time, recovery_basis, last_released_segment_end, repaired_emergency_finish_time
 
+    def _record_recovery_path_diagnostics(
+        self,
+        path_diagnostics: dict[str, object] | None,
+        segment: Segment,
+        candidates: list[PathCandidate],
+        active_windows: list[ScheduledWindow],
+    ) -> None:
+        if path_diagnostics is None:
+            return
+        candidate_counts = path_diagnostics.setdefault("candidate_path_count_by_segment", {})
+        cross_windows_by_segment = path_diagnostics.setdefault("cross_windows_by_segment", {})
+        if isinstance(candidate_counts, dict) and segment.index not in candidate_counts:
+            candidate_counts[segment.index] = int(len(candidates))
+        if isinstance(cross_windows_by_segment, dict) and segment.index not in cross_windows_by_segment:
+            cross_windows_by_segment[segment.index] = sorted({str(window.window_id) for window in active_windows})
+
+    def _summarize_recovery_path_diagnostics(
+        self,
+        path_diagnostics: dict[str, object] | None,
+    ) -> tuple[int, list[str]]:
+        if not path_diagnostics:
+            return 0, []
+        total_candidate_paths = 0
+        candidate_counts = path_diagnostics.get("candidate_path_count_by_segment", {})
+        if isinstance(candidate_counts, dict):
+            total_candidate_paths = sum(int(value) for value in candidate_counts.values())
+        considered_windows: set[str] = set()
+        cross_windows_by_segment = path_diagnostics.get("cross_windows_by_segment", {})
+        if isinstance(cross_windows_by_segment, dict):
+            for values in cross_windows_by_segment.values():
+                for window_id in values or []:
+                    considered_windows.add(str(window_id))
+        return int(total_candidate_paths), sorted(considered_windows)
+
+    def _best_plan_cross_window_id(self, task_plan: _TaskPlan | None) -> str | None:
+        if task_plan is None:
+            return None
+        best_cross_window_id = None
+        best_delivered = 0.0
+        for action in task_plan.actions:
+            if action.path is None or action.path.cross_window_id is None:
+                continue
+            if action.delivered <= best_delivered + self.numeric_tolerance:
+                continue
+            best_delivered = float(action.delivered)
+            best_cross_window_id = str(action.path.cross_window_id)
+        return best_cross_window_id
+
     def _original_committed_finish_time(
         self,
         task_id: str,
@@ -1292,8 +1363,15 @@ class TwoPhaseEventDrivenScheduler:
         segments: list[Segment],
         committed: dict[tuple[str, int], Allocation],
         initial_cross_link: str | None,
+        enhanced: bool = False,
+        path_diagnostics: dict[str, object] | None = None,
     ) -> _TaskPlan | None:
         recovery_horizon = self._recovery_horizon(task, segments, recovery_start_time)
+        if path_diagnostics is not None:
+            path_diagnostics["objective"] = "recovery"
+            path_diagnostics["enhanced"] = bool(enhanced)
+            path_diagnostics.setdefault("candidate_path_count_by_segment", {})
+            path_diagnostics.setdefault("cross_windows_by_segment", {})
         if not recovery_horizon:
             return None
         capacity_states = self._free_capacity_states(recovery_horizon, plan, committed, exclude_tasks=set())
@@ -1303,9 +1381,14 @@ class TwoPhaseEventDrivenScheduler:
             segments=recovery_horizon,
             capacity_states=capacity_states,
             remaining_data=remaining_data,
-            initial_cross_link=initial_cross_link,
+            initial_cross_link=None if enhanced else initial_cross_link,
             preferred_cross_links={},
             objective="recovery",
+            candidate_mode="recovery_enhanced" if enhanced else "default",
+            label_keep_limit_override=(
+                max(self.scenario.stage2.effective_label_keep_limit, RECOVERY_K_PATHS * 6) if enhanced else None
+            ),
+            path_diagnostics=path_diagnostics,
         )
 
     def _estimate_recoverability(
@@ -1346,6 +1429,7 @@ class TwoPhaseEventDrivenScheduler:
     ) -> dict[str, object]:
         recovery_start_time = recovery_info.get("recovery_start_time")
         recovery_start = None if recovery_start_time is None else float(recovery_start_time)
+        path_diagnostics: dict[str, object] = {}
         remaining_before = float(actual_remaining.get(task.task_id, 0.0))
         if self._is_task_complete(task, remaining_before):
             task_runtime_state[task.task_id] = TASK_RUNTIME_RECOVERED_COMPLETE
@@ -1356,10 +1440,16 @@ class TwoPhaseEventDrivenScheduler:
                 "last_released_segment_end": recovery_info.get("last_released_segment_end"),
                 "repaired_emergency_finish_time": recovery_info.get("repaired_emergency_finish_time"),
                 "delivery": 0.0,
+                "victim_recovery_delivery": 0.0,
                 "completed": True,
+                "victim_recovery_completed": True,
                 "remaining_after_recovery": 0.0,
                 "preempted_by": recovery_info.get("preempted_by"),
                 "released_segments": list(recovery_info.get("released_segments") or []),
+                "victim_recovery_candidate_path_count": 0,
+                "victim_recovery_cross_windows_considered": [],
+                "victim_recovery_objective": "recovery",
+                "victim_recovery_best_path_cross_window_id": None,
             }
         recovery_plan = self._plan_recovery_best_effort(
             task=task,
@@ -1368,7 +1458,9 @@ class TwoPhaseEventDrivenScheduler:
             plan=plan,
             segments=segments,
             committed=committed,
-            initial_cross_link=prev_cross_link.get(task.task_id),
+            initial_cross_link=None,
+            enhanced=True,
+            path_diagnostics=path_diagnostics,
         )
         recovery_delivery = self._task_plan_delivery(recovery_plan)
         remaining_after_recovery = max(remaining_before - recovery_delivery, 0.0)
@@ -1381,6 +1473,7 @@ class TwoPhaseEventDrivenScheduler:
             )
         elif recovery_completed:
             task_runtime_state[task.task_id] = TASK_RUNTIME_RECOVERED_COMPLETE
+        candidate_path_count, cross_windows_considered = self._summarize_recovery_path_diagnostics(path_diagnostics)
         return {
             "task_id": task.task_id,
             "recovery_start_time": recovery_start,
@@ -1388,10 +1481,16 @@ class TwoPhaseEventDrivenScheduler:
             "last_released_segment_end": recovery_info.get("last_released_segment_end"),
             "repaired_emergency_finish_time": recovery_info.get("repaired_emergency_finish_time"),
             "delivery": float(recovery_delivery),
+            "victim_recovery_delivery": float(recovery_delivery),
             "completed": bool(recovery_completed),
+            "victim_recovery_completed": bool(recovery_completed),
             "remaining_after_recovery": float(remaining_after_recovery),
             "preempted_by": recovery_info.get("preempted_by"),
             "released_segments": list(recovery_info.get("released_segments") or []),
+            "victim_recovery_candidate_path_count": int(candidate_path_count),
+            "victim_recovery_cross_windows_considered": list(cross_windows_considered),
+            "victim_recovery_objective": str(path_diagnostics.get("objective", "recovery")),
+            "victim_recovery_best_path_cross_window_id": self._best_plan_cross_window_id(recovery_plan),
         }
 
     def _plan_task(
@@ -1404,6 +1503,9 @@ class TwoPhaseEventDrivenScheduler:
         initial_cross_link: str | None,
         preferred_cross_links: dict[int, str | None],
         objective: str,
+        candidate_mode: str = "default",
+        label_keep_limit_override: int | None = None,
+        path_diagnostics: dict[str, object] | None = None,
     ) -> _TaskPlan | None:
         completion_tolerance = self._task_completion_tolerance(task)
         if remaining_data <= completion_tolerance:
@@ -1420,7 +1522,12 @@ class TwoPhaseEventDrivenScheduler:
         if not segments:
             return None
 
-        path_cache: dict[tuple[str, int], list[PathCandidate]] = {}
+        path_cache: dict[tuple[str, int, str], list[PathCandidate]] = {}
+        label_keep_limit = (
+            self.scenario.stage2.effective_label_keep_limit
+            if label_keep_limit_override in {None, 0}
+            else max(int(label_keep_limit_override), 1)
+        )
         frontier = [
             _PlanLabel(
                 last_cross_link=initial_cross_link,
@@ -1456,9 +1563,16 @@ class TwoPhaseEventDrivenScheduler:
                     actions=label.actions + (_PlannedAction(segment_index=segment.index, path=None, rate=0.0, delivered=0.0, tier=0),),
                 )
                 partial.append(wait_label)
-                self._insert_nondominated(buckets[None], wait_label, objective)
+                self._insert_nondominated(buckets[None], wait_label, objective, label_keep_limit)
 
-                for candidate in self._candidate_paths(plan, task, segment, path_cache):
+                for candidate in self._candidate_paths(
+                    plan,
+                    task,
+                    segment,
+                    path_cache,
+                    candidate_mode=candidate_mode,
+                    path_diagnostics=path_diagnostics,
+                ):
                     state = capacity_states.get(segment.index)
                     if state is None or segment.duration <= EPS:
                         continue
@@ -1492,7 +1606,7 @@ class TwoPhaseEventDrivenScheduler:
                     if remaining_after <= completion_tolerance and finish_time is not None and finish_time <= task.deadline + self.numeric_tolerance:
                         terminals.append(next_label)
                         continue
-                    self._insert_nondominated(buckets[cross_link], next_label, objective)
+                    self._insert_nondominated(buckets[cross_link], next_label, objective, label_keep_limit)
 
             frontier = [label for bucket in buckets.values() for label in bucket]
             if not frontier and terminals:
@@ -1529,20 +1643,40 @@ class TwoPhaseEventDrivenScheduler:
         plan: list[ScheduledWindow],
         task: Task,
         segment: Segment,
-        path_cache: dict[tuple[str, int], list[PathCandidate]],
+        path_cache: dict[tuple[str, int, str], list[PathCandidate]],
+        candidate_mode: str = "default",
+        path_diagnostics: dict[str, object] | None = None,
     ) -> list[PathCandidate]:
-        key = (task.task_id, segment.index)
+        key = (task.task_id, segment.index, candidate_mode)
         if key not in path_cache:
-            path_cache[key] = generate_candidate_paths(
-                self.scenario,
-                plan,
-                task,
-                segment,
-                self.scenario.stage2.k_paths,
-            )
+            if candidate_mode == "recovery_enhanced":
+                active_windows = list(active_cross_links(plan, segment.start))
+                path_cache[key] = generate_candidate_paths(
+                    self.scenario,
+                    plan,
+                    task,
+                    segment,
+                    RECOVERY_K_PATHS,
+                    active_windows=active_windows,
+                )
+                self._record_recovery_path_diagnostics(path_diagnostics, segment, path_cache[key], active_windows)
+            else:
+                path_cache[key] = generate_candidate_paths(
+                    self.scenario,
+                    plan,
+                    task,
+                    segment,
+                    self.scenario.stage2.k_paths,
+                )
         return path_cache[key]
 
-    def _insert_nondominated(self, bucket: list[_PlanLabel], candidate: _PlanLabel, objective: str) -> None:
+    def _insert_nondominated(
+        self,
+        bucket: list[_PlanLabel],
+        candidate: _PlanLabel,
+        objective: str,
+        label_keep_limit: int,
+    ) -> None:
         survivors: list[_PlanLabel] = []
         for existing in bucket:
             if self._dominates(existing, candidate):
@@ -1552,7 +1686,7 @@ class TwoPhaseEventDrivenScheduler:
             survivors.append(existing)
         survivors.append(candidate)
         survivors.sort(key=lambda label: self._partial_key(label, objective))
-        bucket[:] = survivors[: self.scenario.stage2.effective_label_keep_limit]
+        bucket[:] = survivors[: max(int(label_keep_limit), 1)]
 
     def _dominates(self, lhs: _PlanLabel, rhs: _PlanLabel) -> bool:
         lhs_remaining = self._remaining_key(lhs.remaining_data)
@@ -1835,7 +1969,7 @@ class TwoPhaseEventDrivenScheduler:
         committed: dict[tuple[str, int], Allocation],
     ) -> dict[int, set[str]]:
         corridor: dict[int, set[str]] = {}
-        path_cache: dict[tuple[str, int], list[PathCandidate]] = {}
+        path_cache: dict[tuple[str, int, str], list[PathCandidate]] = {}
         capacity_states = self._free_capacity_states(
             horizon,
             plan,
@@ -1857,7 +1991,7 @@ class TwoPhaseEventDrivenScheduler:
         task: Task,
         segment: Segment,
         state: _CapacityState | None,
-        path_cache: dict[tuple[str, int], list[PathCandidate]],
+        path_cache: dict[tuple[str, int, str], list[PathCandidate]],
     ) -> list[PathCandidate]:
         if state is None or segment.duration <= self.numeric_tolerance:
             return []

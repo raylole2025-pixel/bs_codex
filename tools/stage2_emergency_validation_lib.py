@@ -18,7 +18,7 @@ from bs3.stage2 import run_stage2
 
 EPS = 1e-9
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "results" / "generated" / "stage2_emergency_validation"
+DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "results" / "stage2_results"
 
 DEFAULT_SMOKE_CASES = (
     {
