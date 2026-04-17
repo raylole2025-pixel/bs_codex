@@ -1,0 +1,357 @@
+{
+  "run_dir": "D:\\Codex_Project\\bs3 - 副本\\results\\stage2_results\\normal72x_v2_hotspot_mixed_adversarial_20260416_173600",
+  "basic": {
+    "regular_task_total": 72,
+    "emergency_task_total": 12,
+    "run_completed": true,
+    "errors": [],
+    "fallback_counts": {
+      "controlled_preemption_best_effort": 2,
+      "direct_insert_best_effort": 0,
+      "blocked": 0
+    },
+    "missing_event_field_count": 0,
+    "missing_recovery_record_count": 0
+  },
+  "stage2_metrics": {
+    "cr_reg": 0.9066666666666666,
+    "cr_emg": 0.8333333333333334,
+    "n_preemptions": 7,
+    "u_cross": 0.6558586638507676,
+    "u_all": 0.019572298913886885
+  },
+  "strategy_distribution": {
+    "direct_insert": {
+      "count": 5,
+      "ratio": 0.4166666666666667
+    },
+    "controlled_preemption": {
+      "count": 5,
+      "ratio": 0.4166666666666667
+    },
+    "controlled_preemption_best_effort": {
+      "count": 2,
+      "ratio": 0.16666666666666666
+    },
+    "direct_insert_best_effort": {
+      "count": 0,
+      "ratio": 0.0
+    },
+    "blocked": {
+      "count": 0,
+      "ratio": 0.0
+    }
+  },
+  "hotspot_prediction_groups": {
+    "hit": {
+      "count": 8,
+      "success_rate": 1.0,
+      "avg_delivered_ratio": 1.0,
+      "avg_remaining_ratio": 0.0,
+      "avg_triggered_preemption": 0.5,
+      "avg_waiting_steps": 0.0,
+      "avg_switch_count": 2.0
+    },
+    "miss": {
+      "count": 4,
+      "success_rate": 0.5,
+      "avg_delivered_ratio": 0.9421760045304349,
+      "avg_remaining_ratio": 0.0578239954695651,
+      "avg_triggered_preemption": 0.75,
+      "avg_waiting_steps": 0.0,
+      "avg_switch_count": 1.0
+    }
+  },
+  "preemption_recovery": {
+    "preempted_regular_task_count": 7,
+    "preempted_regular_task_ids": [
+      "N72X_006",
+      "N72X_013",
+      "N72X_029",
+      "N72X_041",
+      "N72X_055",
+      "N72X_062",
+      "N72X_066"
+    ],
+    "repeated_preemption_task_ids": [],
+    "recovery_trigger_count": 7,
+    "recovery_event_task_ids": [
+      "N72X_006",
+      "N72X_013",
+      "N72X_029",
+      "N72X_041",
+      "N72X_055",
+      "N72X_062",
+      "N72X_066"
+    ],
+    "recovered_complete_count": 1,
+    "recovered_partial_count": 6,
+    "missing_recovery_record_task_ids": [],
+    "recovery_total_delivery": 1774944.6744000006,
+    "recovery_nonzero_count": 7,
+    "regular_tasks_degraded_by_emergency": [
+      "N72X_013",
+      "N72X_029",
+      "N72X_041",
+      "N72X_055",
+      "N72X_062",
+      "N72X_066"
+    ],
+    "final_regular_completed_count": 66
+  },
+  "logic_checks": {
+    "preempted_partial_used": [
+      {
+        "task_id": "EMG_MIX_ADV_010",
+        "best_effort_source": "preempted",
+        "planned_delivery": 429575.9908000002,
+        "direct_plan_delivery": 244404.0,
+        "improved_vs_direct_partial": true
+      },
+      {
+        "task_id": "EMG_MIX_ADV_012",
+        "best_effort_source": "preempted",
+        "planned_delivery": 418393.9368000001,
+        "direct_plan_delivery": 234260.4792,
+        "improved_vs_direct_partial": true
+      }
+    ],
+    "recovery_tasks_not_repreempted": true
+  },
+  "successful_insertions": {
+    "direct_insert": 5,
+    "controlled_preemption": 5,
+    "controlled_preemption_best_effort": 2,
+    "direct_insert_best_effort": 0
+  },
+  "per_emergency_task": {
+    "EMG_MIX_ADV_001": {
+      "task_id": "EMG_MIX_ADV_001",
+      "data": 260000.0,
+      "delivered": 260000.0,
+      "remaining": 0.0,
+      "delivered_ratio": 1.0,
+      "remaining_ratio": 0.0,
+      "success": true,
+      "notes": "normal72x_v2; layer=adversarial; role=emergency; profile=urgent_cross_domain_backhaul; design_band=W1_dual_entry; design_target=borrow_under_early_overlap; preemption_priority_above_all_regular=true; hotspot_region=z1_A; hotspot_label=z1_A; hotspot_interval=[1920,2100); hotspot_source=Satellite157; mapped_from_arrival=1500; arrival_shift_sec=420; hotspot_aware=true; hotspot_prediction=hit; hotspot_mix=true",
+      "strategy": "direct_insert",
+      "used_preemption": false,
+      "planned_delivery": 260000.0,
+      "direct_plan_delivery": 260000.0,
+      "best_effort_source": null,
+      "waiting_steps": 0,
+      "switch_count": 0,
+      "preempted_task_id": null,
+      "hotspot_prediction": "hit"
+    },
+    "EMG_MIX_ADV_002": {
+      "task_id": "EMG_MIX_ADV_002",
+      "data": 390000.0,
+      "delivered": 390000.0,
+      "remaining": 0.0,
+      "delivered_ratio": 1.0,
+      "remaining_ratio": 0.0,
+      "success": true,
+      "notes": "normal72x_v2; layer=adversarial; role=emergency; profile=urgent_cross_domain_backhaul; design_band=W1_dual_entry; design_target=preemption_pressure_on_regular_corridor; preemption_priority_above_all_regular=true; hotspot_region=z1_A; hotspot_label=z1_A; hotspot_interval=[3120,3360); hotspot_source=Satellite155; mapped_from_arrival=3180; arrival_shift_sec=0; hotspot_aware=true; hotspot_prediction=hit; hotspot_mix=true",
+      "strategy": "controlled_preemption",
+      "used_preemption": true,
+      "planned_delivery": 390000.0,
+      "direct_plan_delivery": 333792.0,
+      "best_effort_source": null,
+      "waiting_steps": 0,
+      "switch_count": 4,
+      "preempted_task_id": "N72X_006",
+      "hotspot_prediction": "hit"
+    },
+    "EMG_MIX_ADV_003": {
+      "task_id": "EMG_MIX_ADV_003",
+      "data": 280000.0,
+      "delivered": 280000.0,
+      "remaining": 0.0,
+      "delivered_ratio": 1.0,
+      "remaining_ratio": 0.0,
+      "success": true,
+      "notes": "normal72x_v2; layer=adversarial; role=emergency; profile=urgent_cross_domain_backhaul; design_band=W2_conflict_transition; design_target=direct_or_borrow_mid_overlap; preemption_priority_above_all_regular=true; hotspot_region=z2_A; hotspot_label=z2_A; hotspot_interval=[8520,8700); hotspot_source=Satellite155; mapped_from_arrival=8460; arrival_shift_sec=60; hotspot_aware=true; hotspot_prediction=hit; hotspot_mix=true",
+      "strategy": "direct_insert",
+      "used_preemption": false,
+      "planned_delivery": 280000.0,
+      "direct_plan_delivery": 280000.0,
+      "best_effort_source": null,
+      "waiting_steps": 0,
+      "switch_count": 1,
+      "preempted_task_id": null,
+      "hotspot_prediction": "hit"
+    },
+    "EMG_MIX_ADV_004": {
+      "task_id": "EMG_MIX_ADV_004",
+      "data": 420000.0,
+      "delivered": 420000.0,
+      "remaining": 0.0,
+      "delivered_ratio": 1.0,
+      "remaining_ratio": 0.0,
+      "success": true,
+      "notes": "normal72x_v2; layer=adversarial; role=emergency; profile=urgent_cross_domain_backhaul; design_band=W2_conflict_transition; design_target=preemption_complete_bias; preemption_priority_above_all_regular=true; hotspot_region=z3_A; hotspot_label=z3_A; hotspot_interval=[8580,8760); hotspot_source=Satellite145; mapped_from_arrival=9480; arrival_shift_sec=-780; hotspot_aware=true; hotspot_prediction=hit; hotspot_mix=true",
+      "strategy": "controlled_preemption",
+      "used_preemption": true,
+      "planned_delivery": 420000.0,
+      "direct_plan_delivery": 372456.0,
+      "best_effort_source": null,
+      "waiting_steps": 0,
+      "switch_count": 1,
+      "preempted_task_id": "N72X_013",
+      "hotspot_prediction": "hit"
+    },
+    "EMG_MIX_ADV_005": {
+      "task_id": "EMG_MIX_ADV_005",
+      "data": 360000.0,
+      "delivered": 360000.0,
+      "remaining": 0.0,
+      "delivered_ratio": 1.0,
+      "remaining_ratio": 0.0,
+      "success": true,
+      "notes": "normal72x_v2; layer=adversarial; role=emergency; profile=urgent_cross_domain_backhaul; design_band=W3_core_pinch; design_target=core_pinch_preemption_bias; preemption_priority_above_all_regular=true; hotspot_region=z2_A; hotspot_label=z2_A; hotspot_interval=[15780,16020); hotspot_source=Satellite117; mapped_from_arrival=15960; arrival_shift_sec=0; hotspot_aware=true; hotspot_prediction=hit; hotspot_mix=true",
+      "strategy": "controlled_preemption",
+      "used_preemption": true,
+      "planned_delivery": 360000.0,
+      "direct_plan_delivery": 303952.7776000002,
+      "best_effort_source": null,
+      "waiting_steps": 0,
+      "switch_count": 3,
+      "preempted_task_id": "N72X_029",
+      "hotspot_prediction": "hit"
+    },
+    "EMG_MIX_ADV_006": {
+      "task_id": "EMG_MIX_ADV_006",
+      "data": 450000.0,
+      "delivered": 450000.0,
+      "remaining": 0.0,
+      "delivered_ratio": 1.0,
+      "remaining_ratio": 0.0,
+      "success": true,
+      "notes": "normal72x_v2; layer=adversarial; role=emergency; profile=urgent_cross_domain_backhaul; design_band=W3_core_pinch; design_target=core_pinch_preemption_best_effort_bias; preemption_priority_above_all_regular=true; hotspot_region=z2_A; hotspot_label=z2_A; hotspot_interval=[17640,17880); hotspot_source=Satellite114; mapped_from_arrival=17640; arrival_shift_sec=0; hotspot_aware=true; hotspot_prediction=hit; hotspot_mix=true",
+      "strategy": "direct_insert",
+      "used_preemption": false,
+      "planned_delivery": 450000.0,
+      "direct_plan_delivery": 450000.0,
+      "best_effort_source": null,
+      "waiting_steps": 0,
+      "switch_count": 2,
+      "preempted_task_id": null,
+      "hotspot_prediction": "hit"
+    },
+    "EMG_MIX_ADV_007": {
+      "task_id": "EMG_MIX_ADV_007",
+      "data": 300000.0,
+      "delivered": 300000.0,
+      "remaining": 0.0,
+      "delivered_ratio": 1.0,
+      "remaining_ratio": 0.0,
+      "success": true,
+      "notes": "normal72x_v2; layer=adversarial; role=emergency; profile=urgent_cross_domain_backhaul; design_band=W4_sustained_split; design_target=sustained_split_direct_borrow; preemption_priority_above_all_regular=true; hotspot_region=z1_A; hotspot_label=z1_A; hotspot_interval=[22920,23160); hotspot_source=Satellite124; mapped_from_arrival=23160; arrival_shift_sec=-60; hotspot_aware=true; hotspot_prediction=hit; hotspot_mix=true",
+      "strategy": "direct_insert",
+      "used_preemption": false,
+      "planned_delivery": 300000.0,
+      "direct_plan_delivery": 300000.0,
+      "best_effort_source": null,
+      "waiting_steps": 0,
+      "switch_count": 2,
+      "preempted_task_id": null,
+      "hotspot_prediction": "hit"
+    },
+    "EMG_MIX_ADV_008": {
+      "task_id": "EMG_MIX_ADV_008",
+      "data": 480000.0,
+      "delivered": 480000.0,
+      "remaining": 0.0,
+      "delivered_ratio": 1.0,
+      "remaining_ratio": 0.0,
+      "success": true,
+      "notes": "normal72x_v2; layer=adversarial; role=emergency; profile=urgent_cross_domain_backhaul; design_band=W4_sustained_split; design_target=sustained_split_hard_preemption; preemption_priority_above_all_regular=true; hotspot_region=z1_A; hotspot_label=z1_A; hotspot_interval=[24780,25020); hotspot_source=Satellite121; mapped_from_arrival=24840; arrival_shift_sec=0; hotspot_aware=true; hotspot_prediction=hit; hotspot_mix=true",
+      "strategy": "controlled_preemption",
+      "used_preemption": true,
+      "planned_delivery": 480000.0,
+      "direct_plan_delivery": 255132.00000000003,
+      "best_effort_source": null,
+      "waiting_steps": 0,
+      "switch_count": 3,
+      "preempted_task_id": "N72X_041",
+      "hotspot_prediction": "hit"
+    },
+    "EMG_MIX_ADV_009": {
+      "task_id": "EMG_MIX_ADV_009",
+      "data": 320000.0,
+      "delivered": 320000.0,
+      "remaining": 0.0,
+      "delivered_ratio": 1.0,
+      "remaining_ratio": 0.0,
+      "success": true,
+      "notes": "normal72x_v2; layer=adversarial; role=emergency; profile=urgent_cross_domain_backhaul; design_band=W5_late_overlap; design_target=late_overlap_direct_borrow; preemption_priority_above_all_regular=true; hotspot_prediction=miss; hotspot_mix=true",
+      "strategy": "direct_insert",
+      "used_preemption": false,
+      "planned_delivery": 320000.0,
+      "direct_plan_delivery": 320000.0,
+      "best_effort_source": null,
+      "waiting_steps": 0,
+      "switch_count": 1,
+      "preempted_task_id": null,
+      "hotspot_prediction": "miss"
+    },
+    "EMG_MIX_ADV_010": {
+      "task_id": "EMG_MIX_ADV_010",
+      "data": 500000.0,
+      "delivered": 429575.9908000002,
+      "remaining": 70424.0091999998,
+      "delivered_ratio": 0.8591519816000004,
+      "remaining_ratio": 0.14084801839999958,
+      "success": false,
+      "notes": "normal72x_v2; layer=adversarial; role=emergency; profile=urgent_cross_domain_backhaul; design_band=W5_late_overlap; design_target=late_overlap_hard_partial; preemption_priority_above_all_regular=true; hotspot_prediction=miss; hotspot_mix=true",
+      "strategy": "controlled_preemption_best_effort",
+      "used_preemption": true,
+      "planned_delivery": 429575.9908000002,
+      "direct_plan_delivery": 244404.0,
+      "best_effort_source": "preempted",
+      "waiting_steps": 0,
+      "switch_count": 1,
+      "preempted_task_id": "N72X_055",
+      "hotspot_prediction": "miss"
+    },
+    "EMG_MIX_ADV_011": {
+      "task_id": "EMG_MIX_ADV_011",
+      "data": 340000.0,
+      "delivered": 340000.0,
+      "remaining": 0.0,
+      "delivered_ratio": 1.0,
+      "remaining_ratio": 0.0,
+      "success": true,
+      "notes": "normal72x_v2; layer=adversarial; role=emergency; profile=urgent_cross_domain_backhaul; design_band=W6_tail_tight; design_target=tail_tight_preemption_complete_bias; preemption_priority_above_all_regular=true; hotspot_prediction=miss; hotspot_mix=true",
+      "strategy": "controlled_preemption",
+      "used_preemption": true,
+      "planned_delivery": 340000.00000000006,
+      "direct_plan_delivery": 159458.5296,
+      "best_effort_source": null,
+      "waiting_steps": 0,
+      "switch_count": 1,
+      "preempted_task_id": "N72X_062",
+      "hotspot_prediction": "miss"
+    },
+    "EMG_MIX_ADV_012": {
+      "task_id": "EMG_MIX_ADV_012",
+      "data": 460000.0,
+      "delivered": 418393.9368,
+      "remaining": 41606.063199999975,
+      "delivered_ratio": 0.9095520365217392,
+      "remaining_ratio": 0.09044796347826081,
+      "success": false,
+      "notes": "normal72x_v2; layer=adversarial; role=emergency; profile=urgent_cross_domain_backhaul; design_band=W6_tail_tight; design_target=tail_tight_preemption_best_effort_bias; preemption_priority_above_all_regular=true; hotspot_prediction=miss; hotspot_mix=true",
+      "strategy": "controlled_preemption_best_effort",
+      "used_preemption": true,
+      "planned_delivery": 418393.9368000001,
+      "direct_plan_delivery": 234260.4792,
+      "best_effort_source": "preempted",
+      "waiting_steps": 0,
+      "switch_count": 1,
+      "preempted_task_id": "N72X_066",
+      "hotspot_prediction": "miss"
+    }
+  }
+}

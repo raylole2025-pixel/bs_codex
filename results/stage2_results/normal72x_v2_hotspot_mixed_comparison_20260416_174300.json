@@ -1,0 +1,123 @@
+{
+  "runs": {
+    "smoke": {
+      "run_dir": "D:\\Codex_Project\\bs3 - 副本\\results\\stage2_results\\normal72x_v2_hotspot_mixed_smoke_20260416_173000",
+      "emergency_total": 8,
+      "emergency_success_count": 7,
+      "emergency_failure_count": 1,
+      "emergency_success_rate": 0.875,
+      "avg_emergency_delivered_ratio": 0.875,
+      "regular_completed_final": 69,
+      "regular_completed_loss_vs_baseline": 3,
+      "degraded_regular_count": 3,
+      "preempted_regular_count": 3,
+      "recovered_complete_count": 0,
+      "recovered_partial_count": 3,
+      "recovery_total_delivery": 481392.3880000004,
+      "recovery_nonzero_count": 3,
+      "n_preemptions": 3,
+      "cr_reg": 0.9533333333333334,
+      "cr_emg": 0.875,
+      "u_cross": 0.6343374698775697,
+      "direct_insert_count": 4,
+      "controlled_preemption_count": 3,
+      "controlled_preemption_best_effort_count": 0,
+      "blocked_count": 1,
+      "direct_insert_best_effort_count": 0,
+      "hit_success_rate": 0.8333333333333334,
+      "miss_success_rate": 1.0,
+      "hit_avg_preemption": 0.3333333333333333,
+      "miss_avg_preemption": 0.5
+    },
+    "adversarial": {
+      "run_dir": "D:\\Codex_Project\\bs3 - 副本\\results\\stage2_results\\normal72x_v2_hotspot_mixed_adversarial_20260416_173600",
+      "emergency_total": 12,
+      "emergency_success_count": 10,
+      "emergency_failure_count": 2,
+      "emergency_success_rate": 0.8333333333333334,
+      "avg_emergency_delivered_ratio": 0.9807253348434783,
+      "regular_completed_final": 66,
+      "regular_completed_loss_vs_baseline": 6,
+      "degraded_regular_count": 6,
+      "preempted_regular_count": 7,
+      "recovered_complete_count": 1,
+      "recovered_partial_count": 6,
+      "recovery_total_delivery": 1774944.6744000006,
+      "recovery_nonzero_count": 7,
+      "n_preemptions": 7,
+      "cr_reg": 0.9066666666666666,
+      "cr_emg": 0.8333333333333334,
+      "u_cross": 0.6558586638507676,
+      "direct_insert_count": 5,
+      "controlled_preemption_count": 5,
+      "controlled_preemption_best_effort_count": 2,
+      "blocked_count": 0,
+      "direct_insert_best_effort_count": 0,
+      "hit_success_rate": 1.0,
+      "miss_success_rate": 0.5,
+      "hit_avg_preemption": 0.5,
+      "miss_avg_preemption": 0.75
+    },
+    "stress": {
+      "run_dir": "D:\\Codex_Project\\bs3 - 副本\\results\\stage2_results\\normal72x_v2_hotspot_mixed_stress_20260416_174300",
+      "emergency_total": 20,
+      "emergency_success_count": 15,
+      "emergency_failure_count": 5,
+      "emergency_success_rate": 0.75,
+      "avg_emergency_delivered_ratio": 0.9624006861073763,
+      "regular_completed_final": 58,
+      "regular_completed_loss_vs_baseline": 14,
+      "degraded_regular_count": 14,
+      "preempted_regular_count": 16,
+      "recovered_complete_count": 2,
+      "recovered_partial_count": 14,
+      "recovery_total_delivery": 3363738.7341000005,
+      "recovery_nonzero_count": 16,
+      "n_preemptions": 16,
+      "cr_reg": 0.8,
+      "cr_emg": 0.75,
+      "u_cross": 0.6662872347766291,
+      "direct_insert_count": 4,
+      "controlled_preemption_count": 11,
+      "controlled_preemption_best_effort_count": 5,
+      "blocked_count": 0,
+      "direct_insert_best_effort_count": 0,
+      "hit_success_rate": 0.7692307692307693,
+      "miss_success_rate": 0.7142857142857143,
+      "hit_avg_preemption": 0.7692307692307693,
+      "miss_avg_preemption": 0.8571428571428571
+    }
+  },
+  "observations": {
+    "direct_insert_share_trend": {
+      "smoke": 0.5,
+      "adversarial": 0.4166666666666667,
+      "stress": 0.2
+    },
+    "controlled_preemption_share_trend": {
+      "smoke": 0.375,
+      "adversarial": 0.4166666666666667,
+      "stress": 0.55
+    },
+    "controlled_preemption_best_effort_share_trend": {
+      "smoke": 0.0,
+      "adversarial": 0.16666666666666666,
+      "stress": 0.25
+    },
+    "regular_loss_trend": {
+      "smoke": 3,
+      "adversarial": 6,
+      "stress": 14
+    },
+    "cross_util_trend": {
+      "smoke": 0.6343374698775697,
+      "adversarial": 0.6558586638507676,
+      "stress": 0.6662872347766291
+    },
+    "emergency_success_rate_trend": {
+      "smoke": 0.875,
+      "adversarial": 0.8333333333333334,
+      "stress": 0.75
+    }
+  }
+}
