@@ -23,7 +23,8 @@ TASK_RUNTIME_NORMAL = "normal"
 TASK_RUNTIME_PREEMPTED_RECOVERABLE = "preempted_recoverable"
 TASK_RUNTIME_RECOVERED_PARTIAL = "recovered_partial"
 TASK_RUNTIME_RECOVERED_COMPLETE = "recovered_complete"
-RECOVERY_START_BASIS_PREEMPTION = "max(last_released_segment_end, emergency_finish_time)"
+RECOVERY_START_BASIS_PREEMPTION = "last_released_segment_end"
+RECOVERY_START_BASIS_RECLAIM = "recovery_reclaim_replan"
 
 
 @dataclass(frozen=True)
@@ -722,6 +723,11 @@ class TwoPhaseEventDrivenScheduler:
         victim_recovery_delivery: float | None = None,
         victim_recovery_completed: bool | None = None,
         best_effort_source: str | None = None,
+        used_recovery_reclaim: bool = False,
+        reclaimed_recovery_task_ids: tuple[str, ...] = (),
+        reclaimed_recovery_segment_indices: tuple[int, ...] = (),
+        reclaimed_recovery_allocation_count: int = 0,
+        reclaimed_recovery_delivery: float = 0.0,
     ) -> dict[str, object]:
         return {
             "task_id": emergency.task_id,
@@ -758,6 +764,11 @@ class TwoPhaseEventDrivenScheduler:
             "victim_recovery_delivery": None if victim_recovery_delivery is None else float(victim_recovery_delivery),
             "victim_recovery_completed": None if victim_recovery_completed is None else bool(victim_recovery_completed),
             "best_effort_source": best_effort_source,
+            "used_recovery_reclaim": bool(used_recovery_reclaim),
+            "reclaimed_recovery_task_ids": [str(task_id) for task_id in reclaimed_recovery_task_ids],
+            "reclaimed_recovery_segment_indices": [int(index) for index in reclaimed_recovery_segment_indices],
+            "reclaimed_recovery_allocation_count": int(reclaimed_recovery_allocation_count),
+            "reclaimed_recovery_delivery": float(reclaimed_recovery_delivery),
         }
 
     def _insert_emergency_task(
@@ -797,16 +808,13 @@ class TwoPhaseEventDrivenScheduler:
             prev_cross_link=prev_cross_link,
         )
         direct_plan_delivery = self._task_plan_delivery(direct_plan)
-        corridor = self._candidate_corridor(plan, emergency, horizon, committed)
-        affected = self._affected_regular_tasks(
-            emergency=emergency,
-            horizon=horizon,
-            committed=committed,
-            actual_remaining=actual_remaining,
-            corridor=corridor,
-            task_runtime_state=task_runtime_state,
-            task_preemption_count=task_preemption_count,
-        )
+        reclaim_event_fields = {
+            "used_recovery_reclaim": False,
+            "reclaimed_recovery_task_ids": (),
+            "reclaimed_recovery_segment_indices": (),
+            "reclaimed_recovery_allocation_count": 0,
+            "reclaimed_recovery_delivery": 0.0,
+        }
         if direct_plan is not None and direct_plan.completed:
             self._commit_single_task_plan(committed, emergency, horizon, direct_plan.actions)
             return self._make_insertion_event(
@@ -819,7 +827,52 @@ class TwoPhaseEventDrivenScheduler:
                 preemptions=0,
                 planned_delivery=direct_plan_delivery,
                 direct_plan_delivery=direct_plan_delivery,
+                **reclaim_event_fields,
             )
+
+        corridor = self._candidate_corridor(plan, emergency, horizon, committed)
+        reclaimed_direct_plan, reclaim_info = self._try_reclaim_revocable_recovery(
+            emergency=emergency,
+            current_direct_plan=direct_plan,
+            plan=plan,
+            horizon=horizon,
+            committed=committed,
+            actual_remaining=actual_remaining,
+            prev_cross_link=prev_cross_link,
+            corridor=corridor,
+            pending_recovery_tasks=pending_recovery_tasks,
+            task_runtime_state=task_runtime_state,
+        )
+        if reclaim_info is not None:
+            reclaim_event_fields = dict(reclaim_info)
+        if reclaimed_direct_plan is not None:
+            direct_plan = reclaimed_direct_plan
+            direct_plan_delivery = self._task_plan_delivery(direct_plan)
+            if direct_plan.completed:
+                self._commit_single_task_plan(committed, emergency, horizon, direct_plan.actions)
+                return self._make_insertion_event(
+                    emergency=emergency,
+                    horizon=horizon,
+                    strategy="direct_insert",
+                    completed=True,
+                    capacity_tier=self._plan_capacity_tier(direct_plan),
+                    used_preemption=False,
+                    preemptions=0,
+                    planned_delivery=direct_plan_delivery,
+                    direct_plan_delivery=direct_plan_delivery,
+                    **reclaim_event_fields,
+                )
+            corridor = self._candidate_corridor(plan, emergency, horizon, committed)
+
+        affected = self._affected_regular_tasks(
+            emergency=emergency,
+            horizon=horizon,
+            committed=committed,
+            actual_remaining=actual_remaining,
+            corridor=corridor,
+            task_runtime_state=task_runtime_state,
+            task_preemption_count=task_preemption_count,
+        )
 
         best_complete, best_partial, preemption_rejection = self._try_controlled_preemption(
             emergency=emergency,
@@ -838,6 +891,7 @@ class TwoPhaseEventDrivenScheduler:
             "emergency_gain_ratio": float((preemption_rejection or {}).get("emergency_gain_ratio", 0.0)),
             "preemption_rejected_reason": (preemption_rejection or {}).get("preemption_rejected_reason"),
             "victim_recovery_completed": (preemption_rejection or {}).get("victim_recovery_completed"),
+            **reclaim_event_fields,
         }
 
         if best_complete is not None:
@@ -876,6 +930,7 @@ class TwoPhaseEventDrivenScheduler:
                 victim_recovery_basis=best_complete.recovery_basis,
                 last_released_segment_end=best_complete.last_released_segment_end,
                 repaired_emergency_finish_time=best_complete.repaired_emergency_finish_time,
+                **reclaim_event_fields,
             )
 
         if best_partial is not None and self._is_better_partial_plan(best_partial.repaired_plan, direct_plan):
@@ -915,6 +970,7 @@ class TwoPhaseEventDrivenScheduler:
                 last_released_segment_end=best_partial.last_released_segment_end,
                 repaired_emergency_finish_time=best_partial.repaired_emergency_finish_time,
                 best_effort_source="preempted",
+                **reclaim_event_fields,
             )
 
         if direct_plan is not None and direct_plan_delivery > self.numeric_tolerance:
@@ -944,6 +1000,97 @@ class TwoPhaseEventDrivenScheduler:
             direct_plan_delivery=direct_plan_delivery,
             **rejection_event_fields,
         )
+
+    def _try_reclaim_revocable_recovery(
+        self,
+        *,
+        emergency: Task,
+        current_direct_plan: _TaskPlan | None,
+        plan: list[ScheduledWindow],
+        horizon: list[Segment],
+        committed: dict[tuple[str, int], Allocation],
+        actual_remaining: dict[str, float],
+        prev_cross_link: dict[str, str | None],
+        corridor: dict[int, set[str]],
+        pending_recovery_tasks: dict[str, dict[str, object]],
+        task_runtime_state: dict[str, str],
+    ) -> tuple[_TaskPlan | None, dict[str, object] | None]:
+        if not horizon:
+            return None, None
+
+        reclaimed_keys: list[tuple[str, int]] = []
+        reclaimed_segments: set[int] = set()
+        reclaimed_tasks: set[str] = set()
+        reclaimed_delivery = 0.0
+        for key, alloc in committed.items():
+            task_id, segment_index = key
+            if (
+                alloc.task_type != "reg"
+                or not bool(alloc.is_preempted)
+                or segment_index not in corridor
+                or not set(alloc.edge_ids).intersection(corridor.get(segment_index, set()))
+            ):
+                continue
+            reclaimed_keys.append(key)
+            reclaimed_segments.add(int(segment_index))
+            reclaimed_tasks.add(str(task_id))
+            reclaimed_delivery += float(alloc.delivered)
+        if not reclaimed_keys:
+            return None, None
+
+        tentative = dict(committed)
+        for key in reclaimed_keys:
+            tentative.pop(key, None)
+        reclaimed_plan = self._solve_direct_insert(
+            task=emergency,
+            plan=plan,
+            horizon=horizon,
+            committed=tentative,
+            actual_remaining=actual_remaining,
+            prev_cross_link=prev_cross_link,
+        )
+        if reclaimed_plan is None:
+            return None, None
+        if self._is_better_partial_plan(current_direct_plan, reclaimed_plan):
+            return None, None
+
+        for key in reclaimed_keys:
+            committed.pop(key, None)
+        for task_id in sorted(reclaimed_tasks):
+            task = self.task_by_id.get(task_id)
+            if task is None or self._is_task_complete(task, actual_remaining.get(task_id, 0.0)):
+                continue
+            existing_info = dict(pending_recovery_tasks.get(task_id) or {})
+            released_segments = set(int(index) for index in existing_info.get("released_segments") or [])
+            released_segments.update(
+                int(segment_index)
+                for reclaim_task_id, segment_index in reclaimed_keys
+                if reclaim_task_id == task_id
+            )
+            pending_recovery_tasks[task_id] = {
+                "task_id": task_id,
+                "recovery_start_time": float(horizon[0].start),
+                "recovery_basis": RECOVERY_START_BASIS_RECLAIM,
+                "last_released_segment_end": existing_info.get("last_released_segment_end"),
+                "repaired_emergency_finish_time": existing_info.get("repaired_emergency_finish_time"),
+                "deadline": float(task.deadline),
+                "remaining_after_preemption": float(actual_remaining.get(task_id, 0.0)),
+                "preempted_by": existing_info.get("preempted_by"),
+                "released_segments": sorted(released_segments),
+                "processed": False,
+                "insertion_event_index": existing_info.get("insertion_event_index"),
+                "reclaimed_by": emergency.task_id,
+                "replan_count": int(existing_info.get("replan_count", 0)) + 1,
+            }
+            task_runtime_state[task_id] = TASK_RUNTIME_PREEMPTED_RECOVERABLE
+
+        return reclaimed_plan, {
+            "used_recovery_reclaim": True,
+            "reclaimed_recovery_task_ids": tuple(sorted(reclaimed_tasks)),
+            "reclaimed_recovery_segment_indices": tuple(sorted(reclaimed_segments)),
+            "reclaimed_recovery_allocation_count": len(reclaimed_keys),
+            "reclaimed_recovery_delivery": float(reclaimed_delivery),
+        }
 
     def _solve_direct_insert(
         self,
@@ -1043,6 +1190,7 @@ class TwoPhaseEventDrivenScheduler:
                 segments=segments,
                 committed=tentative_after_emergency,
                 initial_cross_link=None,
+                allow_relaxed_capacity=False,
             )
             victim_recovery_delivery = self._task_plan_delivery(victim_recovery_plan)
             victim_recovery_completed = self._is_task_complete(
@@ -1089,16 +1237,16 @@ class TwoPhaseEventDrivenScheduler:
                     best_complete = attempt
                     continue
                 current_key = (
-                    0 if attempt.victim_recovery_completed else 1,
-                    float(attempt.candidate.score),
                     *self._terminal_key(self._task_plan_label(attempt.repaired_plan), "emergency"),
+                    float(attempt.candidate.score),
+                    0 if attempt.victim_recovery_completed else 1,
                     -float(attempt.victim_recovery_delivery),
                     attempt.candidate.task.task_id,
                 )
                 best_key = (
-                    0 if best_complete.victim_recovery_completed else 1,
-                    float(best_complete.candidate.score),
                     *self._terminal_key(self._task_plan_label(best_complete.repaired_plan), "emergency"),
+                    float(best_complete.candidate.score),
+                    0 if best_complete.victim_recovery_completed else 1,
                     -float(best_complete.victim_recovery_delivery),
                     best_complete.candidate.task.task_id,
                 )
@@ -1133,14 +1281,14 @@ class TwoPhaseEventDrivenScheduler:
                 continue
             if not self._is_better_partial_plan(best_partial.repaired_plan, attempt.repaired_plan):
                 current_key = (
-                    0 if attempt.victim_recovery_completed else 1,
                     float(attempt.candidate.score),
+                    0 if attempt.victim_recovery_completed else 1,
                     -float(attempt.victim_recovery_delivery),
                     attempt.candidate.task.task_id,
                 )
                 best_key = (
-                    0 if best_partial.victim_recovery_completed else 1,
                     float(best_partial.candidate.score),
+                    0 if best_partial.victim_recovery_completed else 1,
                     -float(best_partial.victim_recovery_delivery),
                     best_partial.candidate.task.task_id,
                 )
@@ -1250,12 +1398,9 @@ class TwoPhaseEventDrivenScheduler:
             horizon,
             fallback_time=fallback_time,
         )
-        candidates = [
-            value
-            for value in (last_released_segment_end, repaired_emergency_finish_time)
-            if value is not None
-        ]
-        recovery_start_time = max(candidates) if candidates else fallback_time
+        recovery_start_time = last_released_segment_end
+        if recovery_start_time is None:
+            recovery_start_time = fallback_time
         recovery_basis = RECOVERY_START_BASIS_PREEMPTION if recovery_start_time is not None else None
         return recovery_start_time, recovery_basis, last_released_segment_end, repaired_emergency_finish_time
 
@@ -1364,11 +1509,12 @@ class TwoPhaseEventDrivenScheduler:
         committed: dict[tuple[str, int], Allocation],
         initial_cross_link: str | None,
         enhanced: bool = False,
+        allow_relaxed_capacity: bool = True,
         path_diagnostics: dict[str, object] | None = None,
     ) -> _TaskPlan | None:
         recovery_horizon = self._recovery_horizon(task, segments, recovery_start_time)
         if path_diagnostics is not None:
-            path_diagnostics["objective"] = "recovery"
+            path_diagnostics["objective"] = "recovery" if allow_relaxed_capacity else "recovery_strict"
             path_diagnostics["enhanced"] = bool(enhanced)
             path_diagnostics.setdefault("candidate_path_count_by_segment", {})
             path_diagnostics.setdefault("cross_windows_by_segment", {})
@@ -1383,7 +1529,7 @@ class TwoPhaseEventDrivenScheduler:
             remaining_data=remaining_data,
             initial_cross_link=None if enhanced else initial_cross_link,
             preferred_cross_links={},
-            objective="recovery",
+            objective="recovery" if allow_relaxed_capacity else "recovery_strict",
             candidate_mode="recovery_enhanced" if enhanced else "default",
             label_keep_limit_override=(
                 max(self.scenario.stage2.effective_label_keep_limit, RECOVERY_K_PATHS * 6) if enhanced else None
@@ -1411,6 +1557,7 @@ class TwoPhaseEventDrivenScheduler:
             segments=segments,
             committed=committed,
             initial_cross_link=None,
+            allow_relaxed_capacity=False,
         )
         recoverable_delivery = self._task_plan_delivery(recovery_plan)
         return clamp01(recoverable_delivery / max(remaining_after_preemption, self.numeric_tolerance))
@@ -1450,6 +1597,8 @@ class TwoPhaseEventDrivenScheduler:
                 "victim_recovery_cross_windows_considered": [],
                 "victim_recovery_objective": "recovery",
                 "victim_recovery_best_path_cross_window_id": None,
+                "reclaimed_by": recovery_info.get("reclaimed_by"),
+                "replan_count": int(recovery_info.get("replan_count", 0)),
             }
         recovery_plan = self._plan_recovery_best_effort(
             task=task,
@@ -1467,7 +1616,7 @@ class TwoPhaseEventDrivenScheduler:
         recovery_completed = self._is_task_complete(task, remaining_after_recovery)
         if recovery_plan is not None and recovery_delivery > self.numeric_tolerance:
             recovery_horizon = self._recovery_horizon(task, segments, recovery_start)
-            self._commit_single_task_plan(committed, task, recovery_horizon, recovery_plan.actions)
+            self._commit_single_task_plan(committed, task, recovery_horizon, recovery_plan.actions, is_preempted=True)
             task_runtime_state[task.task_id] = (
                 TASK_RUNTIME_RECOVERED_COMPLETE if recovery_completed else TASK_RUNTIME_RECOVERED_PARTIAL
             )
@@ -1491,6 +1640,8 @@ class TwoPhaseEventDrivenScheduler:
             "victim_recovery_cross_windows_considered": list(cross_windows_considered),
             "victim_recovery_objective": str(path_diagnostics.get("objective", "recovery")),
             "victim_recovery_best_path_cross_window_id": self._best_plan_cross_window_id(recovery_plan),
+            "reclaimed_by": recovery_info.get("reclaimed_by"),
+            "replan_count": int(recovery_info.get("replan_count", 0)),
         }
 
     def _plan_task(
@@ -1576,7 +1727,14 @@ class TwoPhaseEventDrivenScheduler:
                     state = capacity_states.get(segment.index)
                     if state is None or segment.duration <= EPS:
                         continue
-                    capacity_option = self._path_rate_and_tier(task, candidate, state, label.remaining_data, segment.duration)
+                    capacity_option = self._path_rate_and_tier(
+                        task,
+                        candidate,
+                        state,
+                        label.remaining_data,
+                        segment.duration,
+                        objective=objective,
+                    )
                     if capacity_option is None:
                         continue
                     rate, tier = capacity_option
@@ -1720,7 +1878,7 @@ class TwoPhaseEventDrivenScheduler:
             return (label.load_cost, float(label.switches), finish_time, float(label.idle_steps))
         if objective == "emergency":
             return (float(label.tier_cost), finish_time, float(label.switches), label.load_cost, float(label.idle_steps))
-        if objective == "recovery":
+        if objective in {"recovery", "recovery_strict"}:
             return (label.load_cost, float(label.switches), float(label.idle_steps), finish_time)
         return (float(label.deviations), label.load_cost, float(label.switches), finish_time, float(label.idle_steps))
 
@@ -1730,7 +1888,7 @@ class TwoPhaseEventDrivenScheduler:
             return (remaining, label.load_cost, float(label.switches), float(label.idle_steps))
         if objective == "emergency":
             return (remaining, float(label.tier_cost), float(label.switches), label.load_cost, float(label.idle_steps))
-        if objective == "recovery":
+        if objective in {"recovery", "recovery_strict"}:
             return (remaining, label.load_cost, float(label.switches), float(label.idle_steps))
         return (remaining, float(label.deviations), label.load_cost, float(label.switches), float(label.idle_steps))
 
@@ -1830,7 +1988,13 @@ class TwoPhaseEventDrivenScheduler:
         for action in actions:
             self._apply_action_to_capacity(capacity_states, action, task_type)
 
-    def _path_bottleneck_bounds(self, task: Task, path: PathCandidate, state: _CapacityState) -> tuple[float, float]:
+    def _path_bottleneck_bounds(
+        self,
+        task: Task,
+        path: PathCandidate,
+        state: _CapacityState,
+        objective: str = "default",
+    ) -> tuple[float, float]:
         if not path.edge_ids:
             return float("inf"), float("inf")
         total_bottleneck = float("inf")
@@ -1839,7 +2003,7 @@ class TwoPhaseEventDrivenScheduler:
             total_available = state.total_free.get(edge_id)
             if total_available is None:
                 return 0.0, 0.0
-            if task.task_type == "reg" and state.edge_kind.get(edge_id) == "X":
+            if task.task_type == "reg" and state.edge_kind.get(edge_id) == "X" and objective != "recovery":
                 total_available = min(total_available, state.regular_cross_free.get(edge_id, 0.0))
             total_bottleneck = min(total_bottleneck, total_available)
 
@@ -1856,8 +2020,9 @@ class TwoPhaseEventDrivenScheduler:
         state: _CapacityState,
         remaining_data: float,
         segment_duration: float,
+        objective: str = "default",
     ) -> tuple[float, int] | None:
-        total_bottleneck, reserved_bottleneck = self._path_bottleneck_bounds(task, path, state)
+        total_bottleneck, reserved_bottleneck = self._path_bottleneck_bounds(task, path, state, objective=objective)
         if total_bottleneck <= self.numeric_tolerance or segment_duration <= self.numeric_tolerance:
             return None
         rate = min(float(task.max_rate), float(total_bottleneck), max(float(remaining_data), 0.0) / segment_duration)
@@ -1932,14 +2097,21 @@ class TwoPhaseEventDrivenScheduler:
         task: Task,
         horizon: list[Segment],
         actions: tuple[_PlannedAction, ...],
+        is_preempted: bool = False,
     ) -> None:
-        self._commit_task_action_map(committed, {task.task_id: actions}, {segment.index for segment in horizon})
+        self._commit_task_action_map(
+            committed,
+            {task.task_id: actions},
+            {segment.index for segment in horizon},
+            is_preempted=is_preempted,
+        )
 
     def _commit_task_action_map(
         self,
         committed: dict[tuple[str, int], Allocation],
         action_map: dict[str, tuple[_PlannedAction, ...]],
         segment_indices: set[int],
+        is_preempted: bool = False,
     ) -> None:
         task_ids = set(action_map)
         for key in list(committed):
@@ -1959,6 +2131,7 @@ class TwoPhaseEventDrivenScheduler:
                     delivered=action.delivered,
                     task_type=task.task_type,
                     cross_window_id=action.path.cross_window_id,
+                    is_preempted=bool(is_preempted),
                 )
 
     def _candidate_corridor(
@@ -1997,7 +2170,14 @@ class TwoPhaseEventDrivenScheduler:
             return []
         scored: list[tuple[float, float, int, str, PathCandidate]] = []
         for candidate in self._candidate_paths(plan, task, segment, path_cache):
-            capacity_option = self._path_rate_and_tier(task, candidate, state, task.data, segment.duration)
+            capacity_option = self._path_rate_and_tier(
+                task,
+                candidate,
+                state,
+                task.data,
+                segment.duration,
+                objective="emergency",
+            )
             if capacity_option is None:
                 continue
             rate, tier = capacity_option
@@ -2117,8 +2297,7 @@ class TwoPhaseEventDrivenScheduler:
             for key, alloc in committed.items()
             if not (key[0] == task.task_id and key[1] in released_segments)
         }
-        original_finish_time = self._original_committed_finish_time(task.task_id, committed, segments)
-        recovery_start_time = original_finish_time
+        recovery_start_time = self._released_segment_end_time(released_segments, segments)
         recovery_window = max(float(task.deadline) - float(task.arrival), self.numeric_tolerance)
         recovery_slack = 0.0 if recovery_start_time is None else max(float(task.deadline) - float(recovery_start_time), 0.0)
         normalized_recovery_slack = clamp01(recovery_slack / recovery_window)

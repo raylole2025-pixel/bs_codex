@@ -1,0 +1,332 @@
+{
+  "smoke": {
+    "base": {
+      "cr_reg": 0.9533333333333334,
+      "cr_emg": 0.875,
+      "n_preemptions": 3,
+      "final_regular_completed_count": 69,
+      "recovered_regular_completed_count": 0,
+      "strategy_counts": {
+        "direct_insert": 4,
+        "blocked": 1,
+        "controlled_preemption": 3
+      },
+      "avg_victim_recovery_delivery": 160464.12933333346,
+      "reclaim_used_count": 0,
+      "reclaim_total_delivery": 0,
+      "failed": [
+        {
+          "task_id": "EMG_MIX_SMO_003",
+          "strategy": "blocked",
+          "planned_delivery": 0.0,
+          "direct_plan_delivery": 0.0,
+          "used_recovery_reclaim": false
+        }
+      ],
+      "replan_count": 0
+    },
+    "prev": {
+      "cr_reg": 1.0,
+      "cr_emg": 0.75,
+      "n_preemptions": 2,
+      "final_regular_completed_count": 72,
+      "recovered_regular_completed_count": 2,
+      "strategy_counts": {
+        "direct_insert": 4,
+        "blocked": 1,
+        "controlled_preemption": 2,
+        "direct_insert_best_effort": 1
+      },
+      "avg_victim_recovery_delivery": 422238.0,
+      "reclaim_used_count": 0,
+      "reclaim_total_delivery": 0,
+      "failed": [
+        {
+          "task_id": "EMG_MIX_SMO_003",
+          "strategy": "blocked",
+          "planned_delivery": 0.0,
+          "direct_plan_delivery": 0.0,
+          "used_recovery_reclaim": false
+        },
+        {
+          "task_id": "EMG_MIX_SMO_007",
+          "strategy": "direct_insert_best_effort",
+          "planned_delivery": 343209.014,
+          "direct_plan_delivery": 343209.014,
+          "used_recovery_reclaim": false
+        }
+      ],
+      "replan_count": 0
+    },
+    "new": {
+      "cr_reg": 0.9933333333333333,
+      "cr_emg": 0.875,
+      "n_preemptions": 3,
+      "final_regular_completed_count": 71,
+      "recovered_regular_completed_count": 2,
+      "strategy_counts": {
+        "direct_insert": 4,
+        "blocked": 1,
+        "controlled_preemption": 3
+      },
+      "avg_victim_recovery_delivery": 349857.86240000004,
+      "reclaim_used_count": 0,
+      "reclaim_total_delivery": 0,
+      "failed": [
+        {
+          "task_id": "EMG_MIX_SMO_003",
+          "strategy": "blocked",
+          "planned_delivery": 0.0,
+          "direct_plan_delivery": 0.0,
+          "used_recovery_reclaim": false
+        }
+      ],
+      "replan_count": 0
+    }
+  },
+  "adversarial": {
+    "base": {
+      "cr_reg": 0.9066666666666666,
+      "cr_emg": 0.8333333333333334,
+      "n_preemptions": 7,
+      "final_regular_completed_count": 66,
+      "recovered_regular_completed_count": 1,
+      "strategy_counts": {
+        "direct_insert": 5,
+        "controlled_preemption": 5,
+        "controlled_preemption_best_effort": 2
+      },
+      "avg_victim_recovery_delivery": 291132.0963428572,
+      "reclaim_used_count": 0,
+      "reclaim_total_delivery": 0,
+      "failed": [
+        {
+          "task_id": "EMG_MIX_ADV_010",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 429575.991,
+          "direct_plan_delivery": 244404.0,
+          "used_recovery_reclaim": false
+        },
+        {
+          "task_id": "EMG_MIX_ADV_012",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 418393.937,
+          "direct_plan_delivery": 234260.479,
+          "used_recovery_reclaim": false
+        }
+      ],
+      "replan_count": 0
+    },
+    "prev": {
+      "cr_reg": 0.98,
+      "cr_emg": 0.9166666666666666,
+      "n_preemptions": 8,
+      "final_regular_completed_count": 71,
+      "recovered_regular_completed_count": 7,
+      "strategy_counts": {
+        "direct_insert": 4,
+        "controlled_preemption": 7,
+        "controlled_preemption_best_effort": 1
+      },
+      "avg_victim_recovery_delivery": 390220.7581,
+      "reclaim_used_count": 2,
+      "reclaim_total_delivery": 502066.2072000003,
+      "failed": [
+        {
+          "task_id": "EMG_MIX_ADV_010",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 429575.991,
+          "direct_plan_delivery": 244404.0,
+          "used_recovery_reclaim": false
+        }
+      ],
+      "replan_count": 2
+    },
+    "new": {
+      "cr_reg": 0.98,
+      "cr_emg": 0.9166666666666666,
+      "n_preemptions": 7,
+      "final_regular_completed_count": 71,
+      "recovered_regular_completed_count": 6,
+      "strategy_counts": {
+        "direct_insert": 5,
+        "controlled_preemption": 6,
+        "controlled_preemption_best_effort": 1
+      },
+      "avg_victim_recovery_delivery": 380459.4378285714,
+      "reclaim_used_count": 2,
+      "reclaim_total_delivery": 499804.2072000003,
+      "failed": [
+        {
+          "task_id": "EMG_MIX_ADV_010",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 429575.991,
+          "direct_plan_delivery": 244404.0,
+          "used_recovery_reclaim": false
+        }
+      ],
+      "replan_count": 2
+    }
+  },
+  "stress": {
+    "base": {
+      "cr_reg": 0.8066666666666666,
+      "cr_emg": 0.75,
+      "n_preemptions": 16,
+      "final_regular_completed_count": 58,
+      "recovered_regular_completed_count": 2,
+      "strategy_counts": {
+        "direct_insert": 4,
+        "controlled_preemption": 11,
+        "controlled_preemption_best_effort": 5
+      },
+      "avg_victim_recovery_delivery": 227537.93723125005,
+      "reclaim_used_count": 0,
+      "reclaim_total_delivery": 0,
+      "failed": [
+        {
+          "task_id": "EMG_MIX_STR_010",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 275836.0,
+          "direct_plan_delivery": 101120.0,
+          "used_recovery_reclaim": false
+        },
+        {
+          "task_id": "EMG_MIX_STR_012",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 320988.857,
+          "direct_plan_delivery": 165024.0,
+          "used_recovery_reclaim": false
+        },
+        {
+          "task_id": "EMG_MIX_STR_013",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 322110.0,
+          "direct_plan_delivery": 122064.0,
+          "used_recovery_reclaim": false
+        },
+        {
+          "task_id": "EMG_MIX_STR_015",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 355774.76,
+          "direct_plan_delivery": 162036.0,
+          "used_recovery_reclaim": false
+        },
+        {
+          "task_id": "EMG_MIX_STR_019",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 338371.022,
+          "direct_plan_delivery": 246691.022,
+          "used_recovery_reclaim": false
+        }
+      ],
+      "replan_count": 0
+    },
+    "prev": {
+      "cr_reg": 0.8733333333333333,
+      "cr_emg": 0.75,
+      "n_preemptions": 14,
+      "final_regular_completed_count": 63,
+      "recovered_regular_completed_count": 5,
+      "strategy_counts": {
+        "direct_insert": 6,
+        "controlled_preemption": 9,
+        "controlled_preemption_best_effort": 5
+      },
+      "avg_victim_recovery_delivery": 286220.5531857142,
+      "reclaim_used_count": 3,
+      "reclaim_total_delivery": 633070.8832000003,
+      "failed": [
+        {
+          "task_id": "EMG_MIX_STR_009",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 294865.728,
+          "direct_plan_delivery": 144367.728,
+          "used_recovery_reclaim": false
+        },
+        {
+          "task_id": "EMG_MIX_STR_010",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 332346.0,
+          "direct_plan_delivery": 214446.0,
+          "used_recovery_reclaim": true
+        },
+        {
+          "task_id": "EMG_MIX_STR_012",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 320988.857,
+          "direct_plan_delivery": 165024.0,
+          "used_recovery_reclaim": false
+        },
+        {
+          "task_id": "EMG_MIX_STR_013",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 322110.0,
+          "direct_plan_delivery": 122064.0,
+          "used_recovery_reclaim": false
+        },
+        {
+          "task_id": "EMG_MIX_STR_015",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 383308.76,
+          "direct_plan_delivery": 177024.0,
+          "used_recovery_reclaim": true
+        }
+      ],
+      "replan_count": 4
+    },
+    "new": {
+      "cr_reg": 0.8733333333333333,
+      "cr_emg": 0.75,
+      "n_preemptions": 14,
+      "final_regular_completed_count": 63,
+      "recovered_regular_completed_count": 5,
+      "strategy_counts": {
+        "direct_insert": 6,
+        "controlled_preemption": 9,
+        "controlled_preemption_best_effort": 5
+      },
+      "avg_victim_recovery_delivery": 265923.8388999999,
+      "reclaim_used_count": 3,
+      "reclaim_total_delivery": 633070.8832000003,
+      "failed": [
+        {
+          "task_id": "EMG_MIX_STR_009",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 294865.728,
+          "direct_plan_delivery": 144367.728,
+          "used_recovery_reclaim": false
+        },
+        {
+          "task_id": "EMG_MIX_STR_010",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 332346.0,
+          "direct_plan_delivery": 214446.0,
+          "used_recovery_reclaim": true
+        },
+        {
+          "task_id": "EMG_MIX_STR_012",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 320988.857,
+          "direct_plan_delivery": 165024.0,
+          "used_recovery_reclaim": false
+        },
+        {
+          "task_id": "EMG_MIX_STR_013",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 322110.0,
+          "direct_plan_delivery": 122064.0,
+          "used_recovery_reclaim": false
+        },
+        {
+          "task_id": "EMG_MIX_STR_015",
+          "strategy": "controlled_preemption_best_effort",
+          "planned_delivery": 383308.76,
+          "direct_plan_delivery": 177024.0,
+          "used_recovery_reclaim": true
+        }
+      ],
+      "replan_count": 4
+    }
+  }
+}
