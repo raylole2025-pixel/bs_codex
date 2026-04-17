@@ -101,6 +101,7 @@ class _PreemptionAttempt:
     repaired_emergency_finish_time: float | None
     remaining_after_preemption: float
     additional_victims: tuple["_VictimRecoveryPreview", ...] = ()
+    fallback_tag: str | None = None
 
 
 @dataclass(frozen=True)
@@ -948,6 +949,7 @@ class TwoPhaseEventDrivenScheduler:
             actual_remaining=actual_remaining,
             prev_cross_link=prev_cross_link,
             corridor=corridor,
+            task_runtime_state=task_runtime_state,
         )
         rejection_event_fields = {
             "emergency_gain": float((preemption_rejection or {}).get("emergency_gain", 0.0)),
@@ -1012,10 +1014,15 @@ class TwoPhaseEventDrivenScheduler:
             additional_victim_ids = tuple(
                 preview.candidate.task.task_id for preview in best_two_victim_complete.additional_victims
             )
+            strategy = (
+                "controlled_preemption_recovery_victim_fallback"
+                if best_two_victim_complete.fallback_tag == "reuse_preempted_recoverable"
+                else "controlled_preemption_two_victim"
+            )
             return self._make_insertion_event(
                 emergency=emergency,
                 horizon=horizon,
-                strategy="controlled_preemption_two_victim",
+                strategy=strategy,
                 completed=True,
                 capacity_tier=CAPACITY_TIER_PREEMPTED,
                 used_preemption=True,
@@ -1525,6 +1532,161 @@ class TwoPhaseEventDrivenScheduler:
                     best_attempt = attempt
         return best_attempt
 
+    def _try_preempted_recovery_completion_fallback(
+        self,
+        *,
+        emergency: Task,
+        direct_plan: _TaskPlan | None,
+        partial_attempts: list[_PreemptionAttempt],
+        plan: list[ScheduledWindow],
+        segments: list[Segment],
+        horizon: list[Segment],
+        committed: dict[tuple[str, int], Allocation],
+        actual_remaining: dict[str, float],
+        prev_cross_link: dict[str, str | None],
+        corridor: dict[int, set[str]],
+        task_runtime_state: dict[str, str],
+    ) -> _PreemptionAttempt | None:
+        eligible_first_attempts = [
+            attempt
+            for attempt in partial_attempts
+            if attempt.repaired_plan is not None and not attempt.repaired_plan.completed
+        ]
+        if not eligible_first_attempts:
+            return None
+        recovery_affected: list[Task] = []
+        for task in self.scenario.tasks:
+            if task.task_type != "reg":
+                continue
+            if task_runtime_state.get(task.task_id) != TASK_RUNTIME_PREEMPTED_RECOVERABLE:
+                continue
+            if not self._is_lower_priority_regular(task, emergency):
+                continue
+            if not (task.arrival < emergency.deadline and task.deadline > emergency.arrival):
+                continue
+            if self._is_task_complete(task, actual_remaining.get(task.task_id, 0.0)):
+                continue
+            overlap = self._task_overlap(task.task_id, committed, corridor)
+            if overlap <= 0:
+                continue
+            recovery_affected.append(task)
+        if not recovery_affected:
+            return None
+        recovery_candidates = self._rank_preemption_candidates(
+            emergency=emergency,
+            affected=recovery_affected,
+            plan=plan,
+            committed=committed,
+            actual_remaining=actual_remaining,
+            segments=segments,
+            horizon=horizon,
+            corridor=corridor,
+        )
+        if not recovery_candidates:
+            return None
+        eligible_first_attempts.sort(
+            key=lambda attempt: (
+                -float(attempt.repaired_delivery),
+                float(attempt.candidate.score),
+                attempt.candidate.task.task_id,
+            )
+        )
+        best_attempt: _PreemptionAttempt | None = None
+        for first_attempt in eligible_first_attempts[: max(int(TWO_VICTIM_COMPLETION_MAX_FIRST_CANDIDATES), 1)]:
+            tentative_after_first = self._candidate_without_committed_segments(committed, first_attempt.candidate)
+            for second_candidate in recovery_candidates[: max(int(TWO_VICTIM_COMPLETION_MAX_SECOND_CANDIDATES), 1)]:
+                if second_candidate.task.task_id == first_attempt.candidate.task.task_id:
+                    continue
+                tentative_after_second = self._candidate_without_committed_segments(tentative_after_first, second_candidate)
+                repaired_plan = self._solve_direct_insert(
+                    task=emergency,
+                    plan=plan,
+                    horizon=horizon,
+                    committed=tentative_after_second,
+                    actual_remaining=actual_remaining,
+                    prev_cross_link=prev_cross_link,
+                )
+                if repaired_plan is None or not repaired_plan.completed:
+                    continue
+                repaired_delivery = self._task_plan_delivery(repaired_plan)
+                emergency_gain = self._emergency_gain(repaired_plan, direct_plan)
+                emergency_gain_ratio = self._emergency_gain_ratio(emergency, repaired_plan, direct_plan)
+                if (
+                    not self._completion_preemption_overrides_gain_gate(repaired_plan)
+                    and emergency_gain_ratio + self.numeric_tolerance < PREEMPTION_MIN_GAIN_RATIO
+                ):
+                    continue
+                tentative_after_emergency = dict(tentative_after_second)
+                self._commit_single_task_plan(tentative_after_emergency, emergency, horizon, repaired_plan.actions)
+                primary_preview = self._build_victim_recovery_preview(
+                    candidate=first_attempt.candidate,
+                    emergency=emergency,
+                    repaired_plan=repaired_plan,
+                    plan=plan,
+                    segments=segments,
+                    horizon=horizon,
+                    original_committed=committed,
+                    committed_before_emergency=tentative_after_second,
+                    committed_after_emergency=tentative_after_emergency,
+                    actual_remaining=actual_remaining,
+                )
+                secondary_preview = self._build_victim_recovery_preview(
+                    candidate=second_candidate,
+                    emergency=emergency,
+                    repaired_plan=repaired_plan,
+                    plan=plan,
+                    segments=segments,
+                    horizon=horizon,
+                    original_committed=committed,
+                    committed_before_emergency=tentative_after_second,
+                    committed_after_emergency=tentative_after_emergency,
+                    actual_remaining=actual_remaining,
+                )
+                attempt = _PreemptionAttempt(
+                    candidate=first_attempt.candidate,
+                    repaired_plan=repaired_plan,
+                    repaired_delivery=repaired_delivery,
+                    emergency_gain=emergency_gain,
+                    emergency_gain_ratio=emergency_gain_ratio,
+                    victim_recovery_plan=primary_preview.victim_recovery_plan,
+                    victim_recovery_delivery=primary_preview.victim_recovery_delivery,
+                    victim_recovery_completed=primary_preview.victim_recovery_completed,
+                    original_finish_time=primary_preview.original_finish_time,
+                    recovery_start_time=primary_preview.recovery_start_time,
+                    recovery_basis=primary_preview.recovery_basis,
+                    last_released_segment_end=primary_preview.last_released_segment_end,
+                    repaired_emergency_finish_time=primary_preview.repaired_emergency_finish_time,
+                    remaining_after_preemption=primary_preview.remaining_after_preemption,
+                    additional_victims=(secondary_preview,),
+                    fallback_tag="reuse_preempted_recoverable",
+                )
+                if best_attempt is None:
+                    best_attempt = attempt
+                    continue
+                current_recovered = sum(
+                    1 for preview in self._attempt_victim_previews(attempt) if preview.victim_recovery_completed
+                )
+                best_recovered = sum(
+                    1 for preview in self._attempt_victim_previews(best_attempt) if preview.victim_recovery_completed
+                )
+                current_key = (
+                    *self._terminal_key(self._task_plan_label(attempt.repaired_plan), "emergency"),
+                    float(self._combined_attempt_score(attempt)),
+                    -(current_recovered),
+                    -sum(float(preview.victim_recovery_delivery) for preview in self._attempt_victim_previews(attempt)),
+                    tuple(preview.candidate.task.task_id for preview in self._attempt_victim_previews(attempt)),
+                )
+                best_key = (
+                    *self._terminal_key(self._task_plan_label(best_attempt.repaired_plan), "emergency"),
+                    float(self._combined_attempt_score(best_attempt)),
+                    -(best_recovered),
+                    -sum(float(preview.victim_recovery_delivery) for preview in self._attempt_victim_previews(best_attempt)),
+                    tuple(preview.candidate.task.task_id for preview in self._attempt_victim_previews(best_attempt)),
+                )
+                if current_key < best_key:
+                    best_attempt = attempt
+        return best_attempt
+
     def _try_controlled_preemption(
         self,
         emergency: Task,
@@ -1537,6 +1699,7 @@ class TwoPhaseEventDrivenScheduler:
         actual_remaining: dict[str, float],
         prev_cross_link: dict[str, str | None],
         corridor: dict[int, set[str]],
+        task_runtime_state: dict[str, str],
     ) -> tuple[_PreemptionAttempt | None, _PreemptionAttempt | None, _PreemptionAttempt | None, dict[str, object] | None]:
         if not affected:
             return None, None, None, None
@@ -1670,6 +1833,20 @@ class TwoPhaseEventDrivenScheduler:
             actual_remaining=actual_remaining,
             prev_cross_link=prev_cross_link,
         )
+        if best_two_victim_complete is None:
+            best_two_victim_complete = self._try_preempted_recovery_completion_fallback(
+                emergency=emergency,
+                direct_plan=direct_plan,
+                partial_attempts=partial_attempts,
+                plan=plan,
+                segments=segments,
+                horizon=horizon,
+                committed=committed,
+                actual_remaining=actual_remaining,
+                prev_cross_link=prev_cross_link,
+                corridor=corridor,
+                task_runtime_state=task_runtime_state,
+            )
 
         return best_complete, best_partial, best_two_victim_complete, best_gain_gate_rejection
 
@@ -1701,6 +1878,9 @@ class TwoPhaseEventDrivenScheduler:
                 task_original_committed_finish[victim.task_id] = preview.original_finish_time
             if preview.recovery_start_time is None or preview.recovery_start_time >= victim.deadline - self.numeric_tolerance:
                 continue
+            existing_info = dict(pending_recovery_tasks.get(victim.task_id) or {})
+            released_segments = set(int(index) for index in existing_info.get("released_segments") or [])
+            released_segments.update(int(index) for index in preview.candidate.released_segments)
             pending_recovery_tasks[victim.task_id] = {
                 "task_id": victim.task_id,
                 "recovery_start_time": float(preview.recovery_start_time),
@@ -1716,9 +1896,10 @@ class TwoPhaseEventDrivenScheduler:
                 "deadline": float(victim.deadline),
                 "remaining_after_preemption": float(preview.remaining_after_preemption),
                 "preempted_by": emergency.task_id,
-                "released_segments": [int(index) for index in preview.candidate.released_segments],
+                "released_segments": sorted(released_segments),
                 "processed": False,
                 "insertion_event_index": None,
+                "replan_count": int(existing_info.get("replan_count", 0)) + 1 if existing_info else 0,
             }
 
     def _released_segment_end_time(
