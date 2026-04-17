@@ -1,0 +1,8 @@
+{
+  "smoke_prev": "normal72x_v2_hotspot_mixed_smoke_revocable_recovery_conservative_rank_20260417_150119",
+  "smoke_new": "normal72x_v2_hotspot_mixed_smoke_two_victim_completion_20260417_165122",
+  "adv_prev": "normal72x_v2_hotspot_mixed_adversarial_revocable_recovery_conservative_rank_20260417_150119",
+  "adv_new": "normal72x_v2_hotspot_mixed_adversarial_two_victim_completion_20260417_165122",
+  "stress_prev": "normal72x_v2_hotspot_mixed_stress_revocable_recovery_conservative_rank_20260417_150119",
+  "stress_new": "normal72x_v2_hotspot_mixed_stress_two_victim_completion_20260417_165122"
+}
