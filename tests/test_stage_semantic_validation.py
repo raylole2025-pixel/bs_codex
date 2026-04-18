@@ -6,7 +6,6 @@ from collections import defaultdict
 from bs3.models import CapacityConfig, CandidateWindow, GAConfig, Scenario, ScheduledWindow, Stage1Config, Stage2Config, Task, TemporalLink
 from bs3.stage1 import RegularEvaluator, run_stage1
 from bs3.stage2 import run_stage2
-import bs3.stage2_two_phase_scheduler as stage2_scheduler_module
 
 
 def _normalize_allocations(allocations, task_type: str | None = None):
@@ -213,40 +212,6 @@ class StageSemanticValidationTests(unittest.TestCase):
             result.metadata["baseline_cross_window_usage_by_segment"],
             result.metadata["final_cross_window_usage_by_segment"],
         )
-        for legacy_symbol in (
-            "run_hotspot_relief",
-            "repair_regular_baseline_blocks",
-            "build_regular_baseline_stage1_greedy",
-            "build_regular_baseline_full_milp",
-            "build_regular_baseline_rolling_milp",
-            "build_regular_baseline_joint_milp",
-        ):
-            self.assertFalse(hasattr(stage2_scheduler_module, legacy_symbol))
-        for legacy_field in (
-            "regular_baseline_mode",
-            "regular_baseline_source",
-            "prefer_milp",
-            "milp_mode",
-            "milp_horizon_segments",
-            "milp_commit_segments",
-            "milp_rolling_path_limit",
-            "milp_rolling_high_path_limit",
-            "milp_rolling_promoted_tasks_per_segment",
-            "milp_time_limit_seconds",
-            "milp_relative_gap",
-            "hotspot_relief_enabled",
-            "closed_loop_relief_enabled",
-            "regular_repair_enabled",
-            "repair_block_count_considered",
-            "repair_block_count_accepted",
-            "repair_total_improvement_peak",
-            "repair_total_improvement_integral",
-            "baseline_completed_count_before_repair",
-            "baseline_completed_count_after_repair",
-            "legacy_hotspot_relief_skipped",
-            "legacy_regular_repair_skipped",
-        ):
-            self.assertNotIn(legacy_field, result.metadata)
         self.assertGreater(sum(alloc.delivered for alloc in result.allocations if alloc.task_id == "E_direct"), 0.0)
         self.assertGreater(sum(alloc.delivered for alloc in result.allocations if alloc.task_id == "E_preempt"), 0.0)
 

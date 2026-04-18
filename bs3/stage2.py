@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from .models import ScheduledWindow, Scenario, Stage1BaselineTrace, Stage1Result, Stage2Result
-from .stage2_two_phase_scheduler import run_stage2_two_phase_event_insert
+from .stage2_emergency_scheduler import run_stage2_emergency_scheduler
 
 
 def run_stage2(
@@ -19,4 +19,4 @@ def run_stage2(
             resolved_trace = stage1_result.baseline_trace
     if not resolved_plan:
         raise ValueError("run_stage2 requires a selected plan or stage1_result.selected_plan")
-    return run_stage2_two_phase_event_insert(scenario, resolved_plan, baseline_trace=resolved_trace)
+    return run_stage2_emergency_scheduler(scenario, resolved_plan, baseline_trace=resolved_trace)

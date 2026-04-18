@@ -82,7 +82,7 @@ class StageRefactorSmokeTests(unittest.TestCase):
         self.assertGreater(sum(alloc.delivered for alloc in result.allocations if alloc.task_id == "E1"), 0.0)
         self.assertGreaterEqual(result.cr_emg, 1.0)
 
-    def test_loader_rejects_removed_stage21_fields(self) -> None:
+    def test_loader_rejects_unknown_stage2_fields(self) -> None:
         payload = {
             "planning_end": 2.0,
             "nodes": {"A": ["A1"], "B": ["B1"]},
@@ -91,7 +91,7 @@ class StageRefactorSmokeTests(unittest.TestCase):
             "stage2": {
                 "k_paths": 2,
                 "completion_tolerance": 1e-6,
-                "hotspot_relief_enabled": True,
+                "unexpected_stage2_field": True,
             },
             "candidate_windows": [
                 {"id": "X1", "a": "A1", "b": "B1", "start": 0.0, "end": 2.0},

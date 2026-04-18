@@ -418,6 +418,139 @@ class Stage2PriorityInsertTests(unittest.TestCase):
         self.assertEqual(insertions[1]["preempted_task_id"], None)
         self.assertEqual(result.metadata["preempted_regular_tasks"], ["R1"])
 
+    def test_completion_override_bypasses_gain_gate_for_near_complete_plan(self) -> None:
+        segments = _segments_for([(0.0, 1.0), (1.0, 3.0), (3.0, 5.0)])
+        plan = _plan_for(5.0)
+        scenario = _scenario_for(
+            planning_end=5.0,
+            cross_capacity=2.05,
+            domain_capacity=2.05,
+            rho=0.0,
+            tasks=[
+                Task("R1", "A0", "B0", 0.0, 5.0, 0.2, 1.0, 0.05, "reg"),
+                Task("E1", "A0", "B0", 1.0, 3.0, 4.1, 5.0, 2.05, "emg"),
+            ],
+        )
+        baseline_trace = _baseline_trace_for(
+            segments=segments,
+            allocations=[_allocation_for(task_id="R1", rate=0.05, segment_index=1, segments=segments)],
+            completed={"R1": True},
+            remaining_end={"R1": 0.0},
+        )
+
+        result = run_stage2(scenario, plan=plan, baseline_trace=baseline_trace)
+        insertion = _insertion(result)
+
+        self.assertEqual(insertion["strategy"], "controlled_preemption")
+        self.assertTrue(insertion["completed"])
+        self.assertTrue(insertion["preemption_accepted_by_gain_gate"])
+        self.assertLess(insertion["emergency_gain_ratio"], 0.05)
+        self.assertEqual(insertion["completion_path"], "single_victim_preemption")
+
+    def test_recovery_reclaim_can_rescue_late_direct_insert(self) -> None:
+        segments = _segments_for([(0.0, 1.0), (1.0, 3.0), (3.0, 5.0)])
+        plan = _plan_for(5.0)
+        scenario = _scenario_for(
+            planning_end=5.0,
+            cross_capacity=2.0,
+            domain_capacity=2.0,
+            rho=0.0,
+            tasks=[
+                Task("R1", "A0", "B0", 0.0, 5.0, 4.0, 1.0, 1.0, "reg"),
+                Task("E1", "A0", "B0", 1.0, 3.0, 4.0, 5.0, 2.0, "emg"),
+                Task("E2", "A0", "B0", 4.0, 5.0, 2.0, 6.0, 2.0, "emg"),
+            ],
+        )
+        baseline_trace = _baseline_trace_for(
+            segments=segments,
+            allocations=[
+                _allocation_for(task_id="R1", rate=1.0, segment_index=1, segments=segments),
+                _allocation_for(task_id="R1", rate=1.0, segment_index=2, segments=segments),
+            ],
+            completed={"R1": True},
+            remaining_end={"R1": 0.0},
+        )
+
+        result = run_stage2(scenario, plan=plan, baseline_trace=baseline_trace)
+        insertions = list(result.metadata.get("emergency_insertions") or [])
+
+        self.assertEqual(len(insertions), 2)
+        self.assertEqual(insertions[1]["strategy"], "direct_insert")
+        self.assertTrue(insertions[1]["used_recovery_reclaim"])
+        self.assertEqual(insertions[1]["reclaimed_recovery_task_ids"], ["R1"])
+        self.assertEqual(insertions[1]["completion_path"], "reclaim_then_direct_insert")
+
+    def test_two_victim_completion_fallback_can_complete_emergency(self) -> None:
+        segments = _segments_for([(0.0, 1.0), (1.0, 3.0), (3.0, 5.0)])
+        plan = _plan_for(5.0)
+        scenario = _scenario_for(
+            planning_end=5.0,
+            cross_capacity=2.0,
+            domain_capacity=2.0,
+            rho=0.25,
+            tasks=[
+                Task("R1", "A0", "B0", 0.0, 5.0, 1.6, 1.0, 0.4, "reg"),
+                Task("R2", "A0", "B0", 0.0, 5.0, 1.6, 1.2, 0.4, "reg"),
+                Task("E1", "A0", "B0", 1.0, 3.0, 4.0, 5.0, 2.0, "emg"),
+            ],
+        )
+        baseline_trace = _baseline_trace_for(
+            segments=segments,
+            allocations=[
+                _allocation_for(task_id="R1", rate=0.4, segment_index=1, segments=segments),
+                _allocation_for(task_id="R1", rate=0.4, segment_index=2, segments=segments),
+                _allocation_for(task_id="R2", rate=0.4, segment_index=1, segments=segments),
+                _allocation_for(task_id="R2", rate=0.4, segment_index=2, segments=segments),
+            ],
+            completed={"R1": True, "R2": True},
+            remaining_end={"R1": 0.0, "R2": 0.0},
+        )
+
+        result = run_stage2(scenario, plan=plan, baseline_trace=baseline_trace)
+        insertion = _insertion(result)
+
+        self.assertEqual(insertion["strategy"], "controlled_preemption_two_victim")
+        self.assertTrue(insertion["completed"])
+        self.assertEqual(len(insertion["all_preempted_task_ids"]), 2)
+        self.assertEqual(insertion["completion_path"], "two_victim_preemption")
+
+    def test_reuse_preempted_recoverable_victim_can_complete_emergency(self) -> None:
+        segments = _segments_for([(0.0, 1.0), (1.0, 3.0), (3.0, 5.0)])
+        plan = _plan_for(5.0)
+        scenario = _scenario_for(
+            planning_end=5.0,
+            cross_capacity=2.0,
+            domain_capacity=2.0,
+            rho=0.0,
+            tasks=[
+                Task("R_REC", "A0", "B0", 0.0, 5.0, 4.0, 1.0, 1.0, "reg"),
+                Task("R_NORM", "A0", "B0", 0.0, 5.0, 2.0, 1.2, 1.0, "reg"),
+                Task("E1", "A0", "B0", 1.0, 3.0, 4.0, 5.0, 2.0, "emg"),
+                Task("E2", "A0", "B0", 3.0, 5.0, 4.0, 6.0, 2.0, "emg"),
+            ],
+        )
+        baseline_trace = _baseline_trace_for(
+            segments=segments,
+            allocations=[
+                _allocation_for(task_id="R_REC", rate=1.0, segment_index=1, segments=segments),
+                _allocation_for(task_id="R_REC", rate=1.0, segment_index=2, segments=segments),
+                _allocation_for(task_id="R_NORM", rate=1.0, segment_index=2, segments=segments),
+            ],
+            completed={"R_REC": True, "R_NORM": True},
+            remaining_end={"R_REC": 0.0, "R_NORM": 0.0},
+        )
+
+        result = run_stage2(scenario, plan=plan, baseline_trace=baseline_trace)
+        insertions = list(result.metadata.get("emergency_insertions") or [])
+
+        self.assertEqual(len(insertions), 2)
+        self.assertEqual(insertions[0]["strategy"], "controlled_preemption")
+        self.assertEqual(insertions[1]["strategy"], "controlled_preemption_recovery_victim_fallback")
+        self.assertEqual(insertions[1]["reused_preempted_recoverable_task_ids"], ["R_REC"])
+        self.assertEqual(insertions[1]["completion_path"], "reuse_recovery_victim_fallback")
+        self.assertEqual(result.metadata["recovery_victim_reuse_count_by_task"], {"R_REC": 1})
+        self.assertEqual(result.metadata["reused_preempted_recoverable_tasks"], ["R_REC"])
+
 
 if __name__ == "__main__":
     unittest.main()

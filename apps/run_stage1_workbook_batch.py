@@ -32,10 +32,10 @@ from bs3.distance_enrichment import enrich_scenario_distances
 from bs3.models import Stage2Config
 from bs3.pipeline import run_pipeline
 from bs3.scenario import load_scenario, scenario_to_dict
-from bs3.stage1_screening import screen_candidate_windows
+from bs3.stage1_candidate_pool import screen_candidate_windows
 from bs3.stage1 import activation_count, gateway_count, run_stage1
 from bs3.stage1_visualization import export_stage1_run_artifacts
-from bs3.stage1_static_value import annotate_scenario_candidate_values
+from bs3.stage1_window_values import annotate_scenario_candidate_values
 
 NS = {
     "a": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",

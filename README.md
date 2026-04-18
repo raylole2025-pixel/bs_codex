@@ -5,8 +5,6 @@ BS3 is a two-stage cross-domain scheduling project:
 - Stage 1 selects cross-domain windows, fixes the activation plan `S*`, and exports the regular-task baseline state.
 - Stage 2 reads `selected_plan + baseline_trace` from Stage 1 and only performs online emergency insertion with controlled preemption when needed.
 
-The former Stage2-1 hotspot-relief / closed-loop regular-load path has been removed from the active repository code.
-
 ## Quick Start
 
 ```bash
@@ -53,8 +51,8 @@ bs3/
 
 - Base scenario template: `inputs/templates/stage1_scenario_template.json`
 - Distance data: `mydata/distances/`
-- Retained results: `results/`
-- Generated experiment outputs: `results/generated/`
+- Results root: `results/`
+- Stage2 validation outputs: `results/stage2_results/`
 
 ## Parameter Documentation
 
@@ -66,8 +64,6 @@ The active repository structure is:
 
 - Stage 1: select `selected_plan` and export `baseline_trace`
 - Stage 2: read that baseline and only do online emergency insertion
-
-The legacy Stage2-1 hotspot-relief / closed-loop regular-load path is not part of the active code path.
 
 ### 1. Prepare Stage1 Output
 
@@ -158,7 +154,7 @@ Generated custom cases are supported with:
 
 Each run is written under:
 
-- `results/generated/stage2_emergency_validation/<run_name>/`
+- `results/stage2_results/<run_name>/`
 
 Run-level files:
 
@@ -181,3 +177,32 @@ Each case directory contains:
 - `cross_window_usage_delta_by_segment`
 - direct insert vs controlled preemption vs failed emergency tasks
 - differences across `rho` values and Stage1 candidate indices
+
+### 7. Current Stage2 Strategy Ladder
+
+Stage 2 now handles emergency tasks through a single event-driven path:
+
+- `direct_insert`
+- `direct_insert_best_effort`
+- `controlled_preemption`
+- `controlled_preemption_two_victim`
+- `controlled_preemption_recovery_victim_fallback`
+- `controlled_preemption_best_effort`
+- `blocked`
+
+This repository no longer carries an alternate Stage2 solver family. All CLI entrypoints go through `bs3/stage2.py -> bs3/stage2_emergency_scheduler.py`.
+
+### 8. Stage2 Plotting
+
+Use `tools/plot_stage2_results.py` to generate Stage2 plots from one or more `stage2_result.json` files or result directories.
+
+- Single-run plots:
+  - strategy distribution
+  - delivered-ratio timeline
+  - preemption and recovery overview
+- Multi-run comparison plots:
+  - `cr_emg` vs `cr_reg`
+  - stacked strategy mix
+  - preemption and recovery comparison
+
+Active Stage2 implementation now lives in `bs3/stage2_emergency_scheduler.py`. The older `bs3/stage2_two_phase_scheduler.py` file is kept as a thin compatibility shim.

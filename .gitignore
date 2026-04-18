@@ -3,3 +3,5 @@ mydata/
 outputs/
 mydata/
 outputs/
+__pycache__/
+*.pyc

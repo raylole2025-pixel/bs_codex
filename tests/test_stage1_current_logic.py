@@ -3,9 +3,9 @@ from __future__ import annotations
 import unittest
 
 from bs3.models import CapacityConfig, CandidateWindow, GAConfig, HotspotRegion, Scenario, Stage1Config, Stage2Config, Task, TemporalLink
-from bs3.stage1_screening import screen_candidate_windows
+from bs3.stage1_candidate_pool import screen_candidate_windows
 from bs3.stage1 import run_stage1
-from bs3.stage1_static_value import annotate_scenario_candidate_values, compute_candidate_static_values
+from bs3.stage1_window_values import annotate_scenario_candidate_values, compute_candidate_static_values
 
 
 class Stage1CurrentLogicTests(unittest.TestCase):

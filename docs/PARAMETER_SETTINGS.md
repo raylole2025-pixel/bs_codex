@@ -7,8 +7,6 @@ This repository now uses a two-stage structure:
 - Stage 1: cross-domain link configuration plus regular-task baseline export
 - Stage 2: emergency-task insertion on top of the exported baseline
 
-The old Stage2-1 hotspot-relief / closed-loop / regular repair path has been removed. Its old configuration fields are no longer part of the active schema.
-
 ## Scenario JSON
 
 ### `stage1`
@@ -61,8 +59,11 @@ The old Stage2-1 hotspot-relief / closed-loop / regular repair path has been rem
 Stage 2 now keeps the existing external strategy labels:
 
 - `direct_insert`
-- `controlled_preemption`
 - `direct_insert_best_effort`
+- `controlled_preemption`
+- `controlled_preemption_two_victim`
+- `controlled_preemption_recovery_victim_fallback`
+- `controlled_preemption_best_effort`
 - `blocked`
 
 Emergency insertion still runs on top of a fixed Stage 1 `selected_plan` plus `baseline_trace`, and it does not add any new required JSON fields.
@@ -107,12 +108,25 @@ Controlled preemption is limited to one regular task per emergency insertion att
 
 The implementation ranks candidates by a loss-to-release score using these module defaults:
 
-- `PREEMPTION_WEIGHT_COEFF = 0.45`
-- `PREEMPTION_SENT_RATIO_COEFF = 0.35`
-- `PREEMPTION_SLACK_COEFF = 0.20`
+- `PREEMPTION_WEIGHT_COEFF = 0.35`
+- `PREEMPTION_RECOVERY_SLACK_COEFF = 0.30`
+- `PREEMPTION_RECOVERABILITY_COEFF = 0.35`
 - `PREEMPTION_SCORE_EPS = 1e-6`
+- `PREEMPTION_MIN_GAIN_RATIO = 0.05`
+- `RECOVERY_K_PATHS = 5`
 
 No extra scenario schema fields are required for these constants. Each emergency insertion event records the chosen capacity tier, direct-plan delivery, whether preemption was used, the released task/window/edge details, and the computed preemption score.
+
+### Recovery and Completion Fallbacks
+
+The active Stage 2 path also includes:
+
+- victim-specific earliest released recovery
+- revocable recovery reclaim before preemption
+- a completion-only two-victim fallback
+- a completion-only `normal victim + preempted_recoverable victim` fallback
+
+These behaviors are internal scheduler policy. They do not add new required scenario JSON fields.
 
 ## Active Outputs
 
@@ -129,27 +143,12 @@ No extra scenario schema fields are required for these constants. Each emergency
 - insertion events
 - baseline/final cross-window usage comparison
 
-## Removed Stage2 Fields
+## Stage2 Schema Note
 
-The loader now rejects old Stage2-1 fields, including:
+`stage2` is now an explicit small schema. The loader accepts only:
 
-- `regular_baseline_mode`
-- `regular_repair_enabled`
-- `prefer_milp`
-- `milp_*`
-- `repair_*`
-- `hotspot_relief_enabled`
-- `closed_loop_relief_enabled`
-- `hotspot_*`
-- `augment_*`
-- `closed_loop_*`
-- `hot_path_limit`
-- `hot_promoted_tasks_per_segment`
-- `local_peak_*`
-- `fail_if_milp_disabled`
+- `k_paths`
+- `completion_tolerance`
+- `label_keep_limit`
 
-The loader also continues to reject older removed fields:
-
-- `stage2.affected_task_limit`
-- `stage2.best_effort_on_failure`
-- `stage2.insertion_horizon_seconds`
+Any other `stage2` field is rejected instead of being silently ignored.

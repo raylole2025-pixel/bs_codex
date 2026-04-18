@@ -1,0 +1,64 @@
+{
+  "comparison_name": "normal72x_v2_hotspot_mixed_reuse_recovery_completion",
+  "runs": [
+    {
+      "label": "smoke",
+      "result_path": "D:\\Codex_Project\\bs3 - 副本\\results\\stage2_results\\normal72x_v2_hotspot_mixed_reuse_recovery_completion_20260417_182505_smoke\\stage2_result.json",
+      "cr_emg": 0.875,
+      "cr_reg": 0.9933333333333333,
+      "n_preemptions": 3,
+      "strategy_counts": {
+        "direct_insert": 4,
+        "controlled_preemption": 3,
+        "controlled_preemption_two_victim": 0,
+        "controlled_preemption_recovery_victim_fallback": 0,
+        "controlled_preemption_best_effort": 0,
+        "direct_insert_best_effort": 0,
+        "blocked": 1
+      },
+      "failure_class_counts": {},
+      "completion_path_counts": {}
+    },
+    {
+      "label": "adversarial",
+      "result_path": "D:\\Codex_Project\\bs3 - 副本\\results\\stage2_results\\normal72x_v2_hotspot_mixed_reuse_recovery_completion_20260417_182505_adversarial\\stage2_result.json",
+      "cr_emg": 1.0,
+      "cr_reg": 0.98,
+      "n_preemptions": 8,
+      "strategy_counts": {
+        "direct_insert": 5,
+        "controlled_preemption": 6,
+        "controlled_preemption_two_victim": 1,
+        "controlled_preemption_recovery_victim_fallback": 0,
+        "controlled_preemption_best_effort": 0,
+        "direct_insert_best_effort": 0,
+        "blocked": 0
+      },
+      "failure_class_counts": {},
+      "completion_path_counts": {}
+    },
+    {
+      "label": "stress",
+      "result_path": "D:\\Codex_Project\\bs3 - 副本\\results\\stage2_results\\normal72x_v2_hotspot_mixed_reuse_recovery_completion_20260417_182505_stress\\stage2_result.json",
+      "cr_emg": 1.0,
+      "cr_reg": 0.8866666666666667,
+      "n_preemptions": 18,
+      "strategy_counts": {
+        "direct_insert": 6,
+        "controlled_preemption": 10,
+        "controlled_preemption_two_victim": 3,
+        "controlled_preemption_recovery_victim_fallback": 1,
+        "controlled_preemption_best_effort": 0,
+        "direct_insert_best_effort": 0,
+        "blocked": 0
+      },
+      "failure_class_counts": {},
+      "completion_path_counts": {}
+    }
+  ],
+  "generated_files": [
+    "D:\\Codex_Project\\bs3 - 副本\\results\\stage2_results\\normal72x_v2_hotspot_mixed_reuse_recovery_completion_plots_20260418\\normal72x_v2_hotspot_mixed_reuse_recovery_completion_completion_rates.png",
+    "D:\\Codex_Project\\bs3 - 副本\\results\\stage2_results\\normal72x_v2_hotspot_mixed_reuse_recovery_completion_plots_20260418\\normal72x_v2_hotspot_mixed_reuse_recovery_completion_strategy_mix.png",
+    "D:\\Codex_Project\\bs3 - 副本\\results\\stage2_results\\normal72x_v2_hotspot_mixed_reuse_recovery_completion_plots_20260418\\normal72x_v2_hotspot_mixed_reuse_recovery_completion_preemption_recovery.png"
+  ]
+}

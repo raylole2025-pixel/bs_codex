@@ -37,54 +37,10 @@ REMOVED_STAGE1_FIELDS = {
     "viol_weight_hot",
     "viol_weight_sr",
 }
-REMOVED_STAGE2_FIELDS = {
-    "affected_task_limit",
-    "best_effort_on_failure",
-    "insertion_horizon_seconds",
-    "regular_baseline_mode",
-    "regular_repair_enabled",
-    "prefer_milp",
-    "milp_mode",
-    "milp_horizon_segments",
-    "milp_commit_segments",
-    "milp_rolling_path_limit",
-    "milp_rolling_high_path_limit",
-    "milp_rolling_high_weight_threshold",
-    "milp_rolling_high_competition_task_threshold",
-    "milp_rolling_promoted_tasks_per_segment",
-    "milp_time_limit_seconds",
-    "milp_relative_gap",
-    "repair_block_max_count",
-    "repair_expand_segments",
-    "repair_max_block_segments",
-    "repair_min_active_tasks",
-    "repair_util_threshold",
-    "repair_candidate_path_limit",
-    "repair_time_limit_seconds",
-    "repair_accept_epsilon",
-    "hotspot_relief_enabled",
-    "closed_loop_relief_enabled",
-    "hotspot_util_threshold",
-    "hotspot_topk_ranges",
-    "hotspot_expand_segments",
-    "hotspot_single_link_fraction_threshold",
-    "hotspot_top_tasks_per_range",
-    "augment_window_budget",
-    "augment_top_windows_per_range",
-    "augment_selection_policy",
-    "closed_loop_max_rounds",
-    "closed_loop_max_new_windows",
-    "closed_loop_min_delta_q_peak",
-    "closed_loop_min_delta_q_integral",
-    "closed_loop_min_delta_high_segments",
-    "closed_loop_topk_ranges_per_round",
-    "closed_loop_topk_candidates_per_range",
-    "closed_loop_action_mode",
-    "hot_path_limit",
-    "hot_promoted_tasks_per_segment",
-    "local_peak_horizon_cap_segments",
-    "local_peak_accept_epsilon",
-    "fail_if_milp_disabled",
+ALLOWED_STAGE2_FIELDS = {
+    "k_paths",
+    "completion_tolerance",
+    "label_keep_limit",
 }
 
 
@@ -111,6 +67,12 @@ def _reject_removed_fields(config: dict[str, Any], *, section: str, removed: set
     hits = sorted(key for key in removed if key in config)
     if hits:
         raise ValueError(f"{section} contains removed field(s): {', '.join(hits)}")
+
+
+def _reject_unknown_fields(config: dict[str, Any], *, section: str, allowed: set[str]) -> None:
+    hits = sorted(str(key) for key in config if key not in allowed)
+    if hits:
+        raise ValueError(f"{section} contains unknown field(s): {', '.join(hits)}")
 
 
 def _runtime_cache(scenario: Scenario) -> dict:
@@ -215,7 +177,9 @@ def load_scenario(path: str | Path) -> Scenario:
     stage1_cfg = _required(payload, "stage1")
     stage2_cfg = payload.get("stage2", {})
     _reject_removed_fields(stage1_cfg, section="stage1", removed=REMOVED_STAGE1_FIELDS)
-    _reject_removed_fields(stage2_cfg, section="stage2", removed=REMOVED_STAGE2_FIELDS)
+    if not isinstance(stage2_cfg, dict):
+        raise ValueError("stage2 must be an object")
+    _reject_unknown_fields(stage2_cfg, section="stage2", allowed=ALLOWED_STAGE2_FIELDS)
 
     node_domain: dict[str, str] = {}
     for domain in ("A", "B"):

@@ -143,6 +143,7 @@ def build_stage1_scenario_template(
     stage2_payload = {
         "k_paths": int((stage2_config or {}).get("k_paths", 2)),
         "completion_tolerance": float((stage2_config or {}).get("completion_tolerance", 1e-6)),
+        "label_keep_limit": int((stage2_config or {}).get("label_keep_limit", 16)),
     }
 
     payload = {
